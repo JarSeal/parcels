@@ -1,30 +1,34 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
-import * as Stats from './vendor/stats.min.js';
+import Settings from './settings/Settings.js';
+import Utils from './utils/Utils';
 
 class Root {
     constructor() {
-        this.sceneState = {};
+        this.sceneState = {
+            curScene: 'ship',
+        };
+        this.utils = new Utils();
 
         // Setup renderer [START]
         const renderer = new THREE.WebGLRenderer();
         renderer.setClearColor('#000000');
-        const screenSize = this.getScreenResolution();
+        const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
+        this.sceneState.renderer = renderer;
         // Setup renderer [/END]
 
         // Setup scene and basic lights [START]
         const scene = new THREE.Scene();
-        const hemi = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.65);
-        hemi.position.set(32, -32, 5);
-        scene.add(hemi);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
         scene.add(new THREE.AxesHelper(10)); // Helper
         this.scene = scene;
+        this.sceneState.scenes = {
+            ship: scene,
+        };
         // Setup scene and basic lights [/END]
 
         // Setup camera and aspect ratio [START]
@@ -34,38 +38,21 @@ class Root {
         controls.update();
         this.controls = controls;
         this.camera = camera;
+        this.sceneState.cameras = {
+            ship: camera,
+        };
         // Setup camera and aspect ratio [/END]
 
-        // Setup debug statisctics [START]
-        const createStats = () => {
-            const s = new Stats();
-            s.setMode(0);
-            return s;
-        };
-        this.stats = createStats();
-        this.stats.domElement.id = 'debug-stats-wrapper';
-        document.body.appendChild(this.stats.domElement);
-        // Setup debug statisctics [/END]
+        // Settings [START]
+        const settings = new Settings(this.sceneState);
+        this.stats = settings.createStats();
+        // Settings [/END]
 
         // Other setup [START]
-        this.sceneState.clock = new THREE.Clock(),
-        this.sceneState.resizeFns = [this.resize],
-        this.sceneState.getScreenResolution = this.getScreenResolution;
-        this.sceneState.defaultSettings = {
-            showStats: true
-        };
-        this.sceneState.settings = { ...this.sceneState.defaultSettings };
+        this.sceneState.clock = new THREE.Clock();
+        this.sceneState.resizeFns = [this.resize];
         this.initResizer();
         // Other setup [/END]
-
-        // GUI setup [START]
-        const gui = new GUI();
-        gui.close();
-        gui.add(this.sceneState.settings, 'showStats').name('Show stats').onChange((value) => {
-            document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
-        });
-        this.sceneState.gui = gui;
-        // GUI setup [/END]
 
         this.runApp(scene, camera);
     }
@@ -92,28 +79,31 @@ class Root {
 
         // Main app logic [/END]
 
-        this.resize(this.sceneState, this.renderer);
+        this.resize(this.sceneState);
         this.renderLoop();
 
     }
 
     renderLoop = () => {
         requestAnimationFrame(this.renderLoop);
-        // const delta = this.sceneState.clock.getDelta();
-        this.renderer.render(this.scene, this.camera);
-        if(this.sceneState.settings.showStats) this.stats.update(); // Debug statistics
+        const ss = this.sceneState;
+        // const delta = ss.clock.getDelta();
+        const curScene = ss.curScene;
+        this.renderer.render(ss.scenes[curScene], ss.cameras[curScene]);
+        if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
-    resize(sceneState, renderer) {
-        const width = sceneState.getScreenResolution().x;
-        const height = sceneState.getScreenResolution().y;
+    resize(sceneState) {
+        const reso = this.utils.getScreenResolution();
+        const width = reso.x;
+        const height = reso.y;
         const pixelRatio = window.devicePixelRatio || 1;
         document.getElementsByTagName('body')[0].style.width = width + 'px';
         document.getElementsByTagName('body')[0].style.height = height + 'px';
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(pixelRatio);
+        sceneState.renderer.setSize(width, height);
+        sceneState.renderer.setPixelRatio(pixelRatio);
     }
 
     initResizer() {
@@ -125,22 +115,10 @@ class Root {
                 const fns = this.sceneState.resizeFns,
                     fnsLength = fns.length;
                 for(i=0; i<fnsLength; i++) {
-                    fns[i](
-                        this.sceneState,
-                        this.renderer,
-                        this.scene,
-                        this.camera
-                    );
+                    fns[i](this.sceneState);
                 }
             }, 500);
         });
-    }
-
-    getScreenResolution() {
-        return {
-            x: Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0),
-            y: Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-        };
     }
 }
 
