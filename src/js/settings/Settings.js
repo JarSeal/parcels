@@ -5,6 +5,7 @@ import defaultSettings from './defaultSettings';
 class Settings {
     constructor(sceneState) {
         this.sceneState = sceneState;
+        this.userSettings = {};
         this._initSettings(sceneState);
     }
 
@@ -36,6 +37,11 @@ class Settings {
             });
         }
         return stats;
+    }
+
+    addUserSetting(args) {
+        // TODO
+        // args is an object and needs to be defined..
     }
 }
 

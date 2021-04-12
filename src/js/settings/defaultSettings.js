@@ -3,6 +3,9 @@ const defaultSettings = {
     debug: {
         showStats: true,
     },
+    aa: {
+        fxaa: true,
+    },
 };
 
 export default defaultSettings;

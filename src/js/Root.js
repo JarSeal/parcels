@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import Settings from './settings/Settings.js';
+import Settings from './settings/Settings';
 import Utils from './utils/Utils';
+import PostProcessing from './postProcessing/PostProcessing';
 
 class Root {
     constructor() {
@@ -46,10 +47,12 @@ class Root {
         // Settings [START]
         const settings = new Settings(this.sceneState);
         this.stats = settings.createStats();
+        this.sceneState.settingsClass = settings;
         // Settings [/END]
 
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
+        this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this.resize];
         this.initResizer();
         // Other setup [/END]
@@ -89,19 +92,21 @@ class Root {
         const ss = this.sceneState;
         // const delta = ss.clock.getDelta();
         const curScene = ss.curScene;
-        this.renderer.render(ss.scenes[curScene], ss.cameras[curScene]);
+        // this.renderer.render(ss.scenes[curScene], ss.cameras[curScene]);
+        ss.pp.runComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
     resize(sceneState) {
-        const reso = this.utils.getScreenResolution();
+        const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
         const pixelRatio = window.devicePixelRatio || 1;
         document.getElementsByTagName('body')[0].style.width = width + 'px';
         document.getElementsByTagName('body')[0].style.height = height + 'px';
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
+        const curScene = sceneState.curScene;
+        sceneState.cameras[curScene].aspect = width / height;
+        sceneState.cameras[curScene].updateProjectionMatrix();
         sceneState.renderer.setSize(width, height);
         sceneState.renderer.setPixelRatio(pixelRatio);
     }
