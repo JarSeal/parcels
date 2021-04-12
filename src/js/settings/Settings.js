@@ -7,6 +7,7 @@ class Settings {
         this.sceneState = sceneState;
         this.userSettings = {};
         this._initSettings(sceneState);
+        this._debugSettings(sceneState);
     }
 
     _initSettings(sceneState) {
@@ -22,6 +23,15 @@ class Settings {
         // GUI setup [/END]
     }
 
+    _debugSettings(sceneState) {
+        const settings = sceneState.settings;
+
+        if(!settings.debug.showAxesHelper) sceneState.axesHelper.visible = false;
+        this.addGuiElem('boolean', settings.debug, 'showAxesHelper', 'Show axes helper', 'Debug', (value) => {
+            sceneState.axesHelper.visible = value;
+        });
+    }
+
     createStats() {
         const stats = new Stats();
         stats.setMode(0);
@@ -31,24 +41,29 @@ class Settings {
             document.getElementById('debug-stats-wrapper').style.display = 'none';
         }
         if(this.sceneState.settings.enableGui) {
-            const debugFolder = this.sceneState.gui.addFolder('Debug');
-            debugFolder.add(this.sceneState.settings.debug, 'showStats').name('Show stats').onChange((value) => {
-                document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
-            });
+            this.addGuiElem(
+                'boolean',
+                this.sceneState.settings.debug,
+                'showStats',
+                'Show stats',
+                'Debug',
+                (value) => {
+                    document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
+                }
+            );
         }
         return stats;
     }
 
-    addGuiElem(type, setting, settingKey, folder, onChange) {
+    addGuiElem(type, setting, settingKey, name, folder, onChange) {
         const ss = this.sceneState;
-        if(ss.settings.enableGui) {
-            let target;
-            switch(type) {
-            case 'boolean':
-                folder ? target = folder : target = ss.gui;
-                target.add(setting, settingKey).name('Use FXAA').onChange(onChange);
-                break;
-            }
+        if(!ss.settings.enableGui) return;
+        let target;
+        folder ? target = this.addGuiFolder(folder) : target = ss.gui;
+        switch(type) {
+        case 'boolean':
+            target.add(setting, settingKey).name(name).onChange(onChange);
+            break;
         }
     }
 

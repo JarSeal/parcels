@@ -25,7 +25,8 @@ class Root {
         // Setup scene and basic lights [START]
         const scene = new THREE.Scene();
         scene.add(new THREE.AmbientLight(0xffffff, 1));
-        scene.add(new THREE.AxesHelper(10)); // Helper
+        this.sceneState.axesHelper = new THREE.AxesHelper(10);
+        scene.add(this.sceneState.axesHelper);
         this.scene = scene;
         this.sceneState.scenes = {
             ship: scene,
