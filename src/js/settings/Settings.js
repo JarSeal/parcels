@@ -39,7 +39,31 @@ class Settings {
         return stats;
     }
 
+    addGuiElem(type, setting, settingKey, folder, onChange) {
+        const ss = this.sceneState;
+        if(ss.settings.enableGui) {
+            let target;
+            switch(type) {
+            case 'boolean':
+                folder ? target = folder : target = ss.gui;
+                target.add(setting, settingKey).name('Use FXAA').onChange(onChange);
+                break;
+            }
+        }
+    }
+
+    addGuiFolder(name) {
+        const ss = this.sceneState;
+        if(ss.settings.enableGui) {
+            const folders = Object.keys(ss.gui.__folders);
+            if(folders.includes(name)) return ss.gui.__folders[name];
+            return ss.gui.addFolder(name);
+        }
+        return null;
+    }
+
     addUserSetting(args) {
+        args;
         // TODO
         // args is an object and needs to be defined..
     }

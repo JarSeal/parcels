@@ -21,13 +21,18 @@ class PostProcessing {
     }
 
     _addFXAA() {
+        const ss = this.sceneState;
         const fxaaPass = new ShaderPass(FXAAShader);
-        const pixelRatio = this.sceneState.renderer.getPixelRatio();
+        const pixelRatio = ss.renderer.getPixelRatio();
         const container = document.getElementById('main-stage');
-		fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.offsetWidth * pixelRatio);
-		fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.x = 1 / (container.offsetWidth * pixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
         this.composer.addPass(fxaaPass);
-        // fxaaPass.enabed = false;
+        fxaaPass.enabled = ss.settings.aa.fxaa;
+        const folder = ss.settingsClass.addGuiFolder('Antialiasing');
+        ss.settingsClass.addGuiElem('boolean', ss.settings.aa, 'fxaa', folder, (value) => {
+            fxaaPass.enabled = value;
+        });
         this.sceneState.settingsClass.addUserSetting({});
     }
 

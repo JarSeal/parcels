@@ -91,8 +91,6 @@ class Root {
         requestAnimationFrame(this.renderLoop);
         const ss = this.sceneState;
         // const delta = ss.clock.getDelta();
-        const curScene = ss.curScene;
-        // this.renderer.render(ss.scenes[curScene], ss.cameras[curScene]);
         ss.pp.runComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
