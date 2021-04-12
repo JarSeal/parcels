@@ -27,9 +27,16 @@ class Settings {
         const settings = sceneState.settings;
 
         if(!settings.debug.showAxesHelper) sceneState.axesHelper.visible = false;
-        this.addGuiElem('boolean', settings.debug, 'showAxesHelper', 'Show axes helper', 'Debug', (value) => {
-            sceneState.axesHelper.visible = value;
-        });
+        this.addGuiElem(
+            'boolean',
+            settings.debug,
+            'showAxesHelper',
+            'Show axes helper',
+            'Debug',
+            (value) => {
+                sceneState.axesHelper.visible = value;
+            }
+        );
     }
 
     createStats() {

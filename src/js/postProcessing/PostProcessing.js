@@ -29,9 +29,16 @@ class PostProcessing {
         fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
         this.composer.addPass(fxaaPass);
         fxaaPass.enabled = ss.settings.aa.fxaa;
-        ss.settingsClass.addGuiElem('boolean', ss.settings.aa, 'fxaa', 'Use FXAA', 'Antialiasing', (value) => {
-            fxaaPass.enabled = value;
-        });
+        ss.settingsClass.addGuiElem(
+            'boolean',
+            ss.settings.aa,
+            'fxaa',
+            'Use FXAA',
+            'Antialiasing',
+            (value) => {
+                fxaaPass.enabled = value;
+            }
+        );
         this.sceneState.settingsClass.addUserSetting({});
     }
 
