@@ -69,7 +69,7 @@ class Root {
     runApp(scene, camera) {
 
         // Main app logic [START]
-        camera.position.set(1, 1, 10);
+        camera.position.set(7, 20, 10);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         // Add ground
