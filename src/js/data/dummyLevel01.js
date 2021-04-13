@@ -5,7 +5,7 @@ const levelData = {
     textures: ['AO_AND_DIFFUSE', 'DIFFUSE', 'AO'],
     ext: 'png',
     size: [10, 2.6, 10],
-    position: [0, 0, 0],
+    position: [0, -0.125, 0],
     floorThickness: 0.25,
 };
 

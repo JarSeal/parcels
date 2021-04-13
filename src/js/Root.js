@@ -4,7 +4,10 @@ import Settings from './settings/Settings';
 import Utils from './utils/Utils';
 import PostProcessing from './postProcessing/PostProcessing';
 import levelData from './data/dummyLevel01';
+import userPlayerData from './data/userPlayerData';
 import ModelLoader from './loaders/ModelLoader';
+import Player from './players/Player';
+import UserControls from './controls/UserControls';
 
 class Root {
     constructor() {
@@ -28,7 +31,10 @@ class Root {
 
         // Setup scene and basic lights [START]
         const scene = new THREE.Scene();
-        scene.add(new THREE.AmbientLight(0xffffff, rendererAA === '1' ? 1 : 1.1));
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
+        hemiLight.position.set(32, -32, 5);
+        scene.add(hemiLight);
         this.sceneState.axesHelper = new THREE.AxesHelper(100);
         scene.add(this.sceneState.axesHelper);
         this.scene = scene;
@@ -69,7 +75,7 @@ class Root {
     runApp(scene, camera) {
 
         // Main app logic [START]
-        camera.position.set(7, 20, 10);
+        camera.position.set(-7, 20, -10);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         // Add ground
@@ -103,6 +109,10 @@ class Root {
         const modelLoader = new ModelLoader(this.sceneState);
         modelLoader.loadModel(levelData);
 
+        const userPlayer = new Player(this.sceneState, userPlayerData);
+        userPlayer.create();
+        new UserControls(this.sceneState, userPlayer);
+
         // Main app logic [/END]
 
         this.resize(this.sceneState);
@@ -116,7 +126,18 @@ class Root {
         const ss = this.sceneState;
         // const delta = ss.clock.getDelta();
         ss.pp.getComposer().render();
+        this._renderPlayers(ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
+    }
+
+    _renderPlayers(ss) {
+        let i = 0;
+        const c = ss.playerKeysCount,
+            k = ss.playerKeys,
+            p = ss.players;
+        for(i=0; i<c; i++) {
+            p[k].render();
+        }
     }
 
     resize(sceneState) {

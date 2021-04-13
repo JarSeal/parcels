@@ -25,6 +25,7 @@ class ModelLoader {
                 '.' + data.ext,
                 (texture) => { texture.flipY = false; }
             );
+            mesh.position.set(data.position[0], data.position[1], data.position[2]);
             this.sceneState.scenes[this.sceneState.curScene].add(mesh);
         }, undefined, function(error) {
             console.error(error);
