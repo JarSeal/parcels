@@ -3,6 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
 import PostProcessing from './postProcessing/PostProcessing';
+import levelData from './data/dummyLevel01';
+import ModelLoader from './loaders/ModelLoader';
 
 class Root {
     constructor() {
@@ -15,7 +17,7 @@ class Root {
         const urlParams = new URLSearchParams(window.location.search);
         const rendererAA = urlParams.get('aa');
         const renderer = new THREE.WebGLRenderer({ antialias: rendererAA === '1' });
-        renderer.setClearColor('#ffffff');
+        renderer.setClearColor('#222222');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -95,6 +97,9 @@ class Root {
                 Math.random() < 0.5 ? randomPos * -1 : randomPos);
             scene.add(newBox);
         }
+
+        const modelLoader = new ModelLoader(this.sceneState);
+        modelLoader.loadModel(levelData);
 
         // Main app logic [/END]
 
