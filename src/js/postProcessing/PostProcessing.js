@@ -9,6 +9,7 @@ class PostProcessing {
         this.composer = new EffectComposer(sceneState.renderer);
         this._addRenderPass();
         this._addFXAA();
+        this._addSMAA();
     }
 
     _addRenderPass() {
@@ -29,7 +30,7 @@ class PostProcessing {
         fxaaPass.material.uniforms['resolution'].value.y = 1 / (container.offsetHeight * pixelRatio);
         this.composer.addPass(fxaaPass);
         fxaaPass.enabled = ss.settings.aa.fxaa;
-        ss.settingsClass.addGuiElem(
+        ss.settingsClass.addUserSetting(
             'boolean',
             ss.settings.aa,
             'fxaa',
@@ -39,7 +40,10 @@ class PostProcessing {
                 fxaaPass.enabled = value;
             }
         );
-        this.sceneState.settingsClass.addUserSetting({});
+    }
+
+    _addSMAA() {
+        console.log('here');
     }
 
     runComposer() {

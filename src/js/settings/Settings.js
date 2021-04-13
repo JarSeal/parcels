@@ -84,10 +84,9 @@ class Settings {
         return null;
     }
 
-    addUserSetting(args) {
-        args;
+    addUserSetting(type, setting, settingKey, name, folder, onChange) {
+        this.addGuiElem(type, setting, settingKey, name, folder, onChange);
         // TODO
-        // args is an object and needs to be defined..
     }
 
     endInit() {
