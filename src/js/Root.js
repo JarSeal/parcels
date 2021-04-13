@@ -84,6 +84,7 @@ class Root {
         // Main app logic [/END]
 
         this.resize(this.sceneState);
+        this.sceneState.settingsClass.endInit();
         this.renderLoop();
 
     }

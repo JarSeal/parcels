@@ -17,7 +17,7 @@ class Settings {
         // GUI setup [START]
         if(sceneState.settings.enableGui) {
             const gui = new GUI();
-            gui.close();
+            if(!sceneState.settings.openGuiControls) gui.close();
             sceneState.gui = gui;
         }
         // GUI setup [/END]
@@ -66,7 +66,7 @@ class Settings {
         const ss = this.sceneState;
         if(!ss.settings.enableGui) return;
         let target;
-        folder ? target = this.addGuiFolder(folder) : target = ss.gui;
+        folder ? target = this._addGuiFolder(folder) : target = ss.gui;
         switch(type) {
         case 'boolean':
             target.add(setting, settingKey).name(name).onChange(onChange);
@@ -74,7 +74,7 @@ class Settings {
         }
     }
 
-    addGuiFolder(name) {
+    _addGuiFolder(name) {
         const ss = this.sceneState;
         if(ss.settings.enableGui) {
             const folders = Object.keys(ss.gui.__folders);
@@ -88,6 +88,15 @@ class Settings {
         args;
         // TODO
         // args is an object and needs to be defined..
+    }
+
+    endInit() {
+        if(this.sceneState.settings.openAllGuiFolders) {
+            const folders = Object.keys(this.sceneState.gui.__folders);
+            folders.forEach(folder => {
+                this.sceneState.gui.__folders[folder].open();
+            });
+        }
     }
 }
 
