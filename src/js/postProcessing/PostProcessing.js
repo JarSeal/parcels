@@ -30,6 +30,7 @@ class PostProcessing {
 
     _addFXAA() {
         const ss = this.sceneState;
+        if(ss.settings.aa.rendererAA) return;
         const fxaaPass = new ShaderPass(FXAAShader);
         const pixelRatio = ss.renderer.getPixelRatio();
         const container = document.getElementById('main-stage');
@@ -49,6 +50,7 @@ class PostProcessing {
 
     _addSMAA() {
         const ss = this.sceneState;
+        if(ss.settings.aa.rendererAA) return;
         const pixelRatio = ss.renderer.getPixelRatio();
         const container = document.getElementById('main-stage');
         const smaaPass = new SMAAPass(container.offsetWidth * pixelRatio, container.offsetHeight * pixelRatio);
@@ -66,6 +68,7 @@ class PostProcessing {
 
     _addSAO() {
         const ss = this.sceneState;
+        if(ss.settings.aa.rendererAA) return;
         const saoPass = new SAOPass(ss.scenes[ss.curScene], ss.cameras[ss.curScene], true, true, 4096);
         saoPass.params.saoBias = 0.73;
         saoPass.params.saoIntensity = 0.045;
@@ -88,6 +91,7 @@ class PostProcessing {
 
     _addSSAO() {
         const ss = this.sceneState;
+        if(ss.settings.aa.rendererAA) return;
         const container = document.getElementById('main-stage');
         const ssaoPass = new SSAOPass(ss.scenes[ss.curScene], ss.cameras[ss.curScene], container.offsetWidth, container.offsetHeight);
         ssaoPass.kernelRadius = 0.5;

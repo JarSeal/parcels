@@ -13,9 +13,8 @@ class Root {
 
         // Setup renderer [START]
         const urlParams = new URLSearchParams(window.location.search);
-        const renderAA = urlParams.get('aa');
-        console.log(renderAA);
-        const renderer = new THREE.WebGLRenderer({ antialias: renderAA === '1' });
+        const rendererAA = urlParams.get('aa');
+        const renderer = new THREE.WebGLRenderer({ antialias: rendererAA === '1' });
         renderer.setClearColor('#ffffff');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
@@ -51,6 +50,7 @@ class Root {
         // Settings [START]
         const settings = new Settings(this.sceneState);
         this.stats = settings.createStats();
+        settings.setAA(rendererAA);
         this.sceneState.settingsClass = settings;
         // Settings [/END]
 
