@@ -12,8 +12,11 @@ class Root {
         this.utils = new Utils();
 
         // Setup renderer [START]
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor('#000000');
+        const urlParams = new URLSearchParams(window.location.search);
+        const renderAA = urlParams.get('aa');
+        console.log(renderAA);
+        const renderer = new THREE.WebGLRenderer({ antialias: renderAA === '1' });
+        renderer.setClearColor('#ffffff');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -35,7 +38,7 @@ class Root {
 
         // Setup camera and aspect ratio [START]
         this.aspectRatio = screenSize.x / screenSize.y;
-        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.1, 64);
+        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 4, 64);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.update();
         this.controls = controls;
@@ -93,7 +96,7 @@ class Root {
         requestAnimationFrame(this.renderLoop);
         const ss = this.sceneState;
         // const delta = ss.clock.getDelta();
-        ss.pp.runComposer().render();
+        ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
@@ -102,13 +105,14 @@ class Root {
         const width = reso.x;
         const height = reso.y;
         const pixelRatio = window.devicePixelRatio || 1;
+        sceneState.renderer.setPixelRatio(pixelRatio);
         document.getElementsByTagName('body')[0].style.width = width + 'px';
         document.getElementsByTagName('body')[0].style.height = height + 'px';
         const curScene = sceneState.curScene;
         sceneState.cameras[curScene].aspect = width / height;
         sceneState.cameras[curScene].updateProjectionMatrix();
         sceneState.renderer.setSize(width, height);
-        sceneState.renderer.setPixelRatio(pixelRatio);
+        sceneState.pp.getComposer().setSize(width, height);
     }
 
     initResizer() {

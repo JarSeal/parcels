@@ -16,6 +16,12 @@ const defaultSettings = {
         fxaa: true,
         smaa: true,
     },
+
+    // Ambient Occlusion
+    ao: {
+        sao: true,
+        ssao: false,
+    }
 };
 
 export default defaultSettings;
