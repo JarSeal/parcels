@@ -21,6 +21,10 @@ class Player {
         const pMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.position.set(data.position[0], data.position[1], data.position[2]);
+        const nGeo = new THREE.BoxBufferGeometry(0.1, 0.1, 0.1);
+        const nMesh = new THREE.Mesh(nGeo, new THREE.MeshLambertMaterial({ color: 0x777777 }));
+        nMesh.position.set(data.position[0], data.position[1], data.position[2]-0.2);
+        pMesh.add(nMesh);
         data.mesh = pMesh;
         this.sceneState.scenes[this.sceneState.curScene].add(pMesh);
     }
@@ -55,35 +59,40 @@ class Player {
             if(data.movingLeft) {
                 data.position[0] += speed;
                 data.position[2] -= speed;
+                data.mesh.rotation.y = Math.PI / -4;
             }
             if(data.movingRight) {
                 data.position[0] -= speed;
                 data.position[2] += speed;
+                data.mesh.rotation.y = Math.PI / 2 + Math.PI / 4;
             }
             if(data.movingUp) {
                 data.position[0] += speed;
                 data.position[2] += speed;
+                data.mesh.rotation.y = Math.PI / -2 + Math.PI / -4;
             }
             if(data.movingDown) {
                 data.position[0] -= speed;
                 data.position[2] -= speed;
+                data.mesh.rotation.y = Math.PI / 4;
             }
         } else {
             if(data.movingLeft && data.movingUp) {
                 data.position[0] += speed;
+                data.mesh.rotation.y = Math.PI / -2;
             }
             if(data.movingLeft && data.movingDown) {
                 data.position[2] -= speed;
+                data.mesh.rotation.y = 0;
             }
             if(data.movingRight && data.movingUp) {
                 data.position[2] += speed;
+                data.mesh.rotation.y = Math.PI;
             }
             if(data.movingRight && data.movingDown) {
                 data.position[0] -= speed;
+                data.mesh.rotation.y = Math.PI / 2;
             }
-            // if(data.movingRight) data.position[0] -= speed;
-            // if(data.movingUp) data.position[2] += speed;
-            // if(data.movingDown) data.position[2] -= speed;
         }
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
     }
