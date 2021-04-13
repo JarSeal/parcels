@@ -84,6 +84,18 @@ class Root {
         boxMesh.position.set(0, 0.5, 0);
         scene.add(boxMesh);
 
+        for(let i=0; i<14; i++) {
+            const newBox = new THREE.Mesh(boxGeo, boxMat);
+            const randomScale = parseFloat((Math.random() * (2.0000 - 0.4000) + 0.4000).toFixed(4));
+            newBox.scale.set(randomScale, randomScale, randomScale);
+            let randomPos = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
+            newBox.position.set(
+                Math.random() < 0.5 ? randomPos * -1 : randomPos,
+                Math.random() < 0.5 ? randomPos * -1 : randomPos,
+                Math.random() < 0.5 ? randomPos * -1 : randomPos);
+            scene.add(newBox);
+        }
+
         // Main app logic [/END]
 
         this.resize(this.sceneState);

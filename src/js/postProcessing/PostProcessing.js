@@ -71,9 +71,9 @@ class PostProcessing {
         saoPass.params.saoIntensity = 0.045;
         saoPass.params.saoScale = 2.3;
         saoPass.params.saoKernelRadius = 22;
-        saoPass.params.saoBlurRadius = 53.8;
+        saoPass.params.saoBlurRadius = 60;
         saoPass.params.saoBlurStdDev = 6.7;
-        saoPass.params.saoBlurDepthCutoff = 0.043;
+        saoPass.params.saoBlurDepthCutoff = 0.003;
         this.composer.addPass(saoPass);
         saoPass.enabled = ss.settings.ao.sao;
         ss.settingsClass.addUserSetting(
