@@ -49,12 +49,12 @@ class Player {
             this.data.movingDown = time;
             break;
         }
-        console.log('keys pressed', this.data.moveKeysPressed);
     }
 
     render = () => {
         const data = this.data;
         const speed = data.moveKeysPressed > 1 ? data.moveSpeed * 1.25 : data.moveSpeed;
+        data.curMovementSpeed = speed;
         if(data.moveKeysPressed === 1) {
             if(data.movingLeft) {
                 data.position[0] += speed;
@@ -93,8 +93,15 @@ class Player {
                 data.position[0] -= speed;
                 data.mesh.rotation.y = Math.PI / 2;
             }
+            if(!data.movingLeft && !data.movingRight && !data.movingUp && !data.movingDown) {
+                data.curMovementSpeed = 0;
+            }
         }
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        if(data.userPlayer && data.curMovementSpeed > 0) {
+            this.sceneState.cameras[this.sceneState.curScene].position.set(-7+data.position[0], 20+data.position[1], -10+data.position[2]);
+            this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
+        }
     }
 }
 
