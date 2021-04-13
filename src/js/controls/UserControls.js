@@ -43,19 +43,19 @@ class UserControls {
             switch(e.code) {
             case 'KeyA':
                 this.keydownTimes.a = 0;
-                this.player.move('posx', 0);
+                this.player.move('left', 0);
                 break;
             case 'KeyD':
                 this.keydownTimes.d = 0;
-                this.player.move('negx', 0);
+                this.player.move('right', 0);
                 break;
             case 'KeyW':
                 this.keydownTimes.w = 0;
-                this.player.move('posz', 0);
+                this.player.move('up', 0);
                 break;
             case 'KeyS':
                 this.keydownTimes.s = 0;
-                this.player.move('negz', 0);
+                this.player.move('down', 0);
                 break;
             }
         });

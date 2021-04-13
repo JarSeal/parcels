@@ -17,7 +17,7 @@ class Player {
         this.sceneState.players[data.id] = data;
         this.sceneState.playerKeys.push(data.id);
         this.sceneState.playerKeysCount += 1;
-        const pGeo = new THREE.BoxBufferGeometry(0.4, 1.82, 0.8);
+        const pGeo = new THREE.BoxBufferGeometry(0.8, 1.82, 0.4);
         const pMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.position.set(data.position[0], data.position[1], data.position[2]);
@@ -50,14 +50,41 @@ class Player {
 
     render = () => {
         const data = this.data;
-        const speed = data.moveKeysPressed > 1 ? data.moveSpeed : data.moveSpeed * 0.75;
-        if(data.movingLeft) {
-            data.position[0] += speed;
-            data.position[2] -= speed;
+        const speed = data.moveKeysPressed > 1 ? data.moveSpeed * 1.25 : data.moveSpeed;
+        if(data.moveKeysPressed === 1) {
+            if(data.movingLeft) {
+                data.position[0] += speed;
+                data.position[2] -= speed;
+            }
+            if(data.movingRight) {
+                data.position[0] -= speed;
+                data.position[2] += speed;
+            }
+            if(data.movingUp) {
+                data.position[0] += speed;
+                data.position[2] += speed;
+            }
+            if(data.movingDown) {
+                data.position[0] -= speed;
+                data.position[2] -= speed;
+            }
+        } else {
+            if(data.movingLeft && data.movingUp) {
+                data.position[0] += speed;
+            }
+            if(data.movingLeft && data.movingDown) {
+                data.position[2] -= speed;
+            }
+            if(data.movingRight && data.movingUp) {
+                data.position[2] += speed;
+            }
+            if(data.movingRight && data.movingDown) {
+                data.position[0] -= speed;
+            }
+            // if(data.movingRight) data.position[0] -= speed;
+            // if(data.movingUp) data.position[2] += speed;
+            // if(data.movingDown) data.position[2] -= speed;
         }
-        if(data.movingRight) data.position[0] -= speed;
-        if(data.movingUp) data.position[2] += speed;
-        if(data.movingDown) data.position[2] -= speed;
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
     }
 }
