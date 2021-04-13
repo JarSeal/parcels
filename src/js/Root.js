@@ -17,7 +17,7 @@ class Root {
         const urlParams = new URLSearchParams(window.location.search);
         const rendererAA = urlParams.get('aa');
         const renderer = new THREE.WebGLRenderer({ antialias: rendererAA === '1' });
-        renderer.setClearColor('#222222');
+        renderer.setClearColor('#ffffff');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -28,8 +28,8 @@ class Root {
 
         // Setup scene and basic lights [START]
         const scene = new THREE.Scene();
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
-        this.sceneState.axesHelper = new THREE.AxesHelper(10);
+        scene.add(new THREE.AmbientLight(0xffffff, rendererAA === '1' ? 1 : 1.1));
+        this.sceneState.axesHelper = new THREE.AxesHelper(100);
         scene.add(this.sceneState.axesHelper);
         this.scene = scene;
         this.sceneState.scenes = {
@@ -39,7 +39,7 @@ class Root {
 
         // Setup camera and aspect ratio [START]
         this.aspectRatio = screenSize.x / screenSize.y;
-        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 4, 64);
+        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.5, 128);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.update();
         this.controls = controls;
@@ -77,25 +77,27 @@ class Root {
         const groundMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
         const groundMesh = new THREE.Mesh(groundGeo, groundMat);
         groundMesh.position.set(0, -0.1, 0);
-        scene.add(groundMesh);
+        // scene.add(groundMesh);
 
         // Add a box
         const boxGeo = new THREE.BoxBufferGeometry(1, 1, 1);
         const boxMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
         const boxMesh = new THREE.Mesh(boxGeo, boxMat);
         boxMesh.position.set(0, 0.5, 0);
-        scene.add(boxMesh);
+        // scene.add(boxMesh);
 
-        for(let i=0; i<14; i++) {
+        for(let i=0; i<32; i++) {
             const newBox = new THREE.Mesh(boxGeo, boxMat);
             const randomScale = parseFloat((Math.random() * (2.0000 - 0.4000) + 0.4000).toFixed(4));
             newBox.scale.set(randomScale, randomScale, randomScale);
-            let randomPos = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
+            let randomPosX = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
+            let randomPosY = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
+            let randomPosZ = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
             newBox.position.set(
-                Math.random() < 0.5 ? randomPos * -1 : randomPos,
-                Math.random() < 0.5 ? randomPos * -1 : randomPos,
-                Math.random() < 0.5 ? randomPos * -1 : randomPos);
-            scene.add(newBox);
+                Math.random() < 0.5 ? randomPosX * -1 : randomPosX,
+                randomPosY,
+                Math.random() < 0.5 ? randomPosZ * -1 : randomPosZ);
+            // scene.add(newBox);
         }
 
         const modelLoader = new ModelLoader(this.sceneState);

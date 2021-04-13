@@ -71,7 +71,7 @@ class PostProcessing {
         if(ss.settings.aa.rendererAA) return;
         const saoPass = new SAOPass(ss.scenes[ss.curScene], ss.cameras[ss.curScene], true, true, 4096);
         saoPass.params.saoBias = 0.73;
-        saoPass.params.saoIntensity = 0.045;
+        saoPass.params.saoIntensity = 0.025;
         saoPass.params.saoScale = 2.3;
         saoPass.params.saoKernelRadius = 22;
         saoPass.params.saoBlurRadius = 60;
