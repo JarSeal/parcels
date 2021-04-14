@@ -60,39 +60,47 @@ class Player {
             if(data.movingLeft) {
                 data.position[0] += speed;
                 data.position[2] -= speed;
-                data.mesh.rotation.y = Math.PI / -4;
+                data.direction = this.sceneState.utils.getCommonPIs('negQuarter');
+                data.mesh.rotation.y = data.direction;
             }
             if(data.movingRight) {
                 data.position[0] -= speed;
                 data.position[2] += speed;
-                data.mesh.rotation.y = Math.PI / 2 + Math.PI / 4;
+                data.direction = this.sceneState.utils.getCommonPIs('threeFourths');
+                data.mesh.rotation.y = data.direction;
             }
             if(data.movingUp) {
                 data.position[0] += speed;
                 data.position[2] += speed;
-                data.mesh.rotation.y = Math.PI / -2 + Math.PI / -4;
+                data.direction = this.sceneState.utils.getCommonPIs('negThreeFourths');
+                data.mesh.rotation.y = data.direction;
             }
             if(data.movingDown) {
                 data.position[0] -= speed;
                 data.position[2] -= speed;
-                data.mesh.rotation.y = Math.PI / 4;
+                data.direction = this.sceneState.utils.getCommonPIs('quarter');
+                data.mesh.rotation.y = data.direction;
             }
         } else {
             if(data.movingLeft && data.movingUp) {
                 data.position[0] += speed;
-                data.mesh.rotation.y = Math.PI / -2;
+                data.direction = this.sceneState.utils.getCommonPIs('negHalf');
+                data.mesh.rotation.y = data.direction;
             }
             if(data.movingLeft && data.movingDown) {
                 data.position[2] -= speed;
+                data.direction = 0;
                 data.mesh.rotation.y = 0;
             }
             if(data.movingRight && data.movingUp) {
                 data.position[2] += speed;
-                data.mesh.rotation.y = Math.PI;
+                data.direction = Math.PI;
+                data.mesh.rotation.y = data.direction;
             }
             if(data.movingRight && data.movingDown) {
                 data.position[0] -= speed;
-                data.mesh.rotation.y = Math.PI / 2;
+                data.direction = this.sceneState.utils.getCommonPIs('half');
+                data.mesh.rotation.y = data.direction;
             }
             if(!data.movingLeft && !data.movingRight && !data.movingUp && !data.movingDown) {
                 data.curMovementSpeed = 0;

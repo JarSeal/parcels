@@ -15,6 +15,7 @@ class Root {
             curScene: 'ship',
         };
         this.utils = new Utils();
+        this.sceneState.utils = this.utils;
 
         // Setup renderer [START]
         const urlParams = new URLSearchParams(window.location.search);
