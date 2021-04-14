@@ -74,10 +74,6 @@ class Root {
 
     runApp(scene, camera) {
 
-        // Main app logic [START]
-        camera.position.set(-7, 20, -10);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-
         // Add ground
         const groundGeo = new THREE.BoxBufferGeometry(5, 0.2, 2);
         const groundMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
@@ -113,7 +109,12 @@ class Root {
         userPlayer.create();
         new UserControls(this.sceneState, userPlayer);
 
-        // Main app logic [/END]
+        const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
+        camera.position.set(
+            -10 + playerPos[0],
+            17 + playerPos[1],
+            -10 + playerPos[2]);
+        camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
 
         this.resize(this.sceneState);
         this.sceneState.settingsClass.endInit();

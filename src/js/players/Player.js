@@ -15,6 +15,7 @@ class Player {
     create() {
         const data = this.data;
         this.sceneState.players[data.id] = data;
+        this.sceneState.userPlayerId = data.id;
         this.sceneState.playerKeys.push(data.id);
         this.sceneState.playerKeysCount += 1;
         const pGeo = new THREE.BoxBufferGeometry(0.8, 1.82, 0.4);
@@ -99,7 +100,7 @@ class Player {
         }
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
         if(data.userPlayer && data.curMovementSpeed > 0) {
-            this.sceneState.cameras[this.sceneState.curScene].position.set(-7+data.position[0], 20+data.position[1], -10+data.position[2]);
+            this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
             this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
         }
     }
