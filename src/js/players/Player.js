@@ -5,6 +5,7 @@ class Player {
     constructor(sceneState, data) {
         this.sceneState = sceneState;
         this.rotatationTL = null;
+        this.twoPI = 2 * Math.PI;
         this.data = data;
         data.render = this.render;
         data.xPosMulti = 0;
@@ -23,7 +24,7 @@ class Player {
         this.sceneState.playerKeys.push(data.id);
         this.sceneState.playerKeysCount += 1;
         const pGeo = new THREE.BoxBufferGeometry(0.8, 1.82, 0.4);
-        const pMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+        const pMat = new THREE.MeshLambertMaterial({ color: 0x002f00 });
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.position.set(data.position[0], data.position[1], data.position[2]);
         const nGeo = new THREE.BoxBufferGeometry(0.1, 0.1, 0.1);
@@ -42,20 +43,33 @@ class Player {
         if(this.rotatationTL) {
             this.rotatationTL.kill();
         }
-        const curRotation = this.data.mesh.rotation.y;
-        if(curRotation < 0 && toDir > 0 && toDir - curRotation > Math.PI) {
-            console.log('HERE1', curRotation, toDir, curRotation + 2 * Math.PI);
-            this.data.mesh.rotation.y += 2 * Math.PI;
-            console.log('MATKA', toDir - this.data.mesh.rotation.y);
-        } else if(curRotation > 0 && toDir < 0 && curRotation - toDir > Math.PI) {
-            this.data.mesh.rotation.y -= 2 * Math.PI;
+        const from = this.data.mesh.rotation.y;
+        if(Math.abs(from - toDir) > Math.PI) {
+            if(toDir > 0) {
+                toDir -= this.twoPI;    
+            } else {
+                toDir += this.twoPI;
+            }
         }
-        if(curRotation === toDir) return;
         this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
             y: toDir,
             ease: Sine.easeInOut,
-            onComplete: () => { this.rotationTL = null; },
+            onComplete: () => {
+                this.rotationTL = null;
+                this._normaliseRotation();
+            },
         });
+    }
+
+    _normaliseRotation() {
+        const curRotation = this.data.mesh.rotation.y;
+        if(curRotation > Math.PI) {
+            this.data.mesh.rotation.y -= this.twoPI;
+            this._normaliseRotation();
+        } else if(curRotation < -Math.PI) {
+            this.data.mesh.rotation.y += this.twoPI;
+            this._normaliseRotation();
+        }
     }
 
     movePlayer(xPosMulti, zPosMulti, dir) {
