@@ -1,10 +1,14 @@
 import * as THREE from 'three';
+import { TimelineMax, Sine } from 'gsap-ssr';
 
 class Player {
     constructor(sceneState, data) {
         this.sceneState = sceneState;
+        this.rotatationTL = null;
         this.data = data;
         data.render = this.render;
+        data.xPosMulti = 0;
+        data.zPosMulti = 0;
         if(!this.sceneState.playerKeysCount) {
             this.sceneState.players = {};
             this.sceneState.playerKeys = [];
@@ -30,82 +34,32 @@ class Player {
         this.sceneState.scenes[this.sceneState.curScene].add(pMesh);
     }
 
-    move(dir, time) {
-        if(time === 0) {
-            this.data.moveKeysPressed -= 1;
-        } else {
-            this.data.moveKeysPressed += 1;
+    getDirection() {
+        return this.data.direction;
+    }
+
+    _rotatePlayer(toDir) {
+        if(this.rotatationTL) {
+            this.rotatationTL.kill();
         }
-        switch(dir) {
-        case 'left':
-            this.data.movingLeft = time;
-            break;
-        case 'right':
-            this.data.movingRight = time;
-            break;
-        case 'up':
-            this.data.movingUp = time;
-            break;
-        case 'down':
-            this.data.movingDown = time;
-            break;
-        }
+        if(this.data.mesh.rotation.y === toDir) return;
+        this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
+            y: toDir,
+            ease: Sine.easeInOut,
+            onComplete: () => { this.rotationTL = null; },
+        });
+    }
+
+    movePlayer(xPosMulti, zPosMulti, dir) {
+        this._rotatePlayer(dir);
+        this.data.xPosMulti = xPosMulti;
+        this.data.zPosMulti = zPosMulti;
     }
 
     render = () => {
         const data = this.data;
-        const speed = data.moveKeysPressed > 1 ? data.moveSpeed * 1.25 : data.moveSpeed;
-        data.curMovementSpeed = speed;
-        if(data.moveKeysPressed === 1) {
-            if(data.movingLeft) {
-                data.position[0] += speed;
-                data.position[2] -= speed;
-                data.direction = this.sceneState.utils.getCommonPIs('negQuarter');
-                data.mesh.rotation.y = data.direction;
-            }
-            if(data.movingRight) {
-                data.position[0] -= speed;
-                data.position[2] += speed;
-                data.direction = this.sceneState.utils.getCommonPIs('threeFourths');
-                data.mesh.rotation.y = data.direction;
-            }
-            if(data.movingUp) {
-                data.position[0] += speed;
-                data.position[2] += speed;
-                data.direction = this.sceneState.utils.getCommonPIs('negThreeFourths');
-                data.mesh.rotation.y = data.direction;
-            }
-            if(data.movingDown) {
-                data.position[0] -= speed;
-                data.position[2] -= speed;
-                data.direction = this.sceneState.utils.getCommonPIs('quarter');
-                data.mesh.rotation.y = data.direction;
-            }
-        } else {
-            if(data.movingLeft && data.movingUp) {
-                data.position[0] += speed;
-                data.direction = this.sceneState.utils.getCommonPIs('negHalf');
-                data.mesh.rotation.y = data.direction;
-            }
-            if(data.movingLeft && data.movingDown) {
-                data.position[2] -= speed;
-                data.direction = 0;
-                data.mesh.rotation.y = 0;
-            }
-            if(data.movingRight && data.movingUp) {
-                data.position[2] += speed;
-                data.direction = Math.PI;
-                data.mesh.rotation.y = data.direction;
-            }
-            if(data.movingRight && data.movingDown) {
-                data.position[0] -= speed;
-                data.direction = this.sceneState.utils.getCommonPIs('half');
-                data.mesh.rotation.y = data.direction;
-            }
-            if(!data.movingLeft && !data.movingRight && !data.movingUp && !data.movingDown) {
-                data.curMovementSpeed = 0;
-            }
-        }
+        data.position[0] += data.xPosMulti * data.moveSpeed;
+        data.position[2] += data.zPosMulti * data.moveSpeed;
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
         if(data.userPlayer && data.curMovementSpeed > 0) {
             this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
