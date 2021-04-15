@@ -42,7 +42,15 @@ class Player {
         if(this.rotatationTL) {
             this.rotatationTL.kill();
         }
-        if(this.data.mesh.rotation.y === toDir) return;
+        const curRotation = this.data.mesh.rotation.y;
+        if(curRotation < 0 && toDir > 0 && toDir - curRotation > Math.PI) {
+            console.log('HERE1', curRotation, toDir, curRotation + 2 * Math.PI);
+            this.data.mesh.rotation.y += 2 * Math.PI;
+            console.log('MATKA', toDir - this.data.mesh.rotation.y);
+        } else if(curRotation > 0 && toDir < 0 && curRotation - toDir > Math.PI) {
+            this.data.mesh.rotation.y -= 2 * Math.PI;
+        }
+        if(curRotation === toDir) return;
         this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
             y: toDir,
             ease: Sine.easeInOut,
@@ -61,7 +69,7 @@ class Player {
         data.position[0] += data.xPosMulti * data.moveSpeed;
         data.position[2] += data.zPosMulti * data.moveSpeed;
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
-        if(data.userPlayer && data.curMovementSpeed > 0) {
+        if(data.userPlayer) {
             this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
             this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
         }

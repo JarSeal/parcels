@@ -115,7 +115,6 @@ class UserControls {
                 zPosMulti = -1;
                 this.direction = this.sceneState.utils.getCommonPIs('quarter');
             }
-            
         } else if(keyCount === 2) {
             if(this.keydownTimes.a && this.keydownTimes.w) {
                 xPosMulti = 1.25;
@@ -133,6 +132,20 @@ class UserControls {
             this.twoKeyDirection = this.direction;
         } else if(keyCount === 0) {
             if(performance.now() - this.stopTwoKeyPressTime < 50) {
+                // if(this.twoKeyDirection < this.direction && this.direction - this.twoKeyDirection > Math.PI) {
+                //     this.twoKeyDirection += 2 * Math.PI;
+                // } else if(this.twoKeyDirection > this.direction && this.twoKeyDirection - this.direction > Math.PI) {
+                //     this.twoKeyDirection -= 2 * Math.PI;
+                // }
+                // if(this.direction < this.twoKeyDirection && this.twoKeyDirection - this.direction > Math.PI) {
+                //     this.twoKeyDirection += 2 * Math.PI;
+                // } else if(this.direction > this.twoKeyDirection && this.direction - this.twoKeyDirection > Math.PI) {
+                //     this.twoKeyDirection -= 2 * Math.PI;
+                // }
+                if(this.twoKeyDirection > Math.PI || this.twoKeyDirection < -Math.PI) {
+                    console.log('OISKO VIKA TÄSSÄ?');
+                }
+                console.log('NYT*****************');
                 this.direction = this.twoKeyDirection;
             }
         }
