@@ -5,7 +5,8 @@ class Player {
     constructor(sceneState, data) {
         this.sceneState = sceneState;
         this.rotatationTL = null;
-        this.twoPI = 2 * Math.PI;
+        this.twoPI = sceneState.utils.getCommonPIs('twoPi');
+        this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
         data.render = this.render;
         data.xPosMulti = 0;
@@ -26,13 +27,13 @@ class Player {
         this.sceneState.userPlayerId = data.id;
         this.sceneState.playerKeys.push(data.id);
         this.sceneState.playerKeysCount += 1;
-        const pGeo = new THREE.BoxBufferGeometry(0.8, 1.82, 0.4);
+        const pGeo = new THREE.BoxBufferGeometry(0.4, 1.82, 0.8);
         const pMat = new THREE.MeshLambertMaterial({ color: 0x002f00 });
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.position.set(data.position[0], data.position[1], data.position[2]);
         const nGeo = new THREE.BoxBufferGeometry(0.1, 0.1, 0.1);
         const nMesh = new THREE.Mesh(nGeo, new THREE.MeshLambertMaterial({ color: 0x777777 }));
-        nMesh.position.set(data.position[0], data.position[1], data.position[2]-0.2);
+        nMesh.position.set(data.position[0]+0.2, data.position[1], data.position[2]);
         pMesh.add(nMesh);
         data.mesh = pMesh;
         this.sceneState.scenes[this.sceneState.curScene].add(pMesh);
@@ -49,7 +50,7 @@ class Player {
         const from = this.data.mesh.rotation.y;
         if(Math.abs(from - toDir) > Math.PI) {
             if(toDir > 0) {
-                toDir -= this.twoPI;    
+                toDir -= this.twoPI;
             } else {
                 toDir += this.twoPI;
             }
@@ -80,24 +81,22 @@ class Player {
         this._rotatePlayer(dir);
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
-        this._collision(this.data);
+        this.data.direction = dir;
     }
 
     _collision(data) {
-        // newXPoint = startX + (distance * cos(angle))
-        // newYPoint = startY + (distance * sin(angle))
-        let angle = data.direction;
-        if(angle < 0) angle += this.twoPI;
-        let distance = 5;
-        //if(angle < 0) distance = -1;
-        const newX = data.position[0] + (distance * Math.cos(angle));
-        const newZ = data.position[2] + (distance * Math.sin(angle));
+        const angle = data.direction + this.halfPI;
+        const distance = 2;
+        const collisionThreshold = 0.4;
+        const newX = data.position[0] + (distance * Math.sin(angle));
+        const newZ = data.position[2] + (distance * Math.cos(angle));
         const startPos = new THREE.Vector3(data.position[0], data.position[1], data.position[2]);
         const targetPos = new THREE.Vector3(newX, data.position[1], newZ);
         this.rayCastLeft.set(startPos, targetPos);
-        console.log(angle);
-        const intersect = this.rayCastLeft.intersectObject(this.sceneState.curLevelMesh);
-        console.log(intersect);
+        let intersect = [];
+        if(this.sceneState.curLevelMesh) {
+            intersect = this.rayCastLeft.intersectObject(this.sceneState.curLevelMesh);
+        }
         
         const geometry = new THREE.BufferGeometry().setFromPoints([startPos, targetPos]);
         const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
@@ -109,18 +108,18 @@ class Player {
         this.line = new THREE.Line(geometry, material);
         this.sceneState.scenes[this.sceneState.curScene].add(this.line);
         
-        return false;
+        if(intersect[0] && intersect[0].distance < collisionThreshold) {
+            console.log('tadaa', intersect);
+        }
+
+        return intersect[0] && intersect[0].distance < collisionThreshold;
     }
 
     render = () => {
         const data = this.data;
-        const oldPosition = [ ...data.position ];
         // if(!this._collision(data)) {
-            data.position[0] += data.xPosMulti * data.moveSpeed;
-            data.position[2] += data.zPosMulti * data.moveSpeed;
-        // } else {
-
-        // }
+        data.position[0] += data.xPosMulti * data.moveSpeed;
+        data.position[2] += data.zPosMulti * data.moveSpeed;
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
         if(data.userPlayer) {
             this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);

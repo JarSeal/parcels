@@ -9,6 +9,10 @@ class Utils {
             negQuarter: Math.PI / -4,
             threeFourths: Math.PI * 0.75,
             negThreeFourths: Math.PI * -0.75,
+            threeHalves: Math.PI + Math.PI / 2,
+            piAndQuarter: Math.PI / 4 + Math.PI,
+            piAndThreeFourths: Math.PI * 0.75 + Math.PI,
+            twoPi: Math.PI * 2,
         };
     }
 

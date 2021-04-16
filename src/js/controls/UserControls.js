@@ -101,33 +101,33 @@ class UserControls {
             if(this.keydownTimes.a) {
                 xPosMulti = 1;
                 zPosMulti = -1;
-                this.direction = this.sceneState.utils.getCommonPIs('negQuarter');
+                this.direction = this.sceneState.utils.getCommonPIs('quarter');
             } else if(this.keydownTimes.d) {
                 xPosMulti = -1;
                 zPosMulti = 1;
-                this.direction = this.sceneState.utils.getCommonPIs('threeFourths');
+                this.direction = this.sceneState.utils.getCommonPIs('piAndQuarter'); //
             } else if(this.keydownTimes.w) {
                 xPosMulti = 1;
                 zPosMulti = 1;
-                this.direction = this.sceneState.utils.getCommonPIs('negThreeFourths');
+                this.direction = this.sceneState.utils.getCommonPIs('piAndThreeFourths'); //
             } else if(this.keydownTimes.s) {
                 xPosMulti = -1;
                 zPosMulti = -1;
-                this.direction = this.sceneState.utils.getCommonPIs('quarter');
+                this.direction = this.sceneState.utils.getCommonPIs('threeFourths');
             }
         } else if(keyCount === 2) {
             if(this.keydownTimes.a && this.keydownTimes.w) {
                 xPosMulti = 1.25;
-                this.direction = this.sceneState.utils.getCommonPIs('negHalf');
+                this.direction = 0;
             } else if(this.keydownTimes.a && this.keydownTimes.s) {
                 zPosMulti = -1.25;
-                this.direction = 0;
+                this.direction = this.sceneState.utils.getCommonPIs('half');
             } else if(this.keydownTimes.d && this.keydownTimes.w) {
                 zPosMulti = 1.25;
-                this.direction = Math.PI;
+                this.direction = this.sceneState.utils.getCommonPIs('threeHalves');
             } else if(this.keydownTimes.d && this.keydownTimes.s) {
                 xPosMulti = -1.25;
-                this.direction = this.sceneState.utils.getCommonPIs('half');
+                this.direction = Math.PI;
             }
             this.twoKeyDirection = this.direction;
         } else if(keyCount === 0) {
