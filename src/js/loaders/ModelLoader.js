@@ -6,6 +6,7 @@ class ModelLoader {
         this.sceneState = sceneState;
         this.modelLoader = new GLTFLoader();
         this.textureLoader = new THREE.TextureLoader();
+        sceneState.curLevelMesh = null;
     }
 
     loadModel(data) {
@@ -27,6 +28,7 @@ class ModelLoader {
             );
             mesh.position.set(data.position[0], data.position[1], data.position[2]);
             this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+            this.sceneState.curLevelMesh = mesh;
         }, undefined, function(error) {
             console.error(error);
         });

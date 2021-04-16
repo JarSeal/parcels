@@ -10,11 +10,14 @@ class Player {
         data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
+        this.rayCastLeft = new THREE.Raycaster();
+        this.rayCastLeft.far = 2;
         if(!this.sceneState.playerKeysCount) {
             this.sceneState.players = {};
             this.sceneState.playerKeys = [];
             this.sceneState.playerKeysCount = 0;
         }
+        this.line;
     }
 
     create() {
@@ -57,6 +60,7 @@ class Player {
             onComplete: () => {
                 this.rotationTL = null;
                 this._normaliseRotation();
+                this.data.direction = toDir;
             },
         });
     }
@@ -76,12 +80,47 @@ class Player {
         this._rotatePlayer(dir);
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
+        this._collision(this.data);
+    }
+
+    _collision(data) {
+        // newXPoint = startX + (distance * cos(angle))
+        // newYPoint = startY + (distance * sin(angle))
+        let angle = data.direction;
+        if(angle < 0) angle += this.twoPI;
+        let distance = 5;
+        //if(angle < 0) distance = -1;
+        const newX = data.position[0] + (distance * Math.cos(angle));
+        const newZ = data.position[2] + (distance * Math.sin(angle));
+        const startPos = new THREE.Vector3(data.position[0], data.position[1], data.position[2]);
+        const targetPos = new THREE.Vector3(newX, data.position[1], newZ);
+        this.rayCastLeft.set(startPos, targetPos);
+        console.log(angle);
+        const intersect = this.rayCastLeft.intersectObject(this.sceneState.curLevelMesh);
+        console.log(intersect);
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints([startPos, targetPos]);
+        const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        if(this.line) {
+            this.line.geometry.dispose();
+            this.line.material.dispose();
+            this.sceneState.scenes[this.sceneState.curScene].remove(this.line);
+        }
+        this.line = new THREE.Line(geometry, material);
+        this.sceneState.scenes[this.sceneState.curScene].add(this.line);
+        
+        return false;
     }
 
     render = () => {
         const data = this.data;
-        data.position[0] += data.xPosMulti * data.moveSpeed;
-        data.position[2] += data.zPosMulti * data.moveSpeed;
+        const oldPosition = [ ...data.position ];
+        // if(!this._collision(data)) {
+            data.position[0] += data.xPosMulti * data.moveSpeed;
+            data.position[2] += data.zPosMulti * data.moveSpeed;
+        // } else {
+
+        // }
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
         if(data.userPlayer) {
             this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
