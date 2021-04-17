@@ -4,7 +4,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import CannonHelper from './vendor/CannonHelper.js';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
-import LStorage from './utils/LocalStorage.js';
 import PostProcessing from './postProcessing/PostProcessing';
 import levelData from './data/dummyLevel01';
 import userPlayerData from './data/userPlayerData';
@@ -87,7 +86,7 @@ class Root {
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this.resize];
-        this.initResizer();
+        this._initResizer();
         // Other setup [/END]
 
         this.runApp(scene, camera);
@@ -177,7 +176,7 @@ class Root {
         sceneState.pp.getComposer().setSize(width, height);
     }
 
-    initResizer() {
+    _initResizer() {
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);

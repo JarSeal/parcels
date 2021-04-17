@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
+import { Face3 } from 'three/examples/jsm/deprecated/Geometry.js';
 
 class CannonHelper{
     constructor(scene, world){
@@ -156,7 +157,7 @@ class CannonHelper{
 				break;
 
 			case CANNON.Shape.types.CONVEXPOLYHEDRON:
-				const geo = new THREE.Geometry();
+				const geo = new THREE.BufferGeometry();
 
 				// Add vertices
 				shape.vertices.forEach(function(v){
@@ -169,7 +170,7 @@ class CannonHelper{
 					for (let j = 1; j < face.length - 1; j++) {
 						const b = face[j];
 						const c = face[j + 1];
-						geo.faces.push(new THREE.Face3(a, b, c));
+						geo.faces.push(new Face3(a, b, c));
 					}
 				});
 				geo.computeBoundingSphere();
@@ -178,7 +179,7 @@ class CannonHelper{
 				break;
 
 			case CANNON.Shape.types.HEIGHTFIELD:
-				geometry = new THREE.Geometry();
+				geometry = new THREE.BufferGeometry();
 
 				v0 = new CANNON.Vec3();
 				v1 = new CANNON.Vec3();
@@ -199,7 +200,7 @@ class CannonHelper{
 								new THREE.Vector3(v2.x, v2.y, v2.z)
 							);
 							var i = geometry.vertices.length - 3;
-							geometry.faces.push(new THREE.Face3(i, i+1, i+2));
+							geometry.faces.push(new Face3(i, i+1, i+2));
 						}
 					}
 				}
@@ -209,7 +210,7 @@ class CannonHelper{
 				break;
 
 			case CANNON.Shape.types.TRIMESH:
-				geometry = new THREE.Geometry();
+				geometry = new THREE.BufferGeometry();
 
 				v0 = new CANNON.Vec3();
 				v1 = new CANNON.Vec3();
@@ -222,7 +223,7 @@ class CannonHelper{
 						new THREE.Vector3(v2.x, v2.y, v2.z)
 					);
 					var j = geometry.vertices.length - 3;
-					geometry.faces.push(new THREE.Face3(j, j+1, j+2));
+					geometry.faces.push(new Face3(j, j+1, j+2));
 				}
 				geometry.computeBoundingSphere();
 				geometry.computeFaceNormals();

@@ -1,8 +1,8 @@
 class LStorage {
     constructor() {
-        this.keyPrefix = 'sr_kf_';
+        this.keyPrefix = 'p_kf_';
         this.localStorageAvailable = false;
-        if(this.lsTest()) {
+        if(this._lsTest()) {
             this.localStorageAvailable = true;
         }
     }
@@ -36,7 +36,18 @@ class LStorage {
         return true;
     }
 
-    lsTest(){
+    convertValue(defaultValue, lsValue) {
+        if(typeof defaultValue === 'boolean') {
+            return (lsValue === 'true');
+        } else if(typeof defaultValue === 'number') {
+            return Number(lsValue);
+        } else {
+            // typeof string
+            return lsValue;
+        }
+    }
+
+    _lsTest(){
         var test = this.keyPrefix + 'testLSAvailability';
         try {
             localStorage.setItem(test, test);

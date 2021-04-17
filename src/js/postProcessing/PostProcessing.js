@@ -44,7 +44,10 @@ class PostProcessing {
             'fxaa',
             'Use FXAA',
             'Antialiasing',
-            (value) => { fxaaPass.enabled = value; }
+            (value) => {
+                fxaaPass.enabled = value;
+                ss.LStorage.setItem('fxaa', value);
+            }
         );
     }
 
@@ -62,7 +65,10 @@ class PostProcessing {
             'smaa',
             'Use SMAA',
             'Antialiasing',
-            (value) => { smaaPass.enabled = value; }
+            (value) => {
+                smaaPass.enabled = value;
+                ss.LStorage.setItem('smaa', value);
+            }
         );
     }
 
@@ -85,7 +91,10 @@ class PostProcessing {
             'sao',
             'Use SAO',
             'AO',
-            (value) => { saoPass.enabled = value; }
+            (value) => {
+                saoPass.enabled = value;
+                ss.LStorage.setItem('sao', value);
+            }
         );
     }
 
@@ -105,7 +114,10 @@ class PostProcessing {
             'ssao',
             'Use SSAO',
             'AO',
-            (value) => { ssaoPass.enabled = value; }
+            (value) => {
+                ssaoPass.enabled = value;
+                ss.LStorage.setItem('ssao', value);
+            }
         );
     }
 

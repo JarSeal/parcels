@@ -1,17 +1,19 @@
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
 import * as Stats from '../vendor/stats.min.js';
+import LStorage from '../utils/LocalStorage.js';
 import defaultSettings from './defaultSettings';
 
 class Settings {
     constructor(sceneState) {
         this.sceneState = sceneState;
+        sceneState.LStorage = new LStorage();
         this.userSettings = {};
         this._initSettings(sceneState);
         this._debugSettings(sceneState);
     }
 
     _initSettings(sceneState) {
-        sceneState.settings = defaultSettings;
+        this._checkLocalStorage(sceneState);
         sceneState.defaultSettings = defaultSettings;
 
         // GUI setup [START]
@@ -21,6 +23,35 @@ class Settings {
             sceneState.gui = gui;
         }
         // GUI setup [/END]
+    }
+
+    _checkLocalStorage(sceneState) {
+        const ls = sceneState.LStorage,
+            defaults = defaultSettings,
+            defKeys = Object.keys(defaults);
+        sceneState.settings = {};
+        let data, fData;
+        defKeys.forEach(key => {
+            data = ls.getItem(key);
+            sceneState.settings[key] = null;
+            if(data) {
+                const value = ls.convertValue(defaults[key], data);
+                sceneState.settings[key] = value;
+            } else {
+                const folderKeys = Object.keys(defaults[key]);
+                if(folderKeys.length) sceneState.settings[key] = {};
+                folderKeys.forEach(fKey => {
+                    fData = ls.getItem(fKey);
+                    if(fData) {
+                        const value = ls.convertValue(defaults[key][fKey], fData);
+                        sceneState.settings[key][fKey] = value;
+                    } else {
+                        sceneState.settings[key][fKey] = defaults[key][fKey];
+                    }
+                });
+                if(!folderKeys.length) sceneState.settings[key] = defaults[key];
+            }
+        });
     }
 
     _debugSettings(sceneState) {
@@ -35,6 +66,7 @@ class Settings {
             'Debug',
             (value) => {
                 sceneState.axesHelper.visible = value;
+                sceneState.LStorage.setItem('showAxesHelper', value);
             }
         );
     }
@@ -56,6 +88,7 @@ class Settings {
                 'Debug',
                 (value) => {
                     document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
+                    this.sceneState.LStorage.setItem('showStats', value);
                 }
             );
         }
