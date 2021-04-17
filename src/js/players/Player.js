@@ -12,6 +12,7 @@ class Player {
         data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
+        data.maxSpeedMultiplier = 1;
         this.rayCastLeft = new THREE.Raycaster();
         this.rayCastLeft.far = 2;
         if(!this.sceneState.playerKeysCount) {
@@ -29,7 +30,6 @@ class Player {
         this.sceneState.userPlayerId = id;
         this.sceneState.playerKeys.push(id);
         this.sceneState.playerKeysCount += 1;
-        const size = [0.4, 1.82, 0.8];
         const pos = data.position;
         const pGeo = new THREE.BoxBufferGeometry(0.4, 1.82, 0.8);
         const pMat = new THREE.MeshLambertMaterial({ color: 0x002f00 });
@@ -39,26 +39,36 @@ class Player {
         const nMesh = new THREE.Mesh(nGeo, new THREE.MeshLambertMaterial({ color: 0x777777 }));
         nMesh.position.set(data.position[0]+0.2, data.position[1], data.position[2]);
         pMesh.add(nMesh);
+        pMesh.name = id;
         data.mesh = pMesh;
         this.sceneState.scenes[this.sceneState.curScene].add(pMesh);
 
         // Add physics
         const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.01;
+        boxMaterial.friction = 0.025;
         const boxBody = new CANNON.Body({
-            mass: 50,
-            position: new CANNON.Vec3(pos[0], pos[1], pos[2]),
-            shape: new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2)),
+            mass: 90,
+            position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
+            shape: new CANNON.Box(new CANNON.Vec3(0.8 / 2, 0.8 / 2, 0.8 / 2)),
             material: boxMaterial,
         });
         boxBody.allowSleep = true;
         boxBody.sleepSpeedLimit = 0.1;
         boxBody.sleepTimeLimit = 1;
-        const updateFn = () => {
-            
+        boxBody.bodyID = id;
+        const updateFn = (shape) => {
+            // shape.mesh.position.y = shape.body.position.y + 0.51;
+            shape.mesh.position.copy(shape.body.position);
+            shape.mesh.position.y = shape.body.position.y + 0.51;
+            shape.body.quaternion.x = 0;
+            shape.body.quaternion.z = 0;
+            shape.body.quaternion.setFromEuler(0, shape.mesh.rotation.y, 0, 'XYZ');
+            // shape.mesh.quaternion.copy(shape.body.quaternion);
         };
+        data.body = boxBody;
         this.sceneState.physics.world.addBody(boxBody);
-        this.sceneState.physics.shapes.push({ id, pMesh, boxBody, updateFn });
+        this.sceneState.physics.shapes.push({ id, mesh: pMesh, body: boxBody, updateFn, data });
+        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
         if(this.sceneState.settings.physics.showPhysicsHelpers) {
             this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
         }
@@ -69,6 +79,7 @@ class Player {
     }
 
     _rotatePlayer(toDir) {
+        this.data.rotatingY = true;
         if(this.rotatationTL) {
             this.rotatationTL.kill();
         }
@@ -87,6 +98,7 @@ class Player {
                 this.rotationTL = null;
                 this._normaliseRotation();
                 this.data.direction = toDir;
+                this.data.rotatingY = false;
             },
         });
     }
@@ -109,46 +121,47 @@ class Player {
         this.data.direction = dir;
     }
 
-    _collision(data) {
-        const angle = data.direction + this.halfPI;
-        const distance = 2;
-        const collisionThreshold = 0.4;
-        const newX = data.position[0] + (distance * Math.sin(angle));
-        const newZ = data.position[2] + (distance * Math.cos(angle));
-        const startPos = new THREE.Vector3(data.position[0], data.position[1], data.position[2]);
-        const targetPos = new THREE.Vector3(newX, data.position[1], newZ);
-        this.rayCastLeft.set(startPos, targetPos);
-        let intersect = [];
-        if(this.sceneState.curLevelMesh) {
-            intersect = this.rayCastLeft.intersectObject(this.sceneState.curLevelMesh);
-        }
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints([startPos, targetPos]);
-        const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-        if(this.line) {
-            this.line.geometry.dispose();
-            this.line.material.dispose();
-            this.sceneState.scenes[this.sceneState.curScene].remove(this.line);
-        }
-        this.line = new THREE.Line(geometry, material);
-        this.sceneState.scenes[this.sceneState.curScene].add(this.line);
-        
-        if(intersect[0] && intersect[0].distance < collisionThreshold) {
-            console.log('tadaa', intersect);
-        }
-
-        return intersect[0] && intersect[0].distance < collisionThreshold;
+    movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier) {
+        this.data.body.wakeUp();
+        this._rotatePlayer(dir);
+        this.data.xPosMulti = xPosMulti;
+        this.data.zPosMulti = zPosMulti;
+        this.data.maxSpeedMultiplier = maxSpeedMultiplier;
+        this.data.direction = dir;
     }
 
     render = () => {
         const data = this.data;
-        // if(!this._collision(data)) {
-        data.position[0] += data.xPosMulti * data.moveSpeed;
-        data.position[2] += data.zPosMulti * data.moveSpeed;
-        data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        // OLD KEYBOARD MOVE
+        // data.position[0] += data.xPosMulti * data.moveSpeed;
+        // data.position[2] += data.zPosMulti * data.moveSpeed;
+        // data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        data.body.velocity.x += data.xPosMulti * data.moveSpeed;
+        data.body.velocity.z += data.zPosMulti * data.moveSpeed;
+        const maxSpeed = data.maxSpeed * this.data.maxSpeedMultiplier;
+        if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
+            data.body.velocity.x = -maxSpeed;
+        } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
+            data.body.velocity.x = maxSpeed;
+        }
+        if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
+            data.body.velocity.z = -maxSpeed;
+        } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
+            data.body.velocity.z = maxSpeed;
+        }
         if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
-            this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
-            this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
+            this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.mesh.position.x, 17+data.mesh.position.y, -10+data.mesh.position.z);
+            this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.mesh.position.x, data.mesh.position.y, data.mesh.position.z));
+        }
+
+        // Temp death...
+        if(data.body.position.y < -50) {
+            alert('WASTED!');
+            data.body.position.y = 10;
+            data.body.position.x = 0;
+            data.body.position.z = 0;
+            data.body.velocity.x = 0;
+            data.body.velocity.z = 0;
         }
     }
 }

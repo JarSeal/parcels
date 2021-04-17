@@ -20,6 +20,7 @@ class UserControls {
             case 'KeyA':
                 if(this.keydownTimes.a === 0) {
                     this.keydownTimes.a = performance.now();
+                    // this._keyboardMove();
                     this._keyboardMove();
                 }
                 break;
@@ -95,7 +96,7 @@ class UserControls {
     }
 
     _keyboardMove() {
-        let xPosMulti = 0, zPosMulti = 0;
+        let xPosMulti = 0, zPosMulti = 0, maxSpeedMultiplier = 1;
         const keyCount = this._moveKeysPressedCount();
         if(keyCount === 1) {
             if(this.keydownTimes.a) {
@@ -117,25 +118,33 @@ class UserControls {
             }
         } else if(keyCount === 2) {
             if(this.keydownTimes.a && this.keydownTimes.w) {
-                xPosMulti = 1.25;
+                //xPosMulti = 1.25;
+                xPosMulti = 1;
                 this.direction = 0;
             } else if(this.keydownTimes.a && this.keydownTimes.s) {
-                zPosMulti = -1.25;
+                //zPosMulti = -1.25;
+                zPosMulti = -1;
                 this.direction = this.sceneState.utils.getCommonPIs('half');
             } else if(this.keydownTimes.d && this.keydownTimes.w) {
-                zPosMulti = 1.25;
+                //zPosMulti = 1.25;
+                zPosMulti = 1;
                 this.direction = this.sceneState.utils.getCommonPIs('threeHalves');
             } else if(this.keydownTimes.d && this.keydownTimes.s) {
-                xPosMulti = -1.25;
+                //xPosMulti = -1.25;
+                xPosMulti = -1;
                 this.direction = Math.PI;
             }
+            xPosMulti *= 1.5;
+            zPosMulti *= 1.5;
+            maxSpeedMultiplier = 1.5;
             this.twoKeyDirection = this.direction;
         } else if(keyCount === 0) {
             if(performance.now() - this.stopTwoKeyPressTime < 50) {
                 this.direction = this.twoKeyDirection;
             }
         }
-        this.player.movePlayer(xPosMulti, zPosMulti, this.direction);
+        console.log('HUU', xPosMulti, zPosMulti, maxSpeedMultiplier);
+        this.player.movePlayer2(xPosMulti, zPosMulti, this.direction, maxSpeedMultiplier);
     }
 }
 

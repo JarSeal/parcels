@@ -70,8 +70,9 @@ class Root {
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
         this.sceneState.physics.maxSubSteps = 5;
-        this.sceneState.physics.addShape = this.addShapeToPhysics;
+        this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
+        this.sceneState.physics.shapesLength = 0;
         // this.sceneState.isGroundMeshes = []; // CHECK WHETHER OR NOT NEEDED!
         this.world = world;
         this.sceneState.physics.helper = new CannonHelper(scene, world);
@@ -195,7 +196,7 @@ class Root {
         });
     }
 
-    _updatePhysics(delta) {
+    _updatePhysics = (delta) => {
         let i, shape;
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
@@ -203,12 +204,7 @@ class Root {
         this.world.step(this.sceneState.physics.timeStep, delta, this.sceneState.physics.maxSubSteps);
         for(i=0; i<l; i++) {
             shape = s[i];
-            // shape.body.position.z = shape.mesh.position.z;
-            // shape.body.quaternion.x = 0;
-            // shape.body.quaternion.y = 0;
-            shape.mesh.position.copy(shape.body.position);
-            shape.mesh.quaternion.copy(shape.body.quaternion);
-            if(shape.updateFn) shape.updateFn(shape);
+            shape.updateFn(shape);
         }
         if(settings.physics.showPhysicsHelpers) this.helper.update();
     }
