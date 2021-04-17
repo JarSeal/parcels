@@ -31,6 +31,7 @@ class ModelLoader {
             this.sceneState.scenes[this.sceneState.curScene].add(mesh);
             this.sceneState.curLevelMesh = mesh;
             this._createLevelPhysics(data);
+            if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
         }, undefined, function(error) {
             console.error(error);
         });
@@ -42,10 +43,10 @@ class ModelLoader {
         for(let i=0; i<phys.length; i++) {
             const obj = phys[i];
             if(obj.type === 'box') {
-                const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
-                const boxMat = new THREE.MeshLambertMaterial({ color: 0xffff00 });
-                const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-                boxMesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
+                // const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
+                // const boxMat = new THREE.MeshLambertMaterial({ color: 0xffff00 });
+                // const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+                // boxMesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
                 // this.sceneState.scenes[this.sceneState.curScene].add(boxMesh);
                 const groundMaterial = new CANNON.Material(obj.material);
                 const body = new CANNON.Body({
