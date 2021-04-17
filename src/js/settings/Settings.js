@@ -56,7 +56,6 @@ class Settings {
 
     _debugSettings(sceneState) {
         const settings = sceneState.settings;
-
         if(!settings.debug.showAxesHelper) sceneState.axesHelper.visible = false;
         this.addGuiElem(
             'boolean',
@@ -67,6 +66,31 @@ class Settings {
             (value) => {
                 sceneState.axesHelper.visible = value;
                 sceneState.LStorage.setItem('showAxesHelper', value);
+            }
+        );
+        if(settings.debug.cameraFollowsPlayer) sceneState.orbitControls.enabled = false;
+        sceneState.orbitControls.update();
+        this.addGuiElem(
+            'boolean',
+            settings.debug,
+            'cameraFollowsPlayer',
+            'camera lock',
+            'Debug',
+            (value) => {
+                sceneState.orbitControls.enabled = !value;
+                sceneState.LStorage.setItem('cameraFollowsPlayer', value);
+                sceneState.orbitControls.update();
+            }
+        );
+        this.addGuiElem(
+            'boolean',
+            settings.physics,
+            'showPhysicsHelpers',
+            'Show helpers',
+            'Physics',
+            (value) => {
+                sceneState.LStorage.setItem('showPhysicsHelpers', value);
+                window.location.reload();
             }
         );
     }

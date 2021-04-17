@@ -7,6 +7,16 @@ const levelData = {
     size: [10, 2.6, 10],
     position: [0, -0.125, 0],
     floorThickness: 0.25,
+    physics: [
+        {
+            name: 'floor',
+            type: 'box',
+            size: [20, 0.25, 20],
+            position: [0, -0.125, 0],
+            material: { friction: 0.3 },
+            isGroundMesh: true,
+        },
+    ],
 };
 
 export default levelData;

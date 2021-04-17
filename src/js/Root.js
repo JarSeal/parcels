@@ -56,6 +56,7 @@ class Root {
         this.sceneState.cameras = {
             ship: camera,
         };
+        this.sceneState.orbitControls = controls;
         // Setup camera and aspect ratio [/END]
 
         // Setup physics (cannon.js) [START]
@@ -71,8 +72,10 @@ class Root {
         this.sceneState.physics.maxSubSteps = 5;
         this.sceneState.physics.addShape = this.addShapeToPhysics;
         this.sceneState.physics.shapes = [];
+        // this.sceneState.isGroundMeshes = []; // CHECK WHETHER OR NOT NEEDED!
         this.world = world;
-        this.helper = new CannonHelper(scene, world);
+        this.sceneState.physics.helper = new CannonHelper(scene, world);
+        this.helper = this.sceneState.physics.helper;
         // Setup physics (cannon.js) [/END]
 
         // Settings [START]
@@ -145,7 +148,8 @@ class Root {
     renderLoop = () => {
         requestAnimationFrame(this.renderLoop);
         const ss = this.sceneState;
-        // const delta = ss.clock.getDelta();
+        const delta = ss.clock.getDelta();
+        this._updatePhysics(delta);
         ss.pp.getComposer().render();
         this._renderPlayers(ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
@@ -189,6 +193,44 @@ class Root {
                 }
             }, 500);
         });
+    }
+
+    _updatePhysics(delta) {
+        let i, shape;
+        const l = this.sceneState.physics.shapesLength,
+            s = this.sceneState.physics.shapes,
+            settings = this.sceneState.settings;
+        this.world.step(this.sceneState.physics.timeStep, delta, this.sceneState.physics.maxSubSteps);
+        for(i=0; i<l; i++) {
+            shape = s[i];
+            // shape.body.position.z = shape.mesh.position.z;
+            // shape.body.quaternion.x = 0;
+            // shape.body.quaternion.y = 0;
+            shape.mesh.position.copy(shape.body.position);
+            shape.mesh.quaternion.copy(shape.body.quaternion);
+            if(shape.updateFn) shape.updateFn(shape);
+        }
+        if(settings.physics.showPhysicsHelpers) this.helper.update();
+    }
+
+    addShapeToPhysics = (object, moving, helperColor) => {
+        const mesh = object.mesh,
+            body = object.body,
+            updateFn = object.updateFn || null,
+            id = 'phyShape-' + performance.now();
+        mesh.name = id;
+        body.bodyID = id;
+        if(!this.sceneState.settings.physics.showPhysicsHelpers) this.scene.add(mesh);
+        this.world.addBody(body);
+        if(moving) {
+            this.sceneState.physics.shapes.push({ id, mesh, body, updateFn });
+        }
+        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
+        if(this.sceneState.settings.physics.showPhysicsHelpers) {
+            let color = helperColor;
+            if(!color) moving ? color = 0xFF0000 : color = 0xFFFFFFF;
+            this.helper.addVisual(body, color);
+        }
     }
 }
 

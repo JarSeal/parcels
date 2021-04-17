@@ -121,7 +121,7 @@ class Player {
         data.position[0] += data.xPosMulti * data.moveSpeed;
         data.position[2] += data.zPosMulti * data.moveSpeed;
         data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
-        if(data.userPlayer) {
+        if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
             this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.position[0], 17+data.position[1], -10+data.position[2]);
             this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.position[0], data.position[1], data.position[2]));
         }

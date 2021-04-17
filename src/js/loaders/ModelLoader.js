@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class ModelLoader {
@@ -29,9 +30,40 @@ class ModelLoader {
             mesh.position.set(data.position[0], data.position[1], data.position[2]);
             this.sceneState.scenes[this.sceneState.curScene].add(mesh);
             this.sceneState.curLevelMesh = mesh;
+            this._createLevelPhysics(data);
         }, undefined, function(error) {
             console.error(error);
         });
+    }
+
+    _createLevelPhysics(data) {
+        const phys = data.physics;
+        if(!phys) return;
+        for(let i=0; i<phys.length; i++) {
+            const obj = phys[i];
+            if(obj.type === 'box') {
+                const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
+                const boxMat = new THREE.MeshLambertMaterial({ color: 0xffff00 });
+                const boxMesh = new THREE.Mesh(boxGeo, boxMat);
+                boxMesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
+                // this.sceneState.scenes[this.sceneState.curScene].add(boxMesh);
+                const groundMaterial = new CANNON.Material(obj.material);
+                const body = new CANNON.Body({
+                    mass: 0,
+                    position: new CANNON.Vec3(obj.position[0], obj.position[1], obj.position[2]),
+                    shape: new CANNON.Box(new CANNON.Vec3(obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2)),
+                    material: groundMaterial
+                });
+                body.quaternion.setFromEuler(0, 0, 0, 'XYZ');
+                body.allowSleep = true;
+                body.sleepSpeedLimit = 0.1;
+                body.sleepTimeLimit = 1;
+                this.sceneState.physics.world.addBody(body);
+                if(this.sceneState.settings.physics.showPhysicsHelpers) {
+                    this.sceneState.physics.helper.addVisual(body, 0xFF0000);
+                }
+            }
+        }
     }
 }
 

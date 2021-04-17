@@ -4,11 +4,13 @@ const defaultSettings = {
     enableGui: true,
     openGuiControls: true,
     openAllGuiFolders: true,
+    showPhysicsHelpers: true,
 
     // Debugging
     debug: {
         showStats: true,
         showAxesHelper: false,
+        cameraFollowsPlayer: true,
     },
 
     // Antialiasing
@@ -21,6 +23,11 @@ const defaultSettings = {
     ao: {
         sao: true,
         ssao: false,
+    },
+
+    // Physics
+    physics: {
+        showPhysicsHelpers: true,
     }
 };
 
