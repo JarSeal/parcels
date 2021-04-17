@@ -27,7 +27,7 @@ const defaultSettings = {
 
     // Physics
     physics: {
-        showPhysicsHelpers: true,
+        showPhysicsHelpers: false,
     }
 };
 

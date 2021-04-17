@@ -13,7 +13,7 @@ const levelData = {
             type: 'box',
             size: [20, 0.25, 20],
             position: [0, -0.125, 0],
-            material: { friction: 0.5 },
+            material: { friction: 0.4 },
             isGroundMesh: true,
         },
     ],

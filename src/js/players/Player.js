@@ -45,7 +45,7 @@ class Player {
 
         // Add physics
         const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.025;
+        boxMaterial.friction = 0.03;
         const boxBody = new CANNON.Body({
             mass: 90,
             position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
@@ -57,9 +57,8 @@ class Player {
         boxBody.sleepTimeLimit = 1;
         boxBody.bodyID = id;
         const updateFn = (shape) => {
-            // shape.mesh.position.y = shape.body.position.y + 0.51;
             shape.mesh.position.copy(shape.body.position);
-            shape.mesh.position.y = shape.body.position.y + 0.51;
+            // shape.mesh.position.y = 0.51;
             shape.body.quaternion.x = 0;
             shape.body.quaternion.z = 0;
             shape.body.quaternion.setFromEuler(0, shape.mesh.rotation.y, 0, 'XYZ');
