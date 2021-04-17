@@ -1,3 +1,5 @@
+const floorFriction = 0.1;
+const wallFriction = 0.05;
 const levelData = {
     model: 'dummyLevelObject01.glb',
     path: '/models/dummyLevelObject01/',
@@ -13,8 +15,40 @@ const levelData = {
             type: 'box',
             size: [20, 0.25, 20],
             position: [0, -0.125, 0],
-            material: { friction: 0.4 },
-            isGroundMesh: true,
+            material: { friction: floorFriction },
+            helperColor: 0xcc00cc,
+        },
+        {
+            name: 'wall',
+            type: 'box',
+            size: [20, 2, 1],
+            position: [0, 1, -9.5],
+            material: { friction: wallFriction },
+            helperColor: 0xcc0000,
+        },
+        {
+            name: 'wall',
+            type: 'box',
+            size: [20, 2, 1],
+            position: [0, 1, 9.5],
+            material: { friction: wallFriction },
+            helperColor: 0xcc0000,
+        },
+        {
+            name: 'wall',
+            type: 'box',
+            size: [1, 2, 20],
+            position: [9.5, 1, 0],
+            material: { friction: wallFriction },
+            helperColor: 0xcc0000,
+        },
+        {
+            name: 'wall',
+            type: 'box',
+            size: [1, 2, 20],
+            position: [-9.5, 1, 0],
+            material: { friction: wallFriction },
+            helperColor: 0xccff00,
         },
     ],
 };

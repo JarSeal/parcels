@@ -143,7 +143,6 @@ class UserControls {
                 this.direction = this.twoKeyDirection;
             }
         }
-        console.log('HUU', xPosMulti, zPosMulti, maxSpeedMultiplier);
         this.player.movePlayer2(xPosMulti, zPosMulti, this.direction, maxSpeedMultiplier);
     }
 }

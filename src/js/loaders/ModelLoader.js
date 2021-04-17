@@ -48,12 +48,12 @@ class ModelLoader {
                 // const boxMesh = new THREE.Mesh(boxGeo, boxMat);
                 // boxMesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
                 // this.sceneState.scenes[this.sceneState.curScene].add(boxMesh);
-                const groundMaterial = new CANNON.Material(obj.material);
+                const material = new CANNON.Material(obj.material);
                 const body = new CANNON.Body({
                     mass: 0,
                     position: new CANNON.Vec3(obj.position[0], obj.position[1], obj.position[2]),
                     shape: new CANNON.Box(new CANNON.Vec3(obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2)),
-                    material: groundMaterial
+                    material: material
                 });
                 body.quaternion.setFromEuler(0, 0, 0, 'XYZ');
                 body.allowSleep = true;
@@ -61,7 +61,7 @@ class ModelLoader {
                 body.sleepTimeLimit = 1;
                 this.sceneState.physics.world.addBody(body);
                 if(this.sceneState.settings.physics.showPhysicsHelpers) {
-                    this.sceneState.physics.helper.addVisual(body, 0xFF0000);
+                    this.sceneState.physics.helper.addVisual(body, obj.helperColor ? obj.helperColor : 0xFF0000);
                 }
             }
         }
