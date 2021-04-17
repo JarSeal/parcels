@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import CannonHelper from './vendor/CannonHelper.js';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
+import LStorage from './utils/LocalStorage.js';
 import PostProcessing from './postProcessing/PostProcessing';
 import levelData from './data/dummyLevel01';
 import userPlayerData from './data/userPlayerData';
@@ -55,6 +58,23 @@ class Root {
             ship: camera,
         };
         // Setup camera and aspect ratio [/END]
+
+        // Setup physics (cannon.js) [START]
+        const world = new CANNON.World();
+        world.allowSleep = true;
+        world.gravity.set(0, -9.82, 0);
+        world.broadphase = new CANNON.NaiveBroadphase();
+        world.iterations = 50;
+        world.solver.iterations = 50;
+        this.sceneState.physics = {};
+        this.sceneState.physics.world = world;
+        this.sceneState.physics.timeStep = 1 / 60;
+        this.sceneState.physics.maxSubSteps = 5;
+        this.sceneState.physics.addShape = this.addShapeToPhysics;
+        this.sceneState.physics.shapes = [];
+        this.world = world;
+        this.helper = new CannonHelper(scene, world);
+        // Setup physics (cannon.js) [/END]
 
         // Settings [START]
         const settings = new Settings(this.sceneState);
