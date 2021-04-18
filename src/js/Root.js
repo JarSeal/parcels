@@ -1,20 +1,21 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import CannonHelper from './vendor/CannonHelper.js';
+import CannonHelper from './vendor/CannonHelper';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
 import PostProcessing from './postProcessing/PostProcessing';
 import levelData from './data/dummyLevel01';
 import userPlayerData from './data/userPlayerData';
 import ModelLoader from './loaders/ModelLoader';
+import LevelLoader from './loaders/LevelLoader';
 import Player from './players/Player';
 import UserControls from './controls/UserControls';
 
 class Root {
     constructor() {
         this.sceneState = {
-            curScene: 'ship',
+            curScene: 'level',
         };
         this.utils = new Utils();
         this.sceneState.utils = this.utils;
@@ -42,7 +43,7 @@ class Root {
         scene.add(this.sceneState.axesHelper);
         this.scene = scene;
         this.sceneState.scenes = {
-            ship: scene,
+            level: scene,
         };
         // Setup scene and basic lights [/END]
 
@@ -53,12 +54,11 @@ class Root {
         controls.update();
         this.controls = controls;
         this.camera = camera;
-        console.log(camera);
         camera.userData.followXOffset = 10;
         camera.userData.followYOffset = 17;
         camera.userData.followZOffset = 10;
         this.sceneState.cameras = {
-            ship: camera,
+            level: camera,
         };
         this.sceneState.orbitControls = controls;
         // Setup camera and aspect ratio [/END]
@@ -94,6 +94,7 @@ class Root {
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this.resize];
+        this.levelLoader = new LevelLoader(this.sceneState);
         this._initResizer();
         // Other setup [/END]
 
@@ -102,34 +103,8 @@ class Root {
 
     runApp(scene, camera) {
 
-        // Add ground
-        const groundGeo = new THREE.BoxBufferGeometry(5, 0.2, 2);
-        const groundMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
-        const groundMesh = new THREE.Mesh(groundGeo, groundMat);
-        groundMesh.position.set(0, -0.1, 0);
-        // scene.add(groundMesh);
-
-        // Add a box
-        const boxGeo = new THREE.BoxBufferGeometry(1, 1, 1);
-        const boxMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
-        const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-        boxMesh.position.set(0, 0.5, 0);
-        // scene.add(boxMesh);
-
-        for(let i=0; i<32; i++) {
-            const newBox = new THREE.Mesh(boxGeo, boxMat);
-            const randomScale = parseFloat((Math.random() * (2.0000 - 0.4000) + 0.4000).toFixed(4));
-            newBox.scale.set(randomScale, randomScale, randomScale);
-            let randomPosX = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
-            let randomPosY = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
-            let randomPosZ = parseFloat((Math.random() * (5.0000 - 0.4000) + 0.4000).toFixed(4));
-            newBox.position.set(
-                Math.random() < 0.5 ? randomPosX * -1 : randomPosX,
-                randomPosY,
-                Math.random() < 0.5 ? randomPosZ * -1 : randomPosZ);
-            // scene.add(newBox);
-        }
-
+        this.levelLoader.load('dummyLevel01');
+        
         const modelLoader = new ModelLoader(this.sceneState);
         modelLoader.loadModel(levelData);
 
