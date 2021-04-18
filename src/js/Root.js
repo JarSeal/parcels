@@ -53,6 +53,10 @@ class Root {
         controls.update();
         this.controls = controls;
         this.camera = camera;
+        console.log(camera);
+        camera.userData.followXOffset = 10;
+        camera.userData.followYOffset = 17;
+        camera.userData.followZOffset = 10;
         this.sceneState.cameras = {
             ship: camera,
         };
@@ -135,9 +139,9 @@ class Root {
 
         const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
         camera.position.set(
-            -10 + playerPos[0],
-            17 + playerPos[1],
-            -10 + playerPos[2]);
+            camera.userData.followXOffset + playerPos[0],
+            camera.userData.followYOffset + playerPos[1],
+            camera.userData.followZOffset + playerPos[2]);
         camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
 
         this.resize(this.sceneState);

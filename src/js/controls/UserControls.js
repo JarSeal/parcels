@@ -100,39 +100,35 @@ class UserControls {
         const keyCount = this._moveKeysPressedCount();
         if(keyCount === 1) {
             if(this.keydownTimes.a) {
+                xPosMulti = -1;
+                zPosMulti = 1;
+                this.direction = this.sceneState.utils.getCommonPIs('piAndQuarter');
+            } else if(this.keydownTimes.d) {
                 xPosMulti = 1;
                 zPosMulti = -1;
                 this.direction = this.sceneState.utils.getCommonPIs('quarter');
-            } else if(this.keydownTimes.d) {
-                xPosMulti = -1;
-                zPosMulti = 1;
-                this.direction = this.sceneState.utils.getCommonPIs('piAndQuarter'); //
             } else if(this.keydownTimes.w) {
-                xPosMulti = 1;
-                zPosMulti = 1;
-                this.direction = this.sceneState.utils.getCommonPIs('piAndThreeFourths'); //
-            } else if(this.keydownTimes.s) {
                 xPosMulti = -1;
                 zPosMulti = -1;
                 this.direction = this.sceneState.utils.getCommonPIs('threeFourths');
+            } else if(this.keydownTimes.s) {
+                xPosMulti = 1;
+                zPosMulti = 1;
+                this.direction = this.sceneState.utils.getCommonPIs('piAndThreeFourths');
             }
         } else if(keyCount === 2) {
             if(this.keydownTimes.a && this.keydownTimes.w) {
-                //xPosMulti = 1.25;
-                xPosMulti = 1;
-                this.direction = 0;
-            } else if(this.keydownTimes.a && this.keydownTimes.s) {
-                //zPosMulti = -1.25;
-                zPosMulti = -1;
-                this.direction = this.sceneState.utils.getCommonPIs('half');
-            } else if(this.keydownTimes.d && this.keydownTimes.w) {
-                //zPosMulti = 1.25;
-                zPosMulti = 1;
-                this.direction = this.sceneState.utils.getCommonPIs('threeHalves');
-            } else if(this.keydownTimes.d && this.keydownTimes.s) {
-                //xPosMulti = -1.25;
                 xPosMulti = -1;
                 this.direction = Math.PI;
+            } else if(this.keydownTimes.a && this.keydownTimes.s) {
+                zPosMulti = 1;
+                this.direction = this.sceneState.utils.getCommonPIs('threeHalves');
+            } else if(this.keydownTimes.d && this.keydownTimes.w) {
+                zPosMulti = -1;
+                this.direction = this.sceneState.utils.getCommonPIs('half');
+            } else if(this.keydownTimes.d && this.keydownTimes.s) {
+                xPosMulti = 1;
+                this.direction = 0;
             }
             xPosMulti *= 1.5;
             zPosMulti *= 1.5;

@@ -149,8 +149,13 @@ class Player {
             data.body.velocity.z = maxSpeed;
         }
         if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
-            this.sceneState.cameras[this.sceneState.curScene].position.set(-10+data.mesh.position.x, 17+data.mesh.position.y, -10+data.mesh.position.z);
-            this.sceneState.cameras[this.sceneState.curScene].lookAt(new THREE.Vector3(data.mesh.position.x, data.mesh.position.y, data.mesh.position.z));
+            const camera = this.sceneState.cameras[this.sceneState.curScene];
+            camera.position.set(
+                camera.userData.followXOffset+data.mesh.position.x,
+                camera.userData.followYOffset+data.mesh.position.y,
+                camera.userData.followZOffset+data.mesh.position.z
+            );
+            camera.lookAt(new THREE.Vector3(data.mesh.position.x, data.mesh.position.y, data.mesh.position.z));
         }
 
         // Temp death...
