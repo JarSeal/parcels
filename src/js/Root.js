@@ -103,7 +103,7 @@ class Root {
 
     runApp(scene, camera) {
 
-        this.levelLoader.load('dummyLevel01');
+        this.levelLoader.load('levelDummy01');
         
         const modelLoader = new ModelLoader(this.sceneState);
         modelLoader.loadModel(levelData);

@@ -1,4 +1,4 @@
-import levelsData from '../data/levelsData';
+import LevelsData from '../data/LevelsData';
 
 class LevelLoader {
     constructor(sceneState) {
@@ -10,12 +10,10 @@ class LevelLoader {
     }
 
     load(levelId) {
+        this.texturesToLoad = 0;
+        this.modelsToLoad = 0;
         this.sceneState.loadingLevel = true;
         this._loadLevelData(levelId);
-    }
-
-    _loadAssets(data) {
-
     }
 
     _loadLevelData(levelId) {
@@ -24,11 +22,17 @@ class LevelLoader {
         // Temp fake loading..
         this.loadingData = true;
         setTimeout(() => {
-            const data = levelsData[levelId];
-            console.log('DATA Loaded', data);
+            const data = new LevelsData().getLevelsData(levelId);
+            // console.log('DATA Loaded', data);
             this.loadingData = false;
             this._loadAssets(data);
-        }, 2000);
+        }, 500);
+    }
+
+    _loadAssets(data) {
+        // Load all assets (modules, textures)
+
+
     }
 }
 
