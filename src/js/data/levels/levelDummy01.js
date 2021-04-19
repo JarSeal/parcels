@@ -1,7 +1,8 @@
 const levelData = {
     id: 'levelDummy01',
     name: 'levelDummy01',
-    boundingDims: [20, 20, 1],
+    boundingDims: [1, 6, 6],
+    pos: [0, 0, 0],
     modules: [
         {
             id: 'dummyModule01',

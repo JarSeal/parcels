@@ -16,19 +16,47 @@ class LevelsData {
     };
 
     _unpackData(data) {
-        let newData = { ...data };
+        let newData = { ...data, tiles: [] };
         const modules = data.modules;
         for(let i=0; i<modules.length; i++) {
             const mParams = modules[i];
             const moduleData = modulesData[mParams.id];
-            this._placeModules(moduleData, newData);
+            this._placeModules(moduleData, mParams.pos, newData);
             console.log('MODULE', i, mParams, moduleData);
         }
+        console.log('newData', newData);
         return newData;
     }
 
-    _placeModules(mData, lData) {
-        
+    _placeModules(mData, mPos, lData) {
+        const lDims = lData.boundingDims;
+        const mDims = mData.boundingDims;
+        const tiles = mData.tiles;
+        let nextTile = [0, 0, 0];
+        for(let floor=0; floor<lDims[0]; floor++) {
+            if(!lData.tiles[floor]) lData.tiles.push([]);
+            for(let row=0; row<lDims[1]; row++) {
+                if(!lData.tiles[floor][row]) lData.tiles[floor].push([]);
+                for(let col=0; col<lDims[2]; col++) {
+                    console.log('TEST', floor, mPos, mDims[0]);
+                    if (floor < mPos[0] + mDims[0] && floor >= mPos[0] &&
+                        row < mPos[1] + mDims[1] && row >= mPos[1] &&
+                        col < mPos[2] + mDims[2] && row >= mPos[2]) {
+                        if(lData.tiles[floor][row][col] && lData.tiles[floor][row][col].t > 0) {
+                            console.error('Tile at [' + row + ', ' + col + '] (floor: ' + floor + ') already has an assigned tile.');
+                        }
+                        lData.tiles[floor][row].push(tiles[nextTile[0]][nextTile[1]][nextTile[2]]);
+                    } else {
+                        if(!lData.tiles[floor][row][col]) {
+                            lData.tiles[floor][row].push({t:0});
+                        }
+                    }
+                    nextTile[2]++;
+                }
+                nextTile[1]++;
+            }
+            nextTile[0]++;
+        }
     }
 }
 
