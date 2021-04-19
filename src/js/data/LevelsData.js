@@ -13,7 +13,7 @@ class LevelsData {
             levelDummy01
         };
         return this._unpackData(levelsData[id]);
-    };
+    }
 
     _unpackData(data) {
         let newData = { ...data, tiles: [] };
