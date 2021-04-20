@@ -1,6 +1,7 @@
 const moduleData = {
     id: 'dummyModule01',
     name: 'Dummy module 01',
+    turn: 0,
     boundingDims: [1, 6, 6],
     tiles: [
         [

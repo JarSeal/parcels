@@ -26,6 +26,29 @@ class Utils {
     getCommonPIs(pi) {
         return this.commonPIs[pi];
     }
+
+    turnTiles(tiles, times) {
+        let newTiles = [];
+        for(let f=0; f<tiles.length; f++) {
+            newTiles.push(this.rotate(tiles[f], times));
+        }
+        return newTiles;
+    }
+
+    rotate = (matrix, times) => {
+        let copy = matrix.slice();
+        for(let n=0; n<times; n++) {
+            copy = copy.slice();
+            copy = this._transpose(copy);
+        }
+        return copy;
+    };
+
+    _transpose = (matrix) => {
+        return matrix.reduce((prev, next) => next.map((item, i) =>
+            (prev[i] || []).concat(next[i])
+        ), []).reverse();
+    };
 }
 
 export default Utils;

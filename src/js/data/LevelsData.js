@@ -1,11 +1,13 @@
 import modulesData from './modulesData';
 import levelDummy01 from './levels/levelDummy01';
 
+// This class mocks the data received from the server (getLevelsData)
+
 class LevelsData {
-    constructor() {
-        // This class represents the back end
-        // and emulates what is being done to the data
-        // and how it serves the data to the front end.
+    constructor(sceneState) {
+        this.sceneState = sceneState;
+        this.halfPi = sceneState.utils.getCommonPIs('half');
+        this.threeHalvesPi = sceneState.utils.getCommonPIs('threeHalves');
     }
 
     getLevelsData(id) {
@@ -21,13 +23,36 @@ class LevelsData {
         for(let i=0; i<modules.length; i++) {
             const mParams = modules[i];
             const moduleData = modulesData[mParams.id];
-            this._placeModules(moduleData, mParams.pos, newData);
+            this._turnModule(moduleData);
+            this._placeModule(moduleData, mParams.pos, newData);
         }
         console.log('newData', newData);
         return newData;
     }
 
-    _placeModules(mData, mPos, lData) {
+    _turnModule(data) {
+        data.turnRadians = 0;
+        if(data.turn === 1) {
+            data.turnRadians = this.halfPi;
+            data.boundingDims = [
+                data.boundingDims[0],
+                data.boundingDims[2],
+                data.boundingDims[1],
+            ];
+        } else if(data.turn === 2) {
+            data.turnRadians = Math.PI;
+        } else if(data.turn === 3) {
+            data.turnRadians = this.threeHalvesPi;
+            data.boundingDims = [
+                data.boundingDims[0],
+                data.boundingDims[2],
+                data.boundingDims[1],
+            ];
+        }
+        data.tiles = this.sceneState.utils.turnTiles(data.tiles, data.turn);
+    }
+
+    _placeModule(mData, mPos, lData) {
         const lDims = lData.boundingDims;
         const mDims = mData.boundingDims;
         const tiles = mData.tiles;

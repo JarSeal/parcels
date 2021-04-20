@@ -22,7 +22,7 @@ class LevelLoader {
         // Temp fake loading..
         this.loadingData = true;
         setTimeout(() => {
-            const data = new LevelsData().getLevelsData(levelId);
+            const data = new LevelsData(this.sceneState).getLevelsData(levelId);
             // console.log('DATA Loaded', data);
             this.loadingData = false;
             this._loadAssets(data);
