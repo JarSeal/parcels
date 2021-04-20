@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+// THIS IS TEMPORARY AND WILL BE REMOVED!
+
 class ModelLoader {
     constructor(sceneState) {
         this.sceneState = sceneState;
@@ -33,7 +35,7 @@ class ModelLoader {
             this._createLevelPhysics(data);
             if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
         }, undefined, function(error) {
-            console.error(error);
+            this.sceneState.logger.error(error);
         });
     }
 

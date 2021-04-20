@@ -70,7 +70,7 @@ class LevelsData {
                         row < mPos[1] + mDims[1] && row >= mPos[1] &&
                         col < mPos[2] + mDims[2] && col >= mPos[2]) {
                         if(lData.tiles[floor][row][col] && lData.tiles[floor][row][col].t > 0) {
-                            console.error('Tile at [' + row + ', ' + col + '] (floor: ' + floor + ') already has an assigned tile.');
+                            this.sceneState.logger.error('Tile at [' + row + ', ' + col + '] (floor: ' + floor + ') already has an assigned tile.');
                         }
                         lData.tiles[floor][row].push(tiles[nextTile[0]][nextTile[1]][nextTile[2]]);
                         nextTile[2]++;

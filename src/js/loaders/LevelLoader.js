@@ -22,7 +22,7 @@ class LevelLoader {
 
     _loadAssets(data) {
         // Load all assets (modules, textures)
-        console.log('Start loading assets...', data);
+        this.sceneState.logger.log('Start loading assets...', data);
 
     }
 }

@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import CannonHelper from './vendor/CannonHelper';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
+import Logger from './utils/Logger';
 import PostProcessing from './postProcessing/PostProcessing';
 import levelData from './data/dummyLevel01';
 import userPlayerData from './data/userPlayerData';
@@ -19,6 +20,7 @@ class Root {
         };
         this.utils = new Utils();
         this.sceneState.utils = this.utils;
+        this.sceneState.logger = new Logger(this.sceneState);
 
         // Setup renderer [START]
         const urlParams = new URLSearchParams(window.location.search);
