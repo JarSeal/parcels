@@ -1,7 +1,7 @@
 import modulesData from './modulesData';
 import levelDummy01 from './levels/levelDummy01';
 
-// This class mocks the data received from the server (getLevelsData)
+// This class mocks the data received from the server (loadLevelsData)
 
 class LevelsData {
     constructor(sceneState) {
@@ -10,11 +10,13 @@ class LevelsData {
         this.threeHalvesPi = sceneState.utils.getCommonPIs('threeHalves');
     }
 
-    getLevelsData(id) {
+    loadLevelsData(id, callBack) {
+        // Temp mock data, load the data here eventually with async/await
         const levelsData = {
             levelDummy01
         };
-        return this._unpackData(levelsData[id]);
+        const data = this._unpackData(levelsData[id]);
+        callBack(data);
     }
 
     _unpackData(data) {
