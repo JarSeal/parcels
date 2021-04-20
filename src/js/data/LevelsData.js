@@ -25,10 +25,10 @@ class LevelsData {
         for(let i=0; i<modules.length; i++) {
             const mParams = modules[i];
             const moduleData = modulesData[mParams.id];
+            data.modules[i] = Object.assign(data.modules[i], moduleData);
             this._turnModule(moduleData);
             this._placeModule(moduleData, mParams.pos, newData);
         }
-        console.log('newData', newData);
         return newData;
     }
 
