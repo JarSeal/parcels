@@ -58,10 +58,10 @@ class Player {
         boxBody.bodyID = id;
         const updateFn = (shape) => {
             shape.mesh.position.copy(shape.body.position);
-            // shape.mesh.position.y = 0.51;
-            shape.body.quaternion.x = 0;
-            shape.body.quaternion.z = 0;
             shape.body.quaternion.setFromEuler(0, shape.mesh.rotation.y, 0, 'XYZ');
+            // shape.mesh.position.y = 0.51;
+            // shape.body.quaternion.x = 0;
+            // shape.body.quaternion.z = 0;
             // shape.mesh.quaternion.copy(shape.body.quaternion);
         };
         data.body = boxBody;
@@ -75,17 +75,17 @@ class Player {
         this._addPushableBox(data.position);
     }
 
-    _addPushableBox(pos) {
+    _addPushableBox(pos) { // TEMPORARY
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
         const mesh = new THREE.Mesh(geo, mat);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
         const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.04;
+        boxMaterial.friction = 0.06;
         const boxBody = new CANNON.Body({
-            mass: 10,
-            position: new CANNON.Vec3(pos[0], 2, pos[2]+2),
+            mass: 20,
+            position: new CANNON.Vec3(pos[0]-2, 2, pos[2]-2),
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             material: boxMaterial,
         });
@@ -163,26 +163,20 @@ class Player {
 
     render = () => {
         const data = this.data;
-        // OLD KEYBOARD MOVE
-        // data.position[0] += data.xPosMulti * data.moveSpeed;
-        // data.position[2] += data.zPosMulti * data.moveSpeed;
-        // data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
-        if(!data.xPosMulti && !data.zPosMulti) {
-            data.body.velocity.setZero();
-        } else {
-            data.body.velocity.x += data.xPosMulti * data.moveSpeed;
-            data.body.velocity.z += data.zPosMulti * data.moveSpeed;
-            const maxSpeed = data.maxSpeed * this.data.maxSpeedMultiplier;
-            if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
-                data.body.velocity.x = -maxSpeed;
-            } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
-                data.body.velocity.x = maxSpeed;
-            }
-            if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
-                data.body.velocity.z = -maxSpeed;
-            } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
-                data.body.velocity.z = maxSpeed;
-            }
+        if(!data.xPosMulti) data.body.velocity.x = 0;
+        if(!data.zPosMulti) data.body.velocity.z = 0;
+        data.body.velocity.x += data.xPosMulti * data.moveSpeed;
+        data.body.velocity.z += data.zPosMulti * data.moveSpeed;
+        const maxSpeed = data.maxSpeed * this.data.maxSpeedMultiplier;
+        if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
+            data.body.velocity.x = -maxSpeed;
+        } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
+            data.body.velocity.x = maxSpeed;
+        }
+        if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
+            data.body.velocity.z = -maxSpeed;
+        } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
+            data.body.velocity.z = maxSpeed;
         }
         if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
             const camera = this.sceneState.cameras[this.sceneState.curScene];
