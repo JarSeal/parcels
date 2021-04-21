@@ -47,7 +47,7 @@ class Player {
         const boxMaterial = new CANNON.Material();
         boxMaterial.friction = 0.04;
         const boxBody = new CANNON.Body({
-            mass: 90,
+            mass: 70,
             position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
             shape: new CANNON.Box(new CANNON.Vec3(0.8 / 2, 0.8 / 2, 0.8 / 2)),
             material: boxMaterial,

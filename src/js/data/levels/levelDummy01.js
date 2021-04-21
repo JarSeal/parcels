@@ -1,6 +1,7 @@
 const levelData = {
     id: 'levelDummy01',
     name: 'levelDummy01',
+    type: 'ship',
     boundingDims: [1, 8, 8],
     pos: [0, 0, 0],
     modules: [

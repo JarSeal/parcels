@@ -17,6 +17,7 @@ class Root {
     constructor() {
         this.sceneState = {
             curScene: 'level',
+            curFloor: 0,
         };
         this.utils = new Utils();
         this.sceneState.utils = this.utils;
