@@ -12,6 +12,7 @@ class Player {
         data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
+        data.direction = 0;
         data.maxSpeedMultiplier = 1;
         this.rayCastLeft = new THREE.Raycaster();
         this.rayCastLeft.far = 2;
@@ -45,7 +46,7 @@ class Player {
 
         // Add physics
         const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.04;
+        boxMaterial.friction = 0.01;
         const boxBody = new CANNON.Body({
             mass: 70,
             position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
@@ -57,8 +58,8 @@ class Player {
         boxBody.sleepTimeLimit = 1;
         boxBody.bodyID = id;
         const updateFn = (shape) => {
-            shape.mesh.position.copy(shape.body.position);
-            shape.body.quaternion.setFromEuler(0, shape.mesh.rotation.y, 0, 'XYZ');
+            // shape.mesh.position.copy(shape.body.position);
+            // shape.body.quaternion.setFromEuler(0, data.direction, 0, 'XYZ');
             // shape.mesh.position.y = 0.51;
             // shape.body.quaternion.x = 0;
             // shape.body.quaternion.z = 0;
@@ -114,6 +115,31 @@ class Player {
         if(this.rotatationTL) {
             this.rotatationTL.kill();
         }
+        const from = this.data.direction;
+        if(Math.abs(from - toDir) > Math.PI) {
+            if(toDir > 0) {
+                toDir -= this.twoPI;
+            } else {
+                toDir += this.twoPI;
+            }
+        }
+        this.rotationTL = new TimelineMax().to(this.data, 0.1, {
+            direction: toDir,
+            ease: Sine.easeInOut,
+            onComplete: () => {
+                this.rotationTL = null;
+                this._normaliseRotation();
+                this.data.direction = toDir;
+                this.data.rotatingY = false;
+            },
+        });
+    }
+
+    _rotatePlayer2(toDir) {
+        this.data.rotatingY = true;
+        if(this.rotatationTL) {
+            this.rotatationTL.kill();
+        }
         const from = this.data.mesh.rotation.y;
         if(Math.abs(from - toDir) > Math.PI) {
             if(toDir > 0) {
@@ -127,7 +153,7 @@ class Player {
             ease: Sine.easeInOut,
             onComplete: () => {
                 this.rotationTL = null;
-                this._normaliseRotation();
+                this._normaliseRotation2();
                 this.data.direction = toDir;
                 this.data.rotatingY = false;
             },
@@ -135,6 +161,17 @@ class Player {
     }
 
     _normaliseRotation() {
+        const curRotation = this.data.direction;
+        if(curRotation > Math.PI) {
+            this.data.direction -= this.twoPI;
+            this._normaliseRotation();
+        } else if(curRotation < -Math.PI) {
+            this.data.direction += this.twoPI;
+            this._normaliseRotation();
+        }
+    }
+
+    _normaliseRotation2() {
         const curRotation = this.data.mesh.rotation.y;
         if(curRotation > Math.PI) {
             this.data.mesh.rotation.y -= this.twoPI;
@@ -158,7 +195,7 @@ class Player {
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
         this.data.maxSpeedMultiplier = maxSpeedMultiplier;
-        this.data.direction = dir;
+        // this.data.direction = dir;
     }
 
     render = () => {
@@ -178,14 +215,23 @@ class Player {
         } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
             data.body.velocity.z = maxSpeed;
         }
+        data.mesh.position.copy(data.body.position);
+        // data.mesh.quaternion.copy(data.body.quaternion);
+        data.body.quaternion.setFromEuler(
+            data.mesh.rotation.x,
+            data.direction,
+            data.mesh.rotation.z,
+            'XYZ'
+        );
+        data.mesh.rotation.y = data.direction;
         if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
             const camera = this.sceneState.cameras[this.sceneState.curScene];
             camera.position.set(
-                camera.userData.followXOffset+data.mesh.position.x,
-                camera.userData.followYOffset+data.mesh.position.y,
-                camera.userData.followZOffset+data.mesh.position.z
+                camera.userData.followXOffset+data.body.position.x,
+                camera.userData.followYOffset+data.body.position.y,
+                camera.userData.followZOffset+data.body.position.z
             );
-            camera.lookAt(new THREE.Vector3(data.mesh.position.x, data.mesh.position.y, data.mesh.position.z));
+            camera.lookAt(new THREE.Vector3(data.body.position.x, data.body.position.y, data.body.position.z));
         }
 
         // Temp death...

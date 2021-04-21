@@ -1,5 +1,5 @@
-const floorFriction = 0.1;
-const wallFriction = 0.05;
+const floorFriction = 0.07;
+const wallFriction = 0.1;
 const levelData = {
     model: 'dummyLevelObject01.glb',
     path: '/models/dummyLevelObject01/',
