@@ -71,6 +71,38 @@ class Player {
         if(this.sceneState.settings.physics.showPhysicsHelpers) {
             this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
         }
+
+        this._addPushableBox(data.position);
+    }
+
+    _addPushableBox(pos) {
+        const geo = new THREE.BoxBufferGeometry(1, 1, 1);
+        const mat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+        const mesh = new THREE.Mesh(geo, mat);
+        this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+
+        const boxMaterial = new CANNON.Material();
+        boxMaterial.friction = 0.04;
+        const boxBody = new CANNON.Body({
+            mass: 10,
+            position: new CANNON.Vec3(pos[0], 2, pos[2]+2),
+            shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
+            material: boxMaterial,
+        });
+        boxBody.allowSleep = true;
+        boxBody.sleepSpeedLimit = 0.1;
+        boxBody.sleepTimeLimit = 1;
+        const updateFn = (shape) => {
+            mesh.position.copy(shape.body.position);
+            mesh.quaternion.copy(shape.body.quaternion);
+        };
+        const id = 'dummy-box-01';
+        this.sceneState.physics.world.addBody(boxBody);
+        this.sceneState.physics.shapes.push({ id, mesh, body: boxBody, updateFn, data: {} });
+        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
+        if(this.sceneState.settings.physics.showPhysicsHelpers) {
+            this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
+        }
     }
 
     getDirection() {
