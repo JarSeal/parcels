@@ -77,7 +77,7 @@ class Player {
 
     _addPushableBox(pos) {
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
-        const mat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+        const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
         const mesh = new THREE.Mesh(geo, mat);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
@@ -167,18 +167,22 @@ class Player {
         // data.position[0] += data.xPosMulti * data.moveSpeed;
         // data.position[2] += data.zPosMulti * data.moveSpeed;
         // data.mesh.position.set(data.position[0], data.position[1], data.position[2]);
-        data.body.velocity.x += data.xPosMulti * data.moveSpeed;
-        data.body.velocity.z += data.zPosMulti * data.moveSpeed;
-        const maxSpeed = data.maxSpeed * this.data.maxSpeedMultiplier;
-        if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
-            data.body.velocity.x = -maxSpeed;
-        } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
-            data.body.velocity.x = maxSpeed;
-        }
-        if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
-            data.body.velocity.z = -maxSpeed;
-        } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
-            data.body.velocity.z = maxSpeed;
+        if(!data.xPosMulti && !data.zPosMulti) {
+            data.body.velocity.setZero();
+        } else {
+            data.body.velocity.x += data.xPosMulti * data.moveSpeed;
+            data.body.velocity.z += data.zPosMulti * data.moveSpeed;
+            const maxSpeed = data.maxSpeed * this.data.maxSpeedMultiplier;
+            if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
+                data.body.velocity.x = -maxSpeed;
+            } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
+                data.body.velocity.x = maxSpeed;
+            }
+            if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
+                data.body.velocity.z = -maxSpeed;
+            } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
+                data.body.velocity.z = maxSpeed;
+            }
         }
         if(data.userPlayer && this.sceneState.settings.debug.cameraFollowsPlayer) {
             const camera = this.sceneState.cameras[this.sceneState.curScene];
@@ -193,11 +197,23 @@ class Player {
         // Temp death...
         if(data.body.position.y < -50) {
             alert('WASTED!');
+
+            // position
             data.body.position.y = 10;
             data.body.position.x = 0;
             data.body.position.z = 0;
-            data.body.velocity.x = 0;
-            data.body.velocity.z = 0;
+
+            // orientation
+            data.body.quaternion.set(0,0,0,1);
+            data.body.initQuaternion.set(0,0,0,1);
+            data.body.previousQuaternion.set(0,0,0,1);
+            data.body.interpolatedQuaternion.set(0,0,0,1);
+
+            // Velocity
+            data.body.velocity.setZero();
+            data.body.initVelocity.setZero();
+            data.body.angularVelocity.setZero();
+            data.body.initAngularVelocity.setZero();
         }
     }
 }
