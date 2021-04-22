@@ -48,6 +48,67 @@ const userPlayerData = {
             sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
         }
     },
+    renderFn: (data, sceneState, THREE) => {
+        if(!data.xPosMulti) data.body.velocity.x = 0;
+        if(!data.zPosMulti) data.body.velocity.z = 0;
+        data.body.velocity.x += data.xPosMulti * data.moveSpeed;
+        data.body.velocity.z += data.zPosMulti * data.moveSpeed;
+        const maxSpeed = data.maxSpeed * data.maxSpeedMultiplier;
+        if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
+            data.body.velocity.x = -maxSpeed;
+        } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
+            data.body.velocity.x = maxSpeed;
+        }
+        if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
+            data.body.velocity.z = -maxSpeed;
+        } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
+            data.body.velocity.z = maxSpeed;
+        }
+        data.mesh.position.copy(data.body.position);
+        // data.mesh.quaternion.copy(data.body.quaternion);
+        data.body.quaternion.setFromEuler(
+            data.mesh.rotation.x,
+            data.direction,
+            data.mesh.rotation.z,
+            'XYZ'
+        );
+        data.mesh.rotation.y = data.direction;
+        if(data.userPlayer && sceneState.settings.debug.cameraFollowsPlayer) {
+            const camera = sceneState.cameras[sceneState.curScene];
+            camera.position.set(
+                camera.userData.followXOffset+data.body.position.x,
+                camera.userData.followYOffset+data.body.position.y,
+                camera.userData.followZOffset+data.body.position.z
+            );
+            camera.lookAt(new THREE.Vector3(
+                data.body.position.x,
+                data.body.position.y,
+                data.body.position.z
+            ));
+        }
+
+        // Temp death...
+        if(data.body.position.y < -50) {
+            alert('WASTED!');
+
+            // position
+            data.body.position.y = 10;
+            data.body.position.x = 0;
+            data.body.position.z = 0;
+
+            // orientation
+            data.body.quaternion.set(0,0,0,1);
+            data.body.initQuaternion.set(0,0,0,1);
+            data.body.previousQuaternion.set(0,0,0,1);
+            data.body.interpolatedQuaternion.set(0,0,0,1);
+
+            // Velocity
+            data.body.velocity.setZero();
+            data.body.initVelocity.setZero();
+            data.body.angularVelocity.setZero();
+            data.body.initAngularVelocity.setZero();
+        }
+    },
 };
 
 export default userPlayerData;
