@@ -16,6 +16,7 @@ import UserControls from './controls/UserControls';
 class Root {
     constructor() {
         this.sceneState = {
+            curLevelId: 'levelDummy01',
             curScene: 'level',
             curFloor: 0,
         };
@@ -106,7 +107,7 @@ class Root {
 
     runApp(scene, camera) {
 
-        this.levelLoader.load('levelDummy01');
+        this.levelLoader.load(this.sceneState.curLevelId);
         
         const modelLoader = new ModelLoader(this.sceneState);
         modelLoader.loadModel(levelData);
