@@ -77,7 +77,7 @@ class Root {
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.maxSubSteps = 5;
+        this.sceneState.physics.maxSubSteps = 10;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
