@@ -14,6 +14,10 @@ class Player {
         data.zPosMulti = 0;
         data.direction = 0;
         data.maxSpeedMultiplier = 1;
+        data.moveStartTimes = {
+            startX: 0,
+            startZ: 0,
+        };
         if(!this.sceneState.playerKeysCount) {
             this.sceneState.players = {};
             this.sceneState.playerKeys = [];
@@ -145,12 +149,13 @@ class Player {
         // this.data.direction = dir;
     }
 
-    movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier) {
+    movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier, startTimes) {
         this.data.body.wakeUp();
         this._rotatePlayer(dir);
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
         this.data.maxSpeedMultiplier = maxSpeedMultiplier;
+        this.data.moveStartTimes = startTimes;
     }
 
     render = () => {

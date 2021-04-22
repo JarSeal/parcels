@@ -139,7 +139,17 @@ class UserControls {
                 this.direction = this.twoKeyDirection;
             }
         }
-        this.player.movePlayer2(xPosMulti, zPosMulti, this.direction, maxSpeedMultiplier);
+        const startTime = performance.now();
+        this.player.movePlayer2(
+            xPosMulti,
+            zPosMulti,
+            this.direction,
+            maxSpeedMultiplier,
+            {
+                startX: xPosMulti ? startTime : 0,
+                startZ: zPosMulti ? startTime : 0,
+            }
+        );
     }
 }
 

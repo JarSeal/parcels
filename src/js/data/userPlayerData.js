@@ -49,6 +49,8 @@ const userPlayerData = {
         }
     },
     renderFn: (data, sceneState, THREE) => {
+        const startTimes = data.moveStartTimes;
+        
         if(!data.xPosMulti) data.body.velocity.x = 0;
         if(!data.zPosMulti) data.body.velocity.z = 0;
         data.body.velocity.x += data.xPosMulti * data.moveSpeed;
