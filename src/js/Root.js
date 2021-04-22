@@ -35,6 +35,9 @@ class Root {
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
         this.sceneState.renderer = renderer;
+        this.requestDelta = 0;
+        this.logicDelta = 0;
+        this.renderDelta = 0;
         // Setup renderer [/END]
 
         // Setup scene and basic lights [START]
@@ -130,13 +133,18 @@ class Root {
     }
 
     renderLoop = () => {
-        requestAnimationFrame(this.renderLoop);
         const ss = this.sceneState;
-        const delta = ss.clock.getDelta();
-        this._updatePhysics(delta);
+        this.requestDelta = ss.clock.getDelta();
+        requestAnimationFrame(this.renderLoop);
+        const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
+        let timeStep = unscaledTimeStep; // * 1 = time scale
+        timeStep = Math.min(timeStep, 0.0333); // = 1 / 30 (min 30 fps)
+        this._updatePhysics(timeStep);
+        this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
         this._renderPlayers(ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
+        this.renderDelta = ss.clock.getDelta(); // Measuring render time
     }
 
     _renderPlayers(ss) {
@@ -179,12 +187,12 @@ class Root {
         });
     }
 
-    _updatePhysics = (delta) => {
+    _updatePhysics = (timeStep) => {
         let i, shape;
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        this.world.step(this.sceneState.physics.timeStep, delta, this.sceneState.physics.maxSubSteps);
+        this.world.step(this.sceneState.physics.timeStep, timeStep, this.sceneState.physics.maxSubSteps);
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);
