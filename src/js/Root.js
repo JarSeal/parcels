@@ -142,18 +142,18 @@ class Root {
         this._updatePhysics(timeStep);
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
-        this._renderPlayers(ss);
+        this._renderPlayers(timeStep, ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
         this.renderDelta = ss.clock.getDelta(); // Measuring render time
     }
 
-    _renderPlayers(ss) {
+    _renderPlayers(timeStep, ss) {
         let i = 0;
         const c = ss.playerKeysCount,
             k = ss.playerKeys,
             p = ss.players;
         for(i=0; i<c; i++) {
-            p[k].render();
+            p[k].render(timeStep);
         }
     }
 
@@ -192,7 +192,7 @@ class Root {
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        this.world.step(this.sceneState.physics.timeStep, timeStep, this.sceneState.physics.maxSubSteps);
+        this.world.step(timeStep, timeStep, this.sceneState.physics.maxSubSteps);
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);

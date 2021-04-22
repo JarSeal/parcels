@@ -158,8 +158,9 @@ class Player {
         this.data.moveStartTimes = startTimes;
     }
 
-    render = () => {
+    render = (timeStep) => {
         this.data.renderFn(
+            timeStep,
             this.data,
             this.sceneState,
             THREE

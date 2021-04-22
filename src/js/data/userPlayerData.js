@@ -47,8 +47,9 @@ const userPlayerData = {
         if(sceneState.settings.physics.showPhysicsHelpers) {
             sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
         }
+        console.log('BODY', data.body);
     },
-    renderFn: (data, sceneState, THREE) => {
+    renderFn: (timeStep, data, sceneState, THREE) => {
         let veloX = 0, veloZ = 0;
         const startTimes = data.moveStartTimes;
         const timeNow = performance.now();
