@@ -49,23 +49,23 @@ const userPlayerData = {
         }
     },
     renderFn: (data, sceneState, THREE) => {
+        let veloX = 0, veloZ = 0;
         const startTimes = data.moveStartTimes;
-        
-        if(!data.xPosMulti) data.body.velocity.x = 0;
-        if(!data.zPosMulti) data.body.velocity.z = 0;
-        data.body.velocity.x += data.xPosMulti * data.moveSpeed;
-        data.body.velocity.z += data.zPosMulti * data.moveSpeed;
-        const maxSpeed = data.maxSpeed * data.maxSpeedMultiplier;
-        if(data.body.velocity.x < 0 && data.body.velocity.x < -maxSpeed) {
-            data.body.velocity.x = -maxSpeed;
-        } else if(data.body.velocity.x > 0 && data.body.velocity.x > maxSpeed) {
-            data.body.velocity.x = maxSpeed;
+        const timeNow = performance.now();
+        const elapsedXTime = timeNow - startTimes.startX;
+        const elapsedZTime = timeNow - startTimes.startZ;
+        if(elapsedXTime < 350 && elapsedZTime < 350) {
+            veloX = elapsedXTime / 350 * data.maxSpeed * data.xPosMulti;
+        } else {
+            veloX = data.maxSpeed * data.xPosMulti;
         }
-        if(data.body.velocity.z < 0 && data.body.velocity.z < -maxSpeed) {
-            data.body.velocity.z = -maxSpeed;
-        } else if(data.body.velocity.z > 0 && data.body.velocity.z > maxSpeed) {
-            data.body.velocity.z = maxSpeed;
+        if(elapsedZTime < 350 && elapsedXTime < 350) {
+            veloZ = elapsedZTime / 350 * data.maxSpeed * data.zPosMulti;
+        } else {
+            veloZ = data.maxSpeed * data.zPosMulti;
         }
+        data.body.velocity.x = veloX;
+        data.body.velocity.z = veloZ;
         data.mesh.position.copy(data.body.position);
         // data.mesh.quaternion.copy(data.body.quaternion);
         data.body.quaternion.setFromEuler(
