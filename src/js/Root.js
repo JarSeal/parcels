@@ -75,12 +75,12 @@ class Root {
         world.allowSleep = true;
         world.gravity.set(0, -9.82, 0);
         world.broadphase = new CANNON.NaiveBroadphase();
-        world.iterations = 50;
-        world.solver.iterations = 50;
+        world.iterations = 60;
+        world.solver.iterations = 60;
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.maxSubSteps = 10;
+        this.sceneState.physics.maxSubSteps = 30;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
@@ -192,7 +192,7 @@ class Root {
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        this.world.step(timeStep, timeStep, this.sceneState.physics.maxSubSteps);
+        this.world.step(this.sceneState.physics.timeStep, timeStep, this.sceneState.physics.maxSubSteps);
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);
