@@ -57,17 +57,17 @@ class Player {
         boxBody.sleepSpeedLimit = 0.1;
         boxBody.sleepTimeLimit = 1;
         boxBody.bodyID = id;
-        const updateFn = (shape) => {
-            // shape.mesh.position.copy(shape.body.position);
-            // shape.body.quaternion.setFromEuler(0, data.direction, 0, 'XYZ');
-            // shape.mesh.position.y = 0.51;
-            // shape.body.quaternion.x = 0;
-            // shape.body.quaternion.z = 0;
-            // shape.mesh.quaternion.copy(shape.body.quaternion);
-        };
+        // const updateFn = (shape) => {
+        //     // shape.mesh.position.copy(shape.body.position);
+        //     // shape.body.quaternion.setFromEuler(0, data.direction, 0, 'XYZ');
+        //     // shape.mesh.position.y = 0.51;
+        //     // shape.body.quaternion.x = 0;
+        //     // shape.body.quaternion.z = 0;
+        //     // shape.mesh.quaternion.copy(shape.body.quaternion);
+        // };
         data.body = boxBody;
         this.sceneState.physics.world.addBody(boxBody);
-        this.sceneState.physics.shapes.push({ id, mesh: pMesh, body: boxBody, updateFn, data });
+        this.sceneState.physics.shapes.push({ id, mesh: pMesh, body: boxBody, updateFn: ()=>{}, data });
         this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
         if(this.sceneState.settings.physics.showPhysicsHelpers) {
             this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
