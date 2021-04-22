@@ -14,8 +14,6 @@ class Player {
         data.zPosMulti = 0;
         data.direction = 0;
         data.maxSpeedMultiplier = 1;
-        this.rayCastLeft = new THREE.Raycaster();
-        this.rayCastLeft.far = 2;
         if(!this.sceneState.playerKeysCount) {
             this.sceneState.players = {};
             this.sceneState.playerKeys = [];
@@ -25,55 +23,13 @@ class Player {
     }
 
     create() {
-        const data = this.data;
-        const id = data.id;
-        this.sceneState.players[id] = data;
-        this.sceneState.userPlayerId = id;
-        this.sceneState.playerKeys.push(id);
-        this.sceneState.playerKeysCount += 1;
-        const pos = data.position;
-        const pGeo = new THREE.BoxBufferGeometry(0.4, 1.82, 0.8);
-        const pMat = new THREE.MeshLambertMaterial({ color: 0x002f00 });
-        const pMesh = new THREE.Mesh(pGeo, pMat);
-        pMesh.position.set(pos[0], pos[1], pos[2]);
-        const nGeo = new THREE.BoxBufferGeometry(0.1, 0.1, 0.1);
-        const nMesh = new THREE.Mesh(nGeo, new THREE.MeshLambertMaterial({ color: 0x777777 }));
-        nMesh.position.set(data.position[0]+0.2, data.position[1], data.position[2]);
-        pMesh.add(nMesh);
-        pMesh.name = id;
-        data.mesh = pMesh;
-        this.sceneState.scenes[this.sceneState.curScene].add(pMesh);
-
-        // Add physics
-        const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.01;
-        const boxBody = new CANNON.Body({
-            mass: 70,
-            position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
-            shape: new CANNON.Box(new CANNON.Vec3(0.8 / 2, 0.8 / 2, 0.8 / 2)),
-            material: boxMaterial,
-        });
-        boxBody.allowSleep = true;
-        boxBody.sleepSpeedLimit = 0.1;
-        boxBody.sleepTimeLimit = 1;
-        boxBody.bodyID = id;
-        // const updateFn = (shape) => {
-        //     // shape.mesh.position.copy(shape.body.position);
-        //     // shape.body.quaternion.setFromEuler(0, data.direction, 0, 'XYZ');
-        //     // shape.mesh.position.y = 0.51;
-        //     // shape.body.quaternion.x = 0;
-        //     // shape.body.quaternion.z = 0;
-        //     // shape.mesh.quaternion.copy(shape.body.quaternion);
-        // };
-        data.body = boxBody;
-        this.sceneState.physics.world.addBody(boxBody);
-        this.sceneState.physics.shapes.push({ id, mesh: pMesh, body: boxBody, updateFn: ()=>{}, data });
-        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
-        if(this.sceneState.settings.physics.showPhysicsHelpers) {
-            this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
-        }
-
-        this._addPushableBox(data.position);
+        this.data.createPlayerFn(
+            this.data,
+            this.sceneState,
+            THREE,
+            CANNON
+        );
+        this._addPushableBox(this.data.position); // TEMPORARY
     }
 
     _addPushableBox(pos) { // TEMPORARY
