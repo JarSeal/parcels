@@ -73,7 +73,7 @@ module.exports = {
         // {from:'src/sounds',to:'sounds'},
         {from:'src/js/vendor',to:'js'},
         {from:'src/models',to:'models'},
-        // {from:'src/webworkers',to:'webworkers'},
+        {from:'src/webworkers',to:'webworkers'},
       ],
     }),
     new MiniCssExtractPlugin({

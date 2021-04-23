@@ -80,7 +80,7 @@ class Root {
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.maxSubSteps = 7;
+        this.sceneState.physics.maxSubSteps = 1;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
@@ -96,6 +96,13 @@ class Root {
         settings.setAA(rendererAA);
         this.sceneState.settingsClass = settings;
         // Settings [/END]
+
+        // Webworkers [START]
+        this.workerSendTime = 0;
+        this.worker = new Worker('/webworkers/physics.js');
+        this._workerListener();
+        this._requestDataFromWorker();
+        // Webworkers [/ END]
 
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
@@ -123,7 +130,8 @@ class Root {
         camera.position.set(
             camera.userData.followXOffset + playerPos[0],
             camera.userData.followYOffset + playerPos[1],
-            camera.userData.followZOffset + playerPos[2]);
+            camera.userData.followZOffset + playerPos[2]
+        );
         camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
 
         this.resize(this.sceneState);
@@ -138,7 +146,7 @@ class Root {
         requestAnimationFrame(() => {
             setTimeout(() => {
                 this.renderLoop();
-            }, 0);
+            }, 30);
         });
         const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         let timeStep = unscaledTimeStep; // * 1 = time scale
@@ -202,7 +210,7 @@ class Root {
             this.world.step(
                 this.sceneState.physics.timeStep,
                 timeStep,
-                this.sceneState.physics.maxSubSteps
+                3
             );
         }
         for(i=0; i<l; i++) {
@@ -230,6 +238,17 @@ class Root {
             if(!color) moving ? color = 0xFF0000 : color = 0xFFFFFFF;
             this.helper.addVisual(body, color);
         }
+    }
+
+    _requestDataFromWorker() {
+        this.workerSendTime = performance.now();
+        this.worker.postMessage('Some shit..');
+    }
+
+    _workerListener() {
+        this.worker.addEventListener('message', (event) => {
+            console.log('Data came back', event.data);
+        });
     }
 }
 
