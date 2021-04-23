@@ -57,21 +57,19 @@ const userPlayerData = {
         // const elapsedXTime = timeNow - startTimes.startX;
         // const elapsedZTime = timeNow - startTimes.startZ;
         // if(elapsedXTime < 350 && elapsedZTime < 350) {
-        //     veloX = elapsedXTime / 350 * data.maxSpeed * data.xPosMulti;
+        //     veloX = elapsedXTime / 350 * data.speed * data.xPosMulti;
         // } else {
-        //     veloX = data.maxSpeed * data.xPosMulti;
+        //     veloX = data.speed * data.xPosMulti;
         // }
         // if(elapsedZTime < 350 && elapsedXTime < 350) {
-        //     veloZ = elapsedZTime / 350 * data.maxSpeed * data.zPosMulti;
+        //     veloZ = elapsedZTime / 350 * data.speed * data.zPosMulti;
         // } else {
-        //     veloZ = data.maxSpeed * data.zPosMulti;
+        //     veloZ = data.speed * data.zPosMulti;
         // }
-        veloX = data.xPosMulti * speed;
-        veloZ = data.zPosMulti * speed;
-        // data.body.mass = 100 * ((1/30) / timeStep);
+        veloX = data.xPosMulti * data.speed;
+        veloZ = data.zPosMulti * data.speed;
         data.body.velocity.x = veloX;
         data.body.velocity.z = veloZ;
-        // data.body.previousPosition.copy(data.body.position);
         data.mesh.position.copy(data.body.position);
         // data.mesh.quaternion.copy(data.body.quaternion);
         data.body.quaternion.setFromEuler(
