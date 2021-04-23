@@ -196,7 +196,7 @@ class Root {
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        this.world.step(this.sceneState.physics.timeStep, timeStep);
+        this.world.step(this.sceneState.physics.timeStep, timeStep, this.sceneState.physics.maxSubSteps);
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);
