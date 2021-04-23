@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
+import * as CANNON from 'cannon-es';
 import { Face3 } from 'three/examples/jsm/deprecated/Geometry.js';
 
 class CannonHelper{

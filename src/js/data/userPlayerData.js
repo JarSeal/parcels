@@ -52,10 +52,10 @@ const userPlayerData = {
     },
     renderFn: (timeStep, data, sceneState, THREE) => {
         let veloX = 0, veloZ = 0;
-        const startTimes = data.moveStartTimes;
-        const timeNow = performance.now();
-        const elapsedXTime = timeNow - startTimes.startX;
-        const elapsedZTime = timeNow - startTimes.startZ;
+        // const startTimes = data.moveStartTimes;
+        // const timeNow = performance.now();
+        // const elapsedXTime = timeNow - startTimes.startX;
+        // const elapsedZTime = timeNow - startTimes.startZ;
         // if(elapsedXTime < 350 && elapsedZTime < 350) {
         //     veloX = elapsedXTime / 350 * data.maxSpeed * data.xPosMulti;
         // } else {
@@ -66,8 +66,9 @@ const userPlayerData = {
         // } else {
         //     veloZ = data.maxSpeed * data.zPosMulti;
         // }
-        veloX = data.xPosMulti * data.speed * 1/60;
-        veloZ = data.zPosMulti * data.speed * 1/60;
+        veloX = data.xPosMulti * 1.5;
+        veloZ = data.zPosMulti * 1.5;
+        // data.body.mass = 100 * ((1/30) / timeStep);
         data.body.velocity.x = veloX;
         data.body.velocity.z = veloZ;
         data.body.previousPosition.copy(data.body.position);
