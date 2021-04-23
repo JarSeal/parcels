@@ -5,7 +5,7 @@ const userPlayerData = {
     direction: 0,
     moveSpeed: 0.25,
     maxSpeed: 2.5,
-    speed: 150,
+    speed: 2.8,
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
@@ -66,13 +66,13 @@ const userPlayerData = {
         // } else {
         //     veloZ = data.maxSpeed * data.zPosMulti;
         // }
-        veloX = data.xPosMulti * 1.5;
-        veloZ = data.zPosMulti * 1.5;
+        veloX = data.xPosMulti * speed;
+        veloZ = data.zPosMulti * speed;
         // data.body.mass = 100 * ((1/30) / timeStep);
         data.body.velocity.x = veloX;
         data.body.velocity.z = veloZ;
-        data.body.previousPosition.copy(data.body.position);
-        data.mesh.position.copy(data.body.interpolatedPosition);
+        // data.body.previousPosition.copy(data.body.position);
+        data.mesh.position.copy(data.body.position);
         // data.mesh.quaternion.copy(data.body.quaternion);
         data.body.quaternion.setFromEuler(
             data.mesh.rotation.x,

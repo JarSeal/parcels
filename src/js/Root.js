@@ -88,6 +88,7 @@ class Root {
         this.world = world;
         this.sceneState.physics.helper = new CannonHelper(scene, world);
         this.helper = this.sceneState.physics.helper;
+        this.lastCallTime = performance.now() / 1000;
         // Setup physics (cannon.js) [/END]
 
         // Settings [START]
@@ -146,7 +147,7 @@ class Root {
         requestAnimationFrame(() => {
             setTimeout(() => {
                 this.renderLoop();
-            }, 30);
+            }, 0);
         });
         const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         let timeStep = unscaledTimeStep; // * 1 = time scale
@@ -200,17 +201,18 @@ class Root {
     }
 
     _updatePhysics = (timeStep) => {
+        const time = performance.now() / 1000;
         let i, shape;
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        if(!timeStep) {
+        if(!this.lastCallTime) {
             this.world.step(this.sceneState.physics.timeStep);
         } else {
+            const dt = time - this.lastCallTime;
             this.world.step(
                 this.sceneState.physics.timeStep,
-                timeStep,
-                3
+                dt
             );
         }
         for(i=0; i<l; i++) {
@@ -218,6 +220,7 @@ class Root {
             shape.updateFn(shape);
         }
         if(settings.physics.showPhysicsHelpers) this.helper.update();
+        this.lastCallTime = time;
     }
 
     addShapeToPhysics = (object, moving, helperColor) => {
