@@ -137,12 +137,14 @@ class Root {
 
         this.resize(this.sceneState);
         this.sceneState.settingsClass.endInit();
+        this.lastCallTime = performance.now() / 1000;
         this.renderLoop();
 
     }
 
     renderLoop = () => {
         const ss = this.sceneState;
+        const delta = ss.clock.getDelta();
         this.requestDelta = ss.clock.getDelta();
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -152,10 +154,10 @@ class Root {
         const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         let timeStep = unscaledTimeStep; // * 1 = time scale
         timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
-        this._updatePhysics(timeStep);
+        this._updatePhysics();
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
-        this._renderPlayers(timeStep, ss);
+        this._renderPlayers(delta, ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
         this.renderDelta = ss.clock.getDelta(); // Measuring render time
     }
@@ -200,21 +202,17 @@ class Root {
         });
     }
 
-    _updatePhysics = (timeStep) => {
+    _updatePhysics = () => {
         const time = performance.now() / 1000;
         let i, shape;
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
-            settings = this.sceneState.settings;
-        if(!this.lastCallTime) {
-            this.world.step(this.sceneState.physics.timeStep);
-        } else {
-            const dt = time - this.lastCallTime;
-            this.world.step(
-                this.sceneState.physics.timeStep,
-                dt
-            );
-        }
+            settings = this.sceneState.settings,
+            dt = time - this.lastCallTime;
+        this.world.step(
+            this.sceneState.physics.timeStep,
+            dt
+        );
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);
