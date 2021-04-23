@@ -75,12 +75,12 @@ class Root {
         world.allowSleep = true;
         world.gravity.set(0, -9.82, 0);
         world.broadphase = new CANNON.NaiveBroadphase();
-        world.iterations = 50;
-        world.solver.iterations = 50;
+        world.iterations = 10;
+        // world.solver.iterations = 10;
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.maxSubSteps = 10;
+        this.sceneState.physics.maxSubSteps = 3;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
@@ -135,10 +135,14 @@ class Root {
     renderLoop = () => {
         const ss = this.sceneState;
         this.requestDelta = ss.clock.getDelta();
-        requestAnimationFrame(this.renderLoop);
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                this.renderLoop();
+            }, 0);
+        });
         const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         let timeStep = unscaledTimeStep; // * 1 = time scale
-        timeStep = Math.min(timeStep, 0.0333); // = 1 / 30 (min 30 fps)
+        timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
         this._updatePhysics(timeStep);
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
@@ -192,7 +196,7 @@ class Root {
         const l = this.sceneState.physics.shapesLength,
             s = this.sceneState.physics.shapes,
             settings = this.sceneState.settings;
-        this.world.step(timeStep, timeStep, this.sceneState.physics.maxSubSteps);
+        this.world.step(this.sceneState.physics.timeStep, timeStep);
         for(i=0; i<l; i++) {
             shape = s[i];
             shape.updateFn(shape);

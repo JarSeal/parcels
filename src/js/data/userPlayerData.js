@@ -5,6 +5,7 @@ const userPlayerData = {
     direction: 0,
     moveSpeed: 0.25,
     maxSpeed: 2.5,
+    speed: 150,
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
@@ -55,19 +56,22 @@ const userPlayerData = {
         const timeNow = performance.now();
         const elapsedXTime = timeNow - startTimes.startX;
         const elapsedZTime = timeNow - startTimes.startZ;
-        if(elapsedXTime < 350 && elapsedZTime < 350) {
-            veloX = elapsedXTime / 350 * data.maxSpeed * data.xPosMulti;
-        } else {
-            veloX = data.maxSpeed * data.xPosMulti;
-        }
-        if(elapsedZTime < 350 && elapsedXTime < 350) {
-            veloZ = elapsedZTime / 350 * data.maxSpeed * data.zPosMulti;
-        } else {
-            veloZ = data.maxSpeed * data.zPosMulti;
-        }
+        // if(elapsedXTime < 350 && elapsedZTime < 350) {
+        //     veloX = elapsedXTime / 350 * data.maxSpeed * data.xPosMulti;
+        // } else {
+        //     veloX = data.maxSpeed * data.xPosMulti;
+        // }
+        // if(elapsedZTime < 350 && elapsedXTime < 350) {
+        //     veloZ = elapsedZTime / 350 * data.maxSpeed * data.zPosMulti;
+        // } else {
+        //     veloZ = data.maxSpeed * data.zPosMulti;
+        // }
+        veloX = data.xPosMulti * data.speed * 1/60;
+        veloZ = data.zPosMulti * data.speed * 1/60;
         data.body.velocity.x = veloX;
         data.body.velocity.z = veloZ;
-        data.mesh.position.copy(data.body.position);
+        data.body.previousPosition.copy(data.body.position);
+        data.mesh.position.copy(data.body.interpolatedPosition);
         // data.mesh.quaternion.copy(data.body.quaternion);
         data.body.quaternion.setFromEuler(
             data.mesh.rotation.x,
