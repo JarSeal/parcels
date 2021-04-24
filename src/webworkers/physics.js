@@ -1,5 +1,5 @@
-let world;
-importScripts('/webworkers/cannon-es.js');
+let world, CANNON;
+self.importScripts('/webworkers/cannon-es.js');
 
 self.addEventListener('message', (e) => {
 
@@ -10,12 +10,8 @@ self.addEventListener('message', (e) => {
     } else if(phase === 'init') {
         if(e.data.initParams) {
             console.log('INIT CANNON', CANNON);
-            world = new CANNON.World();
-            world.allowSleep = true;
-            world.gravity.set(0, -9.82, 0);
-            world.iterations = 10;
-            world.solver.iterations = 10;
-            //initPhysics();
+            const params = e.data.initParams;
+            initPhysics(params);
         } else {
             console.error('GAME ENGINE ERROR: web worker physics could not init CANNON world.');
         }
@@ -23,12 +19,11 @@ self.addEventListener('message', (e) => {
     // self.postMessage('sampleText');
 });
 
-const initPhysics = () => {
+const initPhysics = (params) => {
     console.log('INIT---');
-    // world = new CANNON.World();
-    // world.allowSleep = true;
-    // world.gravity.set(0, -9.82, 0);
-    // world.iterations = 10;
-    // world.solver.iterations = 10;
-    // console.log('WORLD', world);
+    world = new CANNON.World();
+    world.allowSleep = params.allowSleep;
+    world.gravity.set(params.gravity[0], params.gravity[1], params.gravity[2]);
+    world.iterations = params.iterations;
+    world.solver.iterations = params.iterations;
 };

@@ -151,9 +151,9 @@ class Root {
                 this.renderLoop();
             }, 0);
         });
-        const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
-        let timeStep = unscaledTimeStep; // * 1 = time scale
-        timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
+        // const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
+        // let timeStep = unscaledTimeStep; // * 1 = time scale
+        // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
         this._updatePhysics();
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
