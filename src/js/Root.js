@@ -247,12 +247,6 @@ class Root {
     }
 
     _initPhysicsWorker() {
-        const world = new CANNON.World();
-        console.log(world);
-        world.allowSleep = true;
-        world.gravity.set(0, -9.82, 0);
-        world.iterations = 10;
-        world.solver.iterations = 10;
         this.worker.postMessage({
             phase: 'init',
             initParams: {
