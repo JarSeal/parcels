@@ -293,6 +293,9 @@ class Root {
                 Logger.error(e.data.error);
             }
         });
+        this.worker.addEventListener('error', (e) => {
+            Logger.error(e.message);
+        });
     }
 }
 
