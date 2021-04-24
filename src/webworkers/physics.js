@@ -20,8 +20,10 @@ self.addEventListener('message', (e) => {
             const params = e.data.initParams;
             initPhysics(params);
         } else {
-            console.error('GAME ENGINE ERROR: web worker physics could not init CANNON world.');
-            self.postMessage({ initPhysicsDone: false });
+            self.postMessage({
+                initPhysicsDone: false,
+                error: 'Web worker physics could not init CANNON world.'
+            });
         }
     }
     // self.postMessage('sampleText');

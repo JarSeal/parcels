@@ -82,6 +82,8 @@ class Root {
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
+        this.sceneState.physics.addShape = this.newPhysicsShape();
+        this.sceneState.physics.removeShape = this.removePhysicsShape();
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
         // this.sceneState.isGroundMeshes = []; // CHECK WHETHER OR NOT NEEDED!
@@ -101,22 +103,26 @@ class Root {
         // Webworkers [START]
         this.workerSendTime = 0;
         this.worker = new Worker('./webworkers/physics.js');
-        this._initPhysicsWorker();
         this._requestPhysicsFromWorker();
         // Webworkers [/ END]
 
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
-        this.sceneState.resizeFns = [this.resize];
+        this.sceneState.resizeFns = [this._resize];
         this.levelLoader = new LevelLoader(this.sceneState);
         this._initResizer();
         // Other setup [/END]
 
-        this.runApp(scene, camera);
+        this._runApp(camera);
     }
 
-    runApp(scene, camera) {
+    _runApp(camera) {
+
+        if(!this.sceneState.physics.initiated) {
+            this._runApp(camera);
+            return;
+        }
 
         this.levelLoader.load(this.sceneState.curLevelId);
         
@@ -172,7 +178,7 @@ class Root {
         }
     }
 
-    resize(sceneState) {
+    _resize(sceneState) {
         const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
@@ -241,6 +247,30 @@ class Root {
         }
     }
 
+    newPhysicsShape = (shapeData) => {
+        // Add shapeData also to the sceneState somewhere.
+        // Add shapesCount also.
+        this.worker.postMessage({
+            phase: 'addShape',
+            shape: {
+                type: shapeData.type,
+                id: shapeData.id,
+                position: shapeData.position,
+                quoternion: shapeData.quoternion,
+                rotation: shapeData.rotation,
+            },
+        });
+    }
+
+    removePhysicsShape = (id) => {
+        // Remove shapeData also from the sceneState somewhere.
+        // Remove one from shapesCount also.
+        this.worker.postMessage({
+            phase: 'removeShape',
+            id,
+        });
+    }
+
     _requestPhysicsFromWorker() {
         this.workerSendTime = performance.now();
         //this.worker.postMessage('Some shit..');
@@ -256,7 +286,11 @@ class Root {
             },
         });
         this.worker.addEventListener('message', (e) => {
-            console.log('eListenerFromPhsicsWokrer', e);
+            if(e.data.initPhysicsDone) {
+                this.sceneState.physics.initiated = true;
+            } else {
+                Logger.error(e.data.error);
+            }
         });
     }
 }
