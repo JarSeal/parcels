@@ -12,6 +12,7 @@ import ModelLoader from './loaders/ModelLoader';
 import LevelLoader from './loaders/LevelLoader';
 import Player from './players/Player';
 import UserControls from './controls/UserControls';
+// import Worker from 'web-worker';
 
 class Root {
     constructor() {
@@ -76,11 +77,10 @@ class Root {
         world.gravity.set(0, -9.82, 0);
         // world.broadphase = new CANNON.SAPBroadphase(world);
         world.iterations = 10;
-        // world.solver.iterations = 10;
+        world.solver.iterations = 10;
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.maxSubSteps = 1;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
@@ -100,9 +100,9 @@ class Root {
 
         // Webworkers [START]
         this.workerSendTime = 0;
-        this.worker = new Worker('/webworkers/physics.js');
-        this._workerListener();
-        this._requestDataFromWorker();
+        this.worker = new Worker('./webworkers/physics.js');
+        this._initPhysicsWorker();
+        this._requestPhysicsFromWorker();
         // Webworkers [/ END]
 
         // Other setup [START]
@@ -241,14 +241,28 @@ class Root {
         }
     }
 
-    _requestDataFromWorker() {
+    _requestPhysicsFromWorker() {
         this.workerSendTime = performance.now();
-        this.worker.postMessage('Some shit..');
+        //this.worker.postMessage('Some shit..');
     }
 
-    _workerListener() {
-        this.worker.addEventListener('message', (event) => {
-            console.log('Data came back', event.data);
+    _initPhysicsWorker() {
+        const world = new CANNON.World();
+        console.log(world);
+        world.allowSleep = true;
+        world.gravity.set(0, -9.82, 0);
+        world.iterations = 10;
+        world.solver.iterations = 10;
+        this.worker.postMessage({
+            phase: 'init',
+            initParams: {
+                allowSleep: true,
+                gravity: [0, -9.82, 0],
+                iterations: 10,
+            },
+        });
+        this.worker.addEventListener('message', (e) => {
+            console.log('eListenerFromPhsicsWokrer', e);
         });
     }
 }
