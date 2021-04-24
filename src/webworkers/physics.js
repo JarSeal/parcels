@@ -1,4 +1,9 @@
-let world, CANNON;
+let world,
+    CANNON,
+    shapes = [],
+    shapesCount = 0,
+    movingShapes = [],
+    movingShapesCount = 0;
 self.importScripts('/webworkers/cannon-es.js');
 
 self.addEventListener('message', (e) => {
@@ -6,7 +11,7 @@ self.addEventListener('message', (e) => {
     const phase = e.data.phase;
 
     if(!phase) {
-        // count positions..
+        // DO PHYSICS..
     } else if(phase === 'addShape') {
         const shape = e.data.shape;
         console.log('ADD SHAPE', shape);
