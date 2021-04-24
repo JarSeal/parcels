@@ -258,6 +258,7 @@ class Root {
                 position: shapeData.position,
                 quoternion: shapeData.quoternion,
                 rotation: shapeData.rotation,
+                material: shapeData.material,
             },
         });
     }
