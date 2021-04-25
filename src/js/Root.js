@@ -82,8 +82,14 @@ class Root {
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
         this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
-        this.sceneState.physics.addShape = this.newPhysicsShape();
-        this.sceneState.physics.removeShape = this.removePhysicsShape();
+        this.sceneState.physics.newShape = this.newPhysicsShape;
+        this.sceneState.physics.movingShapes = [];
+        this.sceneState.physics.movingShapesLength = 0;
+        this.sceneState.physics.staticShapes = [];
+        this.sceneState.physics.staticShapesLength = 0;
+        this.sceneState.physics.positions = new Float32Array(0);
+        this.sceneState.physics.quaternions = new Float32Array(0);
+        this.sceneState.physics.removeShape = this.removePhysicsShape;
         this.sceneState.physics.shapes = [];
         this.sceneState.physics.shapesLength = 0;
         // this.sceneState.isGroundMeshes = []; // CHECK WHETHER OR NOT NEEDED!
@@ -100,12 +106,6 @@ class Root {
         this.sceneState.settingsClass = settings;
         // Settings [/END]
 
-        // Webworkers [START]
-        this.workerSendTime = 0;
-        this.worker = new Worker('./webworkers/physics.js');
-        this._requestPhysicsFromWorker();
-        // Webworkers [/ END]
-
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
@@ -114,15 +114,15 @@ class Root {
         this._initResizer();
         // Other setup [/END]
 
-        this._runApp(camera);
+        // Webworkers [START]
+        this.workerSendTime = 0;
+        this.worker = new Worker('./webworkers/physics.js');
+        this._requestPhysicsFromWorker();
+        this._initPhysicsWorker(camera);
+        // Webworkers [/ END]
     }
 
     _runApp(camera) {
-
-        if(!this.sceneState.physics.initiated) {
-            this._runApp(camera);
-            return;
-        }
 
         this.levelLoader.load(this.sceneState.curLevelId);
         
@@ -141,7 +141,7 @@ class Root {
         );
         camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
 
-        this.resize(this.sceneState);
+        this._resize(this.sceneState);
         this.sceneState.settingsClass.endInit();
         this.lastCallTime = performance.now() / 1000;
         this.renderLoop();
@@ -248,13 +248,41 @@ class Root {
     }
 
     newPhysicsShape = (shapeData) => {
-        // Add shapeData also to the sceneState somewhere.
-        // Add shapesCount also.
+        if(shapeData.moving) {
+            this.sceneState.physics.movingShapes.push(shapeData);
+            this.sceneState.physics.movingShapesLength++;
+            let tempPosArray = new Float32Array(
+                this.sceneState.physics.movingShapesLength * 3
+            );
+            tempPosArray.set(
+                this.sceneState.physics.positions, 0
+            );
+            tempPosArray.set(
+                [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
+                this.sceneState.physics.movingShapesLength * 3 - 1 - 3
+            );
+            this.sceneState.physics.positions = tempPosArray;
+            let tempQuoArray = new Float32Array(
+                this.sceneState.physics.movingShapesLength * 4
+            );
+            tempQuoArray.set(
+                this.sceneState.physics.quoternions, 0
+            );
+            tempQuoArray.set(
+                [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
+                this.sceneState.physics.movingShapesLength * 4 - 1 - 3
+            );
+            this.sceneState.physics.quoternions = tempQuoArray;
+        } else {
+            this.sceneState.physics.staticShapes.push(shapeData);
+            this.sceneState.physics.staticShapesLength++;
+        }
         this.worker.postMessage({
             phase: 'addShape',
             shape: {
                 type: shapeData.type,
                 id: shapeData.id,
+                moving: shapeDate.moving,
                 position: shapeData.position,
                 quoternion: shapeData.quoternion,
                 rotation: shapeData.rotation,
@@ -264,8 +292,25 @@ class Root {
     }
 
     removePhysicsShape = (id) => {
-        // Remove shapeData also from the sceneState somewhere.
-        // Remove one from shapesCount also.
+        if(shapeData.moving) {
+            this.sceneState.physics.movingShapes = this.sceneState.physics.movingShapes
+                .filter(shape => shape.id !== id);
+            this.sceneState.physics.movingShapesLength--;
+            let tempPosArray = new Float32Array(
+                this.sceneState.physics.movingShapesLength * 3
+            );
+            // tempPosArray = this.sceneState.physics.positions
+            //     .filter(shape => shape.id !== id);
+            // this.sceneState.physics.positions = tempPosArray;
+            // tempQuoArray = this.sceneState.physics.quoternions
+            //     .filter((elem, index) => shape.id !== id);
+            // this.sceneState.physics.quoternions = tempQuoArray;
+        } else {
+            // this.sceneState.physics.staticShapes.push(shapeData);
+            this.sceneState.physics.staticShapes = this.sceneState.physics.staticShapes
+                .filter(shape => shape.id !== id);
+            this.sceneState.physics.staticShapesLength--;
+        }
         this.worker.postMessage({
             phase: 'removeShape',
             id,
@@ -277,7 +322,7 @@ class Root {
         //this.worker.postMessage('Some shit..');
     }
 
-    _initPhysicsWorker() {
+    _initPhysicsWorker(camera) {
         this.worker.postMessage({
             phase: 'init',
             initParams: {
@@ -296,6 +341,8 @@ class Root {
         this.worker.addEventListener('error', (e) => {
             Logger.error(e.message);
         });
+
+        this._runApp(camera);
     }
 }
 
