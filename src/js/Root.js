@@ -251,6 +251,7 @@ class Root {
         if(shapeData.moving) {
             this.sceneState.physics.movingShapes.push(shapeData);
             this.sceneState.physics.movingShapesLength++;
+
             let tempPosArray = new Float32Array(
                 this.sceneState.physics.movingShapesLength * 3
             );
@@ -262,6 +263,7 @@ class Root {
                 this.sceneState.physics.movingShapesLength * 3 - 1 - 3
             );
             this.sceneState.physics.positions = tempPosArray;
+
             let tempQuoArray = new Float32Array(
                 this.sceneState.physics.movingShapesLength * 4
             );
@@ -296,15 +298,37 @@ class Root {
             this.sceneState.physics.movingShapes = this.sceneState.physics.movingShapes
                 .filter(shape => shape.id !== id);
             this.sceneState.physics.movingShapesLength--;
+
             let tempPosArray = new Float32Array(
                 this.sceneState.physics.movingShapesLength * 3
             );
-            // tempPosArray = this.sceneState.physics.positions
-            //     .filter(shape => shape.id !== id);
-            // this.sceneState.physics.positions = tempPosArray;
-            // tempQuoArray = this.sceneState.physics.quoternions
-            //     .filter((elem, index) => shape.id !== id);
-            // this.sceneState.physics.quoternions = tempQuoArray;
+            let tempPos = [];
+            this.sceneState.physics.movingShapes
+                .forEach(shape => {
+                    if(shape.id !== id) {
+                        tempPos.push(shape.position[0]);
+                        tempPos.push(shape.position[1]);
+                        tempPos.push(shape.position[2]);
+                    }
+                });
+            tempPosArray = Float32Array.from(tempPos);
+            this.sceneState.physics.positions = tempPosArray;
+
+            let tempQuoArray = new Float32Array(
+                this.sceneState.physics.movingShapesLength * 4
+            );
+            let tempQuo = [];
+            this.sceneState.physics.movingShapes
+                .forEach(shape => {
+                    if(shape.id !== id) {
+                        tempQuo.push(shape.quoternion[0]);
+                        tempQuo.push(shape.quoternion[1]);
+                        tempQuo.push(shape.quoternion[2]);
+                        tempQuo.push(shape.quoternion[3]);
+                    }
+                });
+            tempQuoArray = Float32Array.from(tempQuo);
+            this.sceneState.physics.quoternions = tempQuoArray;
         } else {
             // this.sceneState.physics.staticShapes.push(shapeData);
             this.sceneState.physics.staticShapes = this.sceneState.physics.staticShapes
