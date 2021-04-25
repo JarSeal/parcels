@@ -248,37 +248,37 @@ class Root {
     }
 
     newPhysicsShape = (shapeData) => {
-        if(shapeData.moving) {
-            this.sceneState.physics.movingShapes.push(shapeData);
-            this.sceneState.physics.movingShapesLength++;
+        // if(shapeData.moving) {
+        //     this.sceneState.physics.movingShapes.push(shapeData);
+        //     this.sceneState.physics.movingShapesLength++;
 
-            let tempPosArray = new Float32Array(
-                this.sceneState.physics.movingShapesLength * 3
-            );
-            tempPosArray.set(
-                this.sceneState.physics.positions, 0
-            );
-            tempPosArray.set(
-                [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
-                this.sceneState.physics.movingShapesLength * 3 - 1 - 3
-            );
-            this.sceneState.physics.positions = tempPosArray;
+        //     let tempPosArray = new Float32Array(
+        //         this.sceneState.physics.movingShapesLength * 3
+        //     );
+        //     tempPosArray.set(
+        //         this.sceneState.physics.positions, 0
+        //     );
+        //     tempPosArray.set(
+        //         [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
+        //         this.sceneState.physics.movingShapesLength * 3 - 1 - 3
+        //     );
+        //     this.sceneState.physics.positions = tempPosArray;
 
-            let tempQuoArray = new Float32Array(
-                this.sceneState.physics.movingShapesLength * 4
-            );
-            tempQuoArray.set(
-                this.sceneState.physics.quoternions, 0
-            );
-            tempQuoArray.set(
-                [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
-                this.sceneState.physics.movingShapesLength * 4 - 1 - 3
-            );
-            this.sceneState.physics.quoternions = tempQuoArray;
-        } else {
-            this.sceneState.physics.staticShapes.push(shapeData);
-            this.sceneState.physics.staticShapesLength++;
-        }
+        //     let tempQuoArray = new Float32Array(
+        //         this.sceneState.physics.movingShapesLength * 4
+        //     );
+        //     tempQuoArray.set(
+        //         this.sceneState.physics.quoternions, 0
+        //     );
+        //     tempQuoArray.set(
+        //         [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
+        //         this.sceneState.physics.movingShapesLength * 4 - 1 - 3
+        //     );
+        //     this.sceneState.physics.quoternions = tempQuoArray;
+        // } else {
+        //     this.sceneState.physics.staticShapes.push(shapeData);
+        //     this.sceneState.physics.staticShapesLength++;
+        // }
         this.worker.postMessage({
             phase: 'addShape',
             shape: {
@@ -341,9 +341,44 @@ class Root {
         });
     }
 
-    _requestPhysicsFromWorker() {
+    _requestPhysicsFromWorker(newShape) {
         this.workerSendTime = performance.now();
-        //this.worker.postMessage('Some shit..');
+        const positions = this.sceneState.physics.positions;
+        const quaternions = this.sceneState.physics.quaternions;
+        const sendObject = {
+            timeStep: this.sceneState.physics.timeStep,
+            positions,
+            quaternions,
+        };
+        this.worker.postMessage(
+            sendObject,
+            // Specify that we want actually transfer the memory, not copy it over. This is faster.
+            [positions.buffer, quaternions.buffer]
+        );
+    }
+
+    _updateRenderShapes(data) {
+        const positions = data.positions;
+        const quaternions = data.quaternions;
+        const shapes = this.sceneState.physics.movingShapes;
+        const shapesL = this.sceneState.physics.movingShapesLength;
+        let i;
+        for(i=0; i<shapesL; i++) {
+            shapes[i].mesh.position.set(
+                positions[i * 3],
+                positions[i * 3 + 1],
+                positions[i * 3 + 2]
+            );
+            shapes[i].mesh.quaternion.set(
+                quaternions[i * 4],
+                quaternions[i * 4 + 1],
+                quaternions[i * 4 + 2],
+                quaternions[i * 4 + 3]
+            );
+            if(shapes[i].updateFn) shapes[i].updateFn(shapes[i]);
+        }
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
+        setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
     }
 
     _initPhysicsWorker(camera) {
@@ -356,9 +391,16 @@ class Root {
             },
         });
         this.worker.addEventListener('message', (e) => {
-            if(e.data.initPhysicsDone) {
+            if(e.data.loop) {
+                this._updateRenderShapes(e.data);
+            } else if(e.data.shapeAdded) {
+                const shape = e.data.shape;
+                this._addPhysicsShape
+                this._updateRenderShapes(e.data);
+            } else if(e.data.initPhysicsDone) {
                 this.sceneState.physics.initiated = true;
-            } else {
+                this._requestPhysicsFromWorker();
+            } else if(e.data.error) {
                 Logger.error(e.data.error);
             }
         });
