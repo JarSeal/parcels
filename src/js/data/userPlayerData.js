@@ -10,12 +10,13 @@ const userPlayerData = {
     moveKeysPressed: 0,
     userPlayer: true,
     createPlayerFn: (data, sceneState, THREE) => {
-        // const data = this.data;
         const id = data.id;
         sceneState.players[id] = data;
         sceneState.userPlayerId = id;
+        sceneState.userPlayerIndex = null;
         sceneState.playerKeys.push(id);
         sceneState.playerKeysCount += 1;
+
         const pos = data.position;
         const pGeo = new THREE.BoxBufferGeometry(0.4, 1.82, 0.8);
         const pMat = new THREE.MeshLambertMaterial({ color: 0x002f00 });
@@ -46,7 +47,6 @@ const userPlayerData = {
                 sleeSpeedLimit: 0.1,
                 sleepTimeLimit: 1,
             },
-            character: true,
             characterData: data,
         });
         // Add physics

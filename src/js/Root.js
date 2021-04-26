@@ -269,63 +269,22 @@ class Root {
                 rotation: shapeData.rotation,
                 material: shapeData.material,
                 sleep: shapeData.sleep,
+                characterData: shapeData.characterData
+                    ? {
+                        speed: shapeData.characterData.speed,
+                        direction: shapeData.characterData.direction,
+                        userPlayer: shapeData.characterData.userPlayer,
+                    } : null
             },
         });
     }
 
     removePhysicsShape = (id) => {
         id;
-        // if(shapeData.moving) {
-        //     this.sceneState.physics.movingShapes = this.sceneState.physics.movingShapes
-        //         .filter(shape => shape.id !== id);
-        //     this.sceneState.physics.movingShapesLength--;
-
-        //     let tempPosArray = new Float32Array(
-        //         this.sceneState.physics.movingShapesLength * 3
-        //     );
-        //     let tempPos = [];
-        //     this.sceneState.physics.movingShapes
-        //         .forEach(shape => {
-        //             if(shape.id !== id) {
-        //                 tempPos.push(shape.position[0]);
-        //                 tempPos.push(shape.position[1]);
-        //                 tempPos.push(shape.position[2]);
-        //             }
-        //         });
-        //     tempPosArray = Float32Array.from(tempPos);
-        //     this.sceneState.physics.positions = tempPosArray;
-
-        //     let tempQuoArray = new Float32Array(
-        //         this.sceneState.physics.movingShapesLength * 4
-        //     );
-        //     let tempQuo = [];
-        //     this.sceneState.physics.movingShapes
-        //         .forEach(shape => {
-        //             if(shape.id !== id) {
-        //                 tempQuo.push(shape.quoternion[0]);
-        //                 tempQuo.push(shape.quoternion[1]);
-        //                 tempQuo.push(shape.quoternion[2]);
-        //                 tempQuo.push(shape.quoternion[3]);
-        //             }
-        //         });
-        //     tempQuoArray = Float32Array.from(tempQuo);
-        //     this.sceneState.physics.quoternions = tempQuoArray;
-        // } else {
-        //     // this.sceneState.physics.staticShapes.push(shapeData);
-        //     this.sceneState.physics.staticShapes = this.sceneState.physics.staticShapes
-        //         .filter(shape => shape.id !== id);
-        //     this.sceneState.physics.staticShapesLength--;
-        // }
-        // this.sceneState.additionalWorkerData.push({
-        //     phase: 'removeShape',
-        //     id,
-        // });
     }
 
     _requestPhysicsFromWorker = () => {
         this.workerSendTime = performance.now();
-        // const positions = this.sceneState.physics.positions;
-        // const quaternions = this.sceneState.physics.quaternions;
         const sendObject = {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
@@ -406,44 +365,11 @@ class Root {
             if(a.phase === 'addShape') {
                 const s = this.tempShapes[a.shape.id];
                 if(s.moving) {
-                    let j, tempArr = [];
+                    if(a.characterData && a.characterData.userPlayer) {
+                        this.sceneState.userPlayerIndex = this.sceneState.physics.movingShapesLength;
+                    }
                     this.sceneState.physics.movingShapes.push(s);
                     this.sceneState.physics.movingShapesLength++;
-                    for(j=0; j<this.sceneState.physics.movingShapesLength; j++) {
-                        tempArr.push(this.sceneState.physics.movingShapes[j].position[0]);
-                        tempArr.push(this.sceneState.physics.movingShapes[j].position[1]);
-                        tempArr.push(this.sceneState.physics.movingShapes[j].position[2]);
-                        // this.sceneState.physics.quaternions.set(tempArr, j);
-                    }
-                    // this.sceneState.physics.positions.set(tempArr, 0);
-                    tempArr = [];
-                    for(j=0; j<this.sceneState.physics.movingShapesLength; j++) {
-                        tempArr.push(0);
-                        tempArr.push(0);
-                        tempArr.push(0);
-                        tempArr.push(1);
-                    }
-                    // this.sceneState.physics.quaternions.set(tempArr, 0);
-                    // let tempPosArray = new Float32Array(
-                    //     this.sceneState.physics.movingShapesLength * 3
-                    // );
-                    // tempPosArray.set(this.sceneState.physics.positions, 0);
-                    // console.log('DEBUG4');
-                    // tempPosArray.set(
-                    //     [s.position[0], s.position[1], s.position[2]],
-                    //     this.sceneState.physics.movingShapesLength * 3 - 1 - 3
-                    // );
-                    // console.log('DEBUG5');
-                    // this.sceneState.physics.positions = tempPosArray;
-                    // let tempQuoArray = new Float32Array(
-                    //     this.sceneState.physics.movingShapesLength * 4
-                    // );
-                    // tempQuoArray.set(this.sceneState.physics.quoternions, 0);
-                    // tempQuoArray.set(
-                    //     [s.quoternion[0], s.quoternion[1], s.quoternion[2]],
-                    //     this.sceneState.physics.movingShapesLength * 4 - 1 - 3
-                    // );
-                    // this.sceneState.physics.quoternions = tempQuoArray;
                 } else {
                     this.sceneState.physics.staticShapes.push(s);
                     this.sceneState.physics.staticShapesLength++;

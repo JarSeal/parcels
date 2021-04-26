@@ -35,7 +35,7 @@ class Player {
     }
 
     _addPushableBox(pos) { // TEMPORARY
-        const position = [pos[0]-2, 20, pos[2]-2];
+        const position = [pos[0]-0.5, 20, pos[2]-0.5];
 
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
