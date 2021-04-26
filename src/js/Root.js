@@ -161,7 +161,7 @@ class Root {
         // const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         // let timeStep = unscaledTimeStep; // * 1 = time scale
         // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
-        this._updatePhysics();
+        // this._updatePhysics();
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
         this._renderPlayers(delta, ss);
@@ -365,8 +365,11 @@ class Root {
             if(a.phase === 'addShape') {
                 const s = this.tempShapes[a.shape.id];
                 if(s.moving) {
-                    if(a.characterData && a.characterData.userPlayer) {
-                        this.sceneState.userPlayerIndex = this.sceneState.physics.movingShapesLength;
+                    if(s.characterData) {
+                        if(s.characterData.userPlayer) {
+                            this.sceneState.userPlayerIndex = this.sceneState.physics.movingShapesLength;
+                        }
+                        s.characterData.bodyIndex = this.sceneState.physics.movingShapesLength;
                     }
                     this.sceneState.physics.movingShapes.push(s);
                     this.sceneState.physics.movingShapesLength++;

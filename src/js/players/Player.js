@@ -69,6 +69,7 @@ class Player {
 
     _rotatePlayer(toDir) {
         this.data.rotatingY = true;
+        this.data.direction = toDir;
         if(this.rotatationTL) {
             this.rotatationTL.kill();
         }
@@ -80,8 +81,8 @@ class Player {
                 toDir += this.twoPI;
             }
         }
-        this.rotationTL = new TimelineMax().to(this.data, 0.1, {
-            direction: toDir,
+        this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
+            y: toDir,
             ease: Sine.easeInOut,
             onComplete: () => {
                 this.rotationTL = null;
@@ -147,12 +148,22 @@ class Player {
     }
 
     movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier, startTimes) {
-        this.data.body.wakeUp();
+        // this.data.body.wakeUp();
         this._rotatePlayer(dir);
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
         this.data.maxSpeedMultiplier = maxSpeedMultiplier;
         this.data.moveStartTimes = startTimes;
+        this.sceneState.additionalWorkerData.push({
+            phase: 'moveChar',
+            data: {
+                id: this.data.id,
+                bodyIndex: this.data.bodyIndex,
+                xPosMulti,
+                zPosMulti,
+                moveStartTimes: startTimes,
+            },
+        });
     }
 
     render = (timeStep) => {

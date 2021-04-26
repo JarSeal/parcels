@@ -72,6 +72,7 @@ const userPlayerData = {
     renderFn: (timeStep, data, sceneState, THREE) => {
         if(!data.body) return;
         let veloX = 0, veloZ = 0;
+        if(veloX === 0) return;
         // const startTimes = data.moveStartTimes;
         // const timeNow = performance.now();
         // const elapsedXTime = timeNow - startTimes.startX;
