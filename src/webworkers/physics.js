@@ -1,17 +1,16 @@
 let world,
     CANNON,
-    shapes = [],
-    shapesCount = 0,
+    staticShapes = [],
     movingShapes = [],
     movingShapesCount = 0;
 self.importScripts('/webworkers/cannon-es.js');
 
 self.addEventListener('message', (e) => {
 
-    const phase = e.data.phase;
+    const init = e.data.init;
     let returnAdditionals = [];
 
-    if(!phase) {
+    if(!init) {
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
@@ -25,10 +24,9 @@ self.addEventListener('message', (e) => {
                 }
             }
         }
-        // DO PHYSICS..
         stepTheWorld(e.data, returnAdditionals);
-    } else if(phase === 'init') {
-        if(e.data.initParams) {
+    } else {
+        if(e.data && e.data.initParams && CANNON) {
             const params = e.data.initParams;
             initPhysics(params);
         } else {
@@ -38,13 +36,33 @@ self.addEventListener('message', (e) => {
             });
         }
     }
-    self.postMessage({
-        error: 'Web worker (physics) phase was not recognised.',
-    });
 });
 
 const stepTheWorld = (data, returnAdditionals) => {
-    // Step the world and return pos and qua and possible returnAdditionals
+    let positions = data.positions;
+    let quaternions = data.quaternions;
+    let i;
+    world.step(data.timeStep);
+    for(i=0; i<movingShapesCount; i++) {
+        const body = movingShapes[i];
+        positions[i * 3 + 0] = body.position.x;
+        positions[i * 3 + 1] = body.position.y;
+        positions[i * 3 + 2] = body.position.z;
+        quaternions[i * 4 + 0] = body.quaternion.x;
+        quaternions[i * 4 + 1] = body.quaternion.y;
+        quaternions[i * 4 + 2] = body.quaternion.z;
+        quaternions[i * 4 + 3] = body.quaternion.w;
+    }
+    let returnMessage = {
+        positions,
+        quaternions,
+        loop: true,
+    };
+    if(returnAdditionals.length) {
+        returnMessage.additionals = returnAdditionals;
+        returnMessage.loop = false;
+    }
+    self.postMessage(returnMessage, [positions.buffer, quaternions.buffer]);
 };
 
 const addShape = (shape) => {
@@ -63,11 +81,18 @@ const addShape = (shape) => {
             error: 'Shape could not be added to the physics, type unknown (type: ' + shape.type + ').',
         };
     }
+    body.shapeData = shape;
     body.quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
     body.allowSleep = shape.sleep.allowSleep;
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
     world.addBody(body);
+    if(shape.moving) {
+        movingShapes.push(body);
+        movingShapesCount++;
+    } else {
+        staticShapes.push(body);
+    }
     return { shapeAdded: true };
 };
 

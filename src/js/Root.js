@@ -119,7 +119,6 @@ class Root {
         this.workerSendTime = 0;
         this.worker = new Worker('./webworkers/physics.js');
         this.sceneState.additionalWorkerData = [];
-        this._requestPhysicsFromWorker();
         this._initPhysicsWorker(camera);
         // Webworkers [/ END]
     }
@@ -271,6 +270,7 @@ class Root {
     }
 
     removePhysicsShape = (id) => {
+        id;
         // if(shapeData.moving) {
         //     this.sceneState.physics.movingShapes = this.sceneState.physics.movingShapes
         //         .filter(shape => shape.id !== id);
@@ -318,7 +318,7 @@ class Root {
         // });
     }
 
-    _requestPhysicsFromWorker() {
+    _requestPhysicsFromWorker = () => {
         this.workerSendTime = performance.now();
         const positions = this.sceneState.physics.positions;
         const quaternions = this.sceneState.physics.quaternions;
@@ -364,14 +364,12 @@ class Root {
 
     _initPhysicsWorker(camera) {
         this.worker.postMessage({
-            additionals: {
-                phase: 'init',
-                initParams: {
-                    allowSleep: true,
-                    gravity: [0, -9.82, 0],
-                    iterations: 10,
-                    solverTolerance: 0.001,
-                },
+            init: true,
+            initParams: {
+                allowSleep: true,
+                gravity: [0, -9.82, 0],
+                iterations: 10,
+                solverTolerance: 0.001,
             },
         });
         this.worker.addEventListener('message', (e) => {
@@ -384,11 +382,11 @@ class Root {
                 this.sceneState.physics.initiated = true;
                 this._requestPhysicsFromWorker();
             } else if(e.data.error) {
-                Logger.error(e.data.error);
+                this.sceneState.logger.error(e.data.error);
             }
         });
         this.worker.addEventListener('error', (e) => {
-            Logger.error(e.message);
+            this.sceneState.logger.error(e.message);
         });
 
         this._runApp(camera);
@@ -409,7 +407,7 @@ class Root {
                     );
                     tempPosArray.set(this.sceneState.physics.positions, 0);
                     tempPosArray.set(
-                        [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
+                        [s.position[0], s.position[1], s.position[2]],
                         this.sceneState.physics.movingShapesLength * 3 - 1 - 3
                     );
                     this.sceneState.physics.positions = tempPosArray;
@@ -418,7 +416,7 @@ class Root {
                     );
                     tempQuoArray.set(this.sceneState.physics.quoternions, 0);
                     tempQuoArray.set(
-                        [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
+                        [s.quoternion[0], s.quoternion[1], s.quoternion[2]],
                         this.sceneState.physics.movingShapesLength * 4 - 1 - 3
                     );
                     this.sceneState.physics.quoternions = tempQuoArray;
