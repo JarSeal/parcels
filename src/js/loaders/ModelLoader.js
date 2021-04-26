@@ -63,6 +63,7 @@ class ModelLoader {
                     },
                 });
 
+                // REMOVE:
                 const material = new CANNON.Material(obj.material);
                 const body = new CANNON.Body({
                     mass: 0,

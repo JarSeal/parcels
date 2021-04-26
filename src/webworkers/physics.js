@@ -14,10 +14,11 @@ self.addEventListener('message', (e) => {
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
-                if(a.phase == 'addShape') {
-                    const newShape = addShape(a.shape);
+                if(a[i].phase == 'addShape') {
+                    const newShape = addShape(a[i].shape);
                     if(newShape.shapeAdded) {
-                        returnAdditionals.push(a);
+                        a[i].shape = newShape.shape;
+                        returnAdditionals.push(a[i]);
                     } else {
                         self.postMessage({ error: newShape.error });
                     }
@@ -39,10 +40,9 @@ self.addEventListener('message', (e) => {
 });
 
 const stepTheWorld = (data, returnAdditionals) => {
-    let positions = data.positions;
-    let quaternions = data.quaternions;
+    const { positions, quaternions, timeStep } = data;
     let i;
-    world.step(data.timeStep);
+    world.step(timeStep);
     for(i=0; i<movingShapesCount; i++) {
         const body = movingShapes[i];
         positions[i * 3 + 0] = body.position.x;
@@ -60,9 +60,9 @@ const stepTheWorld = (data, returnAdditionals) => {
     };
     if(returnAdditionals.length) {
         returnMessage.additionals = returnAdditionals;
-        returnMessage.loop = false;
+        returnMessage.loop = false; // Because we want the additionals to be handled in the main thread (returns to normal loop after that)
     }
-    self.postMessage(returnMessage, [positions.buffer, quaternions.buffer]);
+    self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
 };
 
 const addShape = (shape) => {
@@ -93,7 +93,11 @@ const addShape = (shape) => {
     } else {
         staticShapes.push(body);
     }
-    return { shapeAdded: true };
+    shape.quaternions = [
+        body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w,
+    ];
+    console.log('ADDED PHYSICS SHAPE', shape);
+    return { shapeAdded: true, shape };
 };
 
 const initPhysics = (params) => {
