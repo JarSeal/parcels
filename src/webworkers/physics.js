@@ -1,5 +1,6 @@
 let world,
     CANNON,
+    lastCallTime = performance.now() / 1000,
     staticShapes = [],
     movingShapes = [],
     movingShapesCount = 0;
@@ -42,9 +43,11 @@ self.addEventListener('message', (e) => {
 });
 
 const stepTheWorld = (data, returnAdditionals) => {
+    const time = performance.now() / 1000;
+    const dt = time - lastCallTime;
     const { positions, quaternions, timeStep } = data;
     let i;
-    world.step(timeStep);
+    world.step(timeStep, dt);
     for(i=0; i<movingShapesCount; i++) {
         const body = movingShapes[i];
         positions[i * 3 + 0] = body.position.x;
@@ -65,6 +68,7 @@ const stepTheWorld = (data, returnAdditionals) => {
         returnMessage.loop = false; // Because we want the additionals to be handled in the main thread (returns to normal loop after that)
     }
     self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
+    lastCallTime = time;
 };
 
 const addShape = (shape) => {
