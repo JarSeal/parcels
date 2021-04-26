@@ -140,11 +140,10 @@ class UserControls {
             }
         }
         const startTime = performance.now();
-        this.player.movePlayer2(
+        this.player.movePlayer(
             xPosMulti,
             zPosMulti,
             this.direction,
-            maxSpeedMultiplier,
             {
                 startX: xPosMulti ? startTime : 0,
                 startZ: zPosMulti ? startTime : 0,

@@ -57,6 +57,13 @@ const stepTheWorld = (data, returnAdditionals) => {
         quaternions[i * 4 + 1] = body.quaternion.y;
         quaternions[i * 4 + 2] = body.quaternion.z;
         quaternions[i * 4 + 3] = body.quaternion.w;
+        if(body.moveValues.onTheMove) {
+            body.velocity.x = body.moveValues.veloX;
+            body.velocity.z = body.moveValues.veloZ;
+        } else {
+            body.velocity.x = 0;
+            body.velocity.z = 0;
+        }
     }
     let returnMessage = {
         positions,
@@ -72,7 +79,13 @@ const stepTheWorld = (data, returnAdditionals) => {
 };
 
 const moveChar = (data) => {
-    
+    const veloX = data.xPosMulti * data.speed;
+    const veloZ = data.zPosMulti * data.speed;
+    movingShapes[data.bodyIndex].moveValues.veloX = veloX;
+    movingShapes[data.bodyIndex].moveValues.veloZ = veloZ;
+    movingShapes[data.bodyIndex].moveValues.speed = data.speed;
+    const onTheMove = veloX === 0 && veloZ === 0 ? false : true;
+    movingShapes[data.bodyIndex].moveValues.onTheMove = onTheMove;
 };
 
 const addShape = (shape) => {
@@ -98,6 +111,12 @@ const addShape = (shape) => {
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
     world.addBody(body);
     if(shape.moving) {
+        body.moveValues = {
+            speed: 0,
+            veloX: 0,
+            veloZ: 0,
+            onTheMove: false,
+        };
         movingShapes.push(body);
         movingShapesCount++;
     } else {
@@ -106,7 +125,6 @@ const addShape = (shape) => {
     shape.quaternions = [
         body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w,
     ];
-    console.log('ADDED PHYSICS SHAPE', shape);
     return { shapeAdded: true, shape };
 };
 

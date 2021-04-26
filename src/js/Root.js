@@ -164,7 +164,7 @@ class Root {
         // this._updatePhysics();
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
-        this._renderPlayers(delta, ss);
+        // this._renderPlayers(delta, ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
         this.renderDelta = ss.clock.getDelta(); // Measuring render time
     }
@@ -310,18 +310,21 @@ class Root {
         const shapesL = this.sceneState.physics.movingShapesLength;
         let i;
         for(i=0; i<shapesL; i++) {
-            shapes[i].mesh.position.set(
+            const s = shapes[i];
+            s.mesh.position.set(
                 positions[i * 3],
                 positions[i * 3 + 1],
                 positions[i * 3 + 2]
             );
-            shapes[i].mesh.quaternion.set(
-                quaternions[i * 4],
-                quaternions[i * 4 + 1],
-                quaternions[i * 4 + 2],
-                quaternions[i * 4 + 3]
-            );
-            if(shapes[i].updateFn) shapes[i].updateFn(shapes[i]);
+            if(!s.characterData) {
+                s.mesh.quaternion.set(
+                    quaternions[i * 4],
+                    quaternions[i * 4 + 1],
+                    quaternions[i * 4 + 2],
+                    quaternions[i * 4 + 3]
+                );
+            }
+            if(s.updateFn) s.updateFn(s);
         }
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
         setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));

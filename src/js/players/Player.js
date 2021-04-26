@@ -12,7 +12,6 @@ class Player {
         data.xPosMulti = 0;
         data.zPosMulti = 0;
         data.direction = 0;
-        data.maxSpeedMultiplier = 1;
         data.moveStartTimes = {
             startX: 0,
             startZ: 0,
@@ -93,31 +92,6 @@ class Player {
         });
     }
 
-    _rotatePlayer2(toDir) {
-        this.data.rotatingY = true;
-        if(this.rotatationTL) {
-            this.rotatationTL.kill();
-        }
-        const from = this.data.mesh.rotation.y;
-        if(Math.abs(from - toDir) > Math.PI) {
-            if(toDir > 0) {
-                toDir -= this.twoPI;
-            } else {
-                toDir += this.twoPI;
-            }
-        }
-        this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
-            y: toDir,
-            ease: Sine.easeInOut,
-            onComplete: () => {
-                this.rotationTL = null;
-                this._normaliseRotation2();
-                this.data.direction = toDir;
-                this.data.rotatingY = false;
-            },
-        });
-    }
-
     _normaliseRotation() {
         const curRotation = this.data.direction;
         if(curRotation > Math.PI) {
@@ -129,50 +103,22 @@ class Player {
         }
     }
 
-    _normaliseRotation2() {
-        const curRotation = this.data.mesh.rotation.y;
-        if(curRotation > Math.PI) {
-            this.data.mesh.rotation.y -= this.twoPI;
-            this._normaliseRotation();
-        } else if(curRotation < -Math.PI) {
-            this.data.mesh.rotation.y += this.twoPI;
-            this._normaliseRotation();
-        }
-    }
-
-    movePlayer(xPosMulti, zPosMulti, dir) {
+    movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
         this._rotatePlayer(dir);
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
-        // this.data.direction = dir;
-    }
-
-    movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier, startTimes) {
-        // this.data.body.wakeUp();
-        this._rotatePlayer(dir);
-        this.data.xPosMulti = xPosMulti;
-        this.data.zPosMulti = zPosMulti;
-        this.data.maxSpeedMultiplier = maxSpeedMultiplier;
         this.data.moveStartTimes = startTimes;
         this.sceneState.additionalWorkerData.push({
             phase: 'moveChar',
             data: {
                 id: this.data.id,
                 bodyIndex: this.data.bodyIndex,
+                speed: this.data.speed,
                 xPosMulti,
                 zPosMulti,
                 moveStartTimes: startTimes,
             },
         });
-    }
-
-    render = (timeStep) => {
-        this.data.renderFn(
-            timeStep,
-            this.data,
-            this.sceneState,
-            THREE
-        );
     }
 }
 
