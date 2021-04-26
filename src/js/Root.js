@@ -81,7 +81,6 @@ class Root {
         this.sceneState.physics = {};
         this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.addShape = this.addShapeToPhysics; // CHECK WHETHER OR NOT NEEDED!
         this.sceneState.physics.newShape = this.newPhysicsShape;
         this.sceneState.physics.movingShapes = [];
         this.sceneState.physics.movingShapesLength = 0;
@@ -161,22 +160,10 @@ class Root {
         // const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
         // let timeStep = unscaledTimeStep; // * 1 = time scale
         // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
-        // this._updatePhysics();
         this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
-        // this._renderPlayers(delta, ss);
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
         this.renderDelta = ss.clock.getDelta(); // Measuring render time
-    }
-
-    _renderPlayers(timeStep, ss) {
-        let i = 0;
-        const c = ss.playerKeysCount,
-            k = ss.playerKeys,
-            p = ss.players;
-        for(i=0; i<c; i++) {
-            p[k].render(timeStep);
-        }
     }
 
     _resize(sceneState) {
@@ -207,45 +194,6 @@ class Root {
                 }
             }, 500);
         });
-    }
-
-    _updatePhysics = () => {
-        const time = performance.now() / 1000;
-        let i, shape;
-        const l = this.sceneState.physics.shapesLength,
-            s = this.sceneState.physics.shapes,
-            settings = this.sceneState.settings,
-            dt = time - this.lastCallTime;
-        this.world.step(
-            this.sceneState.physics.timeStep,
-            dt
-        );
-        for(i=0; i<l; i++) {
-            shape = s[i];
-            shape.updateFn(shape);
-        }
-        if(settings.physics.showPhysicsHelpers) this.helper.update();
-        this.lastCallTime = time;
-    }
-
-    addShapeToPhysics = (object, moving, helperColor) => {
-        const mesh = object.mesh,
-            body = object.body,
-            updateFn = object.updateFn || null,
-            id = 'phyShape-' + performance.now();
-        mesh.name = id;
-        body.bodyID = id;
-        if(!this.sceneState.settings.physics.showPhysicsHelpers) this.scene.add(mesh);
-        this.world.addBody(body);
-        if(moving) {
-            this.sceneState.physics.shapes.push({ id, mesh, body, updateFn });
-        }
-        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
-        if(this.sceneState.settings.physics.showPhysicsHelpers) {
-            let color = helperColor;
-            if(!color) moving ? color = 0xFF0000 : color = 0xFFFFFFF;
-            this.helper.addVisual(body, color);
-        }
     }
 
     newPhysicsShape = (shapeData) => {
@@ -280,7 +228,7 @@ class Root {
     }
 
     removePhysicsShape = (id) => {
-        id;
+        id; // TODO
     }
 
     _requestPhysicsFromWorker = () => {
