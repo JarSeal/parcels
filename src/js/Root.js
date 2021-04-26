@@ -87,6 +87,7 @@ class Root {
         this.sceneState.physics.movingShapesLength = 0;
         this.sceneState.physics.staticShapes = [];
         this.sceneState.physics.staticShapesLength = 0;
+        this.tempShapes = {};
         this.sceneState.physics.positions = new Float32Array(0);
         this.sceneState.physics.quaternions = new Float32Array(0);
         this.sceneState.physics.removeShape = this.removePhysicsShape;
@@ -117,6 +118,7 @@ class Root {
         // Webworkers [START]
         this.workerSendTime = 0;
         this.worker = new Worker('./webworkers/physics.js');
+        this.sceneState.additionalWorkerData = [];
         this._requestPhysicsFromWorker();
         this._initPhysicsWorker(camera);
         // Webworkers [/ END]
@@ -248,47 +250,22 @@ class Root {
     }
 
     newPhysicsShape = (shapeData) => {
-        // if(shapeData.moving) {
-        //     this.sceneState.physics.movingShapes.push(shapeData);
-        //     this.sceneState.physics.movingShapesLength++;
-
-        //     let tempPosArray = new Float32Array(
-        //         this.sceneState.physics.movingShapesLength * 3
-        //     );
-        //     tempPosArray.set(
-        //         this.sceneState.physics.positions, 0
-        //     );
-        //     tempPosArray.set(
-        //         [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
-        //         this.sceneState.physics.movingShapesLength * 3 - 1 - 3
-        //     );
-        //     this.sceneState.physics.positions = tempPosArray;
-
-        //     let tempQuoArray = new Float32Array(
-        //         this.sceneState.physics.movingShapesLength * 4
-        //     );
-        //     tempQuoArray.set(
-        //         this.sceneState.physics.quoternions, 0
-        //     );
-        //     tempQuoArray.set(
-        //         [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
-        //         this.sceneState.physics.movingShapesLength * 4 - 1 - 3
-        //     );
-        //     this.sceneState.physics.quoternions = tempQuoArray;
-        // } else {
-        //     this.sceneState.physics.staticShapes.push(shapeData);
-        //     this.sceneState.physics.staticShapesLength++;
-        // }
-        this.worker.postMessage({
+        const id = 'phyShape-' + performance.now();
+        shapeData.id = id;
+        this.tempShapes[id] = shapeData;
+        this.sceneState.additionalWorkerData.push({
             phase: 'addShape',
             shape: {
                 type: shapeData.type,
                 id: shapeData.id,
                 moving: shapeData.moving,
+                mass: shapeData.mass,
+                size: shapeData.size,
                 position: shapeData.position,
-                quoternion: shapeData.quoternion,
+                quaternion: shapeData.quaternion,
                 rotation: shapeData.rotation,
                 material: shapeData.material,
+                sleep: shapeData.sleep,
             },
         });
     }
@@ -335,13 +312,13 @@ class Root {
         //         .filter(shape => shape.id !== id);
         //     this.sceneState.physics.staticShapesLength--;
         // }
-        this.worker.postMessage({
-            phase: 'removeShape',
-            id,
-        });
+        // this.sceneState.additionalWorkerData.push({
+        //     phase: 'removeShape',
+        //     id,
+        // });
     }
 
-    _requestPhysicsFromWorker(newShape) {
+    _requestPhysicsFromWorker() {
         this.workerSendTime = performance.now();
         const positions = this.sceneState.physics.positions;
         const quaternions = this.sceneState.physics.quaternions;
@@ -350,9 +327,13 @@ class Root {
             positions,
             quaternions,
         };
+        const additionals = this.sceneState.additionalWorkerData;
+        if(additionals.length) {
+            sendObject.additionals = { ...additionals };
+            this.sceneState.additionalWorkerData = [];
+        }
         this.worker.postMessage(
             sendObject,
-            // Specify that we want actually transfer the memory, not copy it over. This is faster.
             [positions.buffer, quaternions.buffer]
         );
     }
@@ -383,19 +364,21 @@ class Root {
 
     _initPhysicsWorker(camera) {
         this.worker.postMessage({
-            phase: 'init',
-            initParams: {
-                allowSleep: true,
-                gravity: [0, -9.82, 0],
-                iterations: 10,
+            additionals: {
+                phase: 'init',
+                initParams: {
+                    allowSleep: true,
+                    gravity: [0, -9.82, 0],
+                    iterations: 10,
+                    solverTolerance: 0.001,
+                },
             },
         });
         this.worker.addEventListener('message', (e) => {
             if(e.data.loop) {
                 this._updateRenderShapes(e.data);
-            } else if(e.data.shapeAdded) {
-                const shape = e.data.shape;
-                this._addPhysicsShape
+            } else if(e.data.additionals && e.data.additionals.length) {
+                this._handleAdditionalsForMainThread(e.data.additionals);
                 this._updateRenderShapes(e.data);
             } else if(e.data.initPhysicsDone) {
                 this.sceneState.physics.initiated = true;
@@ -409,6 +392,43 @@ class Root {
         });
 
         this._runApp(camera);
+    }
+
+    _handleAdditionalsForMainThread(additionals) {
+        const aLength = additionals.length;
+        let i;
+        for(i=0; i<aLength; i++) {
+            const a = additionals[i];
+            if(a.phase === 'addShape') {
+                const s = this.tempShapes[a.shape.id];
+                if(s.moving) {
+                    this.sceneState.physics.movingShapes.push(s);
+                    this.sceneState.physics.movingShapesLength++;
+                    let tempPosArray = new Float32Array(
+                        this.sceneState.physics.movingShapesLength * 3
+                    );
+                    tempPosArray.set(this.sceneState.physics.positions, 0);
+                    tempPosArray.set(
+                        [shapeData.position[0], shapeData.position[1], shapeData.position[2]],
+                        this.sceneState.physics.movingShapesLength * 3 - 1 - 3
+                    );
+                    this.sceneState.physics.positions = tempPosArray;
+                    let tempQuoArray = new Float32Array(
+                        this.sceneState.physics.movingShapesLength * 4
+                    );
+                    tempQuoArray.set(this.sceneState.physics.quoternions, 0);
+                    tempQuoArray.set(
+                        [shapeData.quoternion[0], shapeData.quoternion[1], shapeData.quoternion[2]],
+                        this.sceneState.physics.movingShapesLength * 4 - 1 - 3
+                    );
+                    this.sceneState.physics.quoternions = tempQuoArray;
+                } else {
+                    this.sceneState.physics.staticShapes.push(s);
+                    this.sceneState.physics.staticShapesLength++;
+                }
+            }
+        }
+        this.tempShapes = {};
     }
 }
 

@@ -45,11 +45,24 @@ class ModelLoader {
         for(let i=0; i<phys.length; i++) {
             const obj = phys[i];
             if(obj.type === 'box') {
-                // const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
-                // const boxMat = new THREE.MeshLambertMaterial({ color: 0xffff00 });
-                // const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-                // boxMesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
-                // this.sceneState.scenes[this.sceneState.curScene].add(boxMesh);
+                this.sceneState.physics.newShape({
+                    type: 'box',
+                    moving: false,
+                    mass: 0,
+                    size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
+                    position: [obj.position[0], obj.position[1], obj.position[2]],
+                    quaternion: null,
+                    rotation: [0, 0, 0],
+                    material: obj.material,
+                    updateFn: null,
+                    mesh: null,
+                    sleep: {
+                        allowSleep: true,
+                        sleeSpeedLimit: 0.1,
+                        sleepTimeLimit: 1,
+                    },
+                });
+
                 const material = new CANNON.Material(obj.material);
                 const body = new CANNON.Body({
                     mass: 0,
