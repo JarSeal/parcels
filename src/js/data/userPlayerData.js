@@ -9,7 +9,7 @@ const userPlayerData = {
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
-    createPlayerFn: (data, sceneState, THREE, CANNON) => {
+    createPlayerFn: (data, sceneState, THREE) => {
         // const data = this.data;
         const id = data.id;
         sceneState.players[id] = data;
@@ -29,27 +29,48 @@ const userPlayerData = {
         data.mesh = pMesh;
         sceneState.scenes[sceneState.curScene].add(pMesh);
 
-        // Add physics
-        const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.01;
-        const boxBody = new CANNON.Body({
+        sceneState.physics.newShape({
+            id,
+            type: 'box',
+            moving: true,
             mass: 70,
-            position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
-            shape: new CANNON.Box(new CANNON.Vec3(0.8 / 2, 0.8 / 2, 0.8 / 2)),
-            material: boxMaterial,
+            size: [0.8 / 2, 0.8 / 2, 0.8 / 2],
+            position: [pos[0], pos[1], pos[2]],
+            quaternion: null,
+            rotation: [0, 0, 0],
+            material: { friction: 0.01 },
+            updateFn: null,
+            mesh: pMesh,
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+            character: true,
+            characterData: data,
         });
-        boxBody.allowSleep = true;
-        boxBody.sleepSpeedLimit = 0.1;
-        boxBody.sleepTimeLimit = 1;
-        boxBody.bodyID = id;
-        data.body = boxBody;
-        sceneState.physics.world.addBody(boxBody);
-        sceneState.physics.shapesLength = sceneState.physics.shapes.length;
-        if(sceneState.settings.physics.showPhysicsHelpers) {
-            sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
-        }
+        // Add physics
+        // const boxMaterial = new CANNON.Material();
+        // boxMaterial.friction = 0.01;
+        // const boxBody = new CANNON.Body({
+        //     mass: 70,
+        //     position: new CANNON.Vec3(pos[0], 1.45, pos[2]),
+        //     shape: new CANNON.Box(new CANNON.Vec3(0.8 / 2, 0.8 / 2, 0.8 / 2)),
+        //     material: boxMaterial,
+        // });
+        // boxBody.allowSleep = true;
+        // boxBody.sleepSpeedLimit = 0.1;
+        // boxBody.sleepTimeLimit = 1;
+        // boxBody.bodyID = id;
+        // data.body = boxBody;
+        // sceneState.physics.world.addBody(boxBody);
+        // sceneState.physics.shapesLength = sceneState.physics.shapes.length;
+        // if(sceneState.settings.physics.showPhysicsHelpers) {
+        //     sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
+        // }
     },
     renderFn: (timeStep, data, sceneState, THREE) => {
+        if(!data.body) return;
         let veloX = 0, veloZ = 0;
         // const startTimes = data.moveStartTimes;
         // const timeNow = performance.now();

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
 import { TimelineMax, Sine } from 'gsap-ssr';
 
 class Player {
@@ -30,8 +29,7 @@ class Player {
         this.data.createPlayerFn(
             this.data,
             this.sceneState,
-            THREE,
-            CANNON
+            THREE
         );
         this._addPushableBox(this.data.position); // TEMPORARY
     }
