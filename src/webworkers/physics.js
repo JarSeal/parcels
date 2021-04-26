@@ -16,7 +16,7 @@ self.addEventListener('message', (e) => {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
                 if(a[i].phase === 'moveChar') {
-                    console.log('Move character!');
+                    moveChar(a[i].data);
                 } else if(a[i].phase === 'addShape') {
                     const newShape = addShape(a[i].shape);
                     if(newShape.shapeAdded) {
@@ -69,6 +69,10 @@ const stepTheWorld = (data, returnAdditionals) => {
     }
     self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
     lastCallTime = time;
+};
+
+const moveChar = (data) => {
+    
 };
 
 const addShape = (shape) => {
