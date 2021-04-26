@@ -37,7 +37,7 @@ class Player {
     }
 
     _addPushableBox(pos) { // TEMPORARY
-        const position = [pos[0]-2, 2, pos[2]-2];
+        const position = [pos[0]-2, 20, pos[2]-2];
 
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
@@ -45,29 +45,13 @@ class Player {
         mesh.position.set(position[0], position[1], position[2]);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
-        const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.06;
-        const boxBody = new CANNON.Body({
-            mass: 20,
-            position: new CANNON.Vec3(position[0], position[1], position[2]),
-            shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
-            material: boxMaterial,
-        });
-        boxBody.allowSleep = true;
-        boxBody.sleepSpeedLimit = 0.1;
-        boxBody.sleepTimeLimit = 1;
-        // const updateFn = (shape) => {
-        //     mesh.position.copy(shape.body.position);
-        //     mesh.quaternion.copy(shape.body.quaternion);
-        // };
-        // const id = 'dummy-box-01';
         this.sceneState.physics.newShape({
             id: 'dummy-box-01',
             type: 'box',
             moving: true,
             mass: 20,
             size: [0.5, 0.5, 0.5],
-            position: [pos[0]-2, 20, pos[2]-2],
+            position,
             quaternion: null,
             rotation: [0, 0, 0],
             material: { friction: 0.06 },
@@ -79,12 +63,6 @@ class Player {
                 sleepTimeLimit: 1,
             },
         });
-        // this.sceneState.physics.world.addBody(boxBody);
-        // this.sceneState.physics.shapes.push({ id, mesh, body: boxBody, updateFn, data: {} });
-        // this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
-        // if(this.sceneState.settings.physics.showPhysicsHelpers) {
-        //     this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
-        // }
     }
 
     getDirection() {
