@@ -14,7 +14,9 @@ self.addEventListener('message', (e) => {
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
-                if(a[i].phase == 'addShape') {
+                if(a[i].phase === 'moveCharacter') {
+                    console.log('Move character!');
+                } else if(a[i].phase === 'addShape') {
                     const newShape = addShape(a[i].shape);
                     if(newShape.shapeAdded) {
                         a[i].shape = newShape.shape;
