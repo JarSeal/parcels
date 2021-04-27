@@ -76,8 +76,8 @@ class Root {
         this.sceneState.physics.movingShapesLength = 0;
         this.sceneState.physics.staticShapes = [];
         this.sceneState.physics.staticShapesLength = 0;
-        this.sceneState.physics.positions = new Float32Array(100 * 7);
-        this.sceneState.physics.quaternions = new Float32Array(100 * 7);
+        this.sceneState.physics.positions = new Float32Array(100 * 3);
+        this.sceneState.physics.quaternions = new Float32Array(100 * 4);
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 

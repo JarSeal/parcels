@@ -80,6 +80,10 @@ class Physics {
                 );
             }
             if(s.updateFn) s.updateFn(s);
+            // meta code:
+            // if (positions.length + quaternions.length) <= shapesL * 7 * 2
+            //     this.sceneState.physics.positions = new Float32Array(positions.length * 2)
+            //     this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2)
         }
 
         const now = performance.now();
