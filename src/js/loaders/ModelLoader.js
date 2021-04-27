@@ -45,6 +45,7 @@ class ModelLoader {
             const obj = phys[i];
             if(obj.type === 'box') {
                 this.sceneState.physicsClass.addShape({
+                    id: obj.id,
                     type: 'box',
                     moving: false,
                     mass: 0,

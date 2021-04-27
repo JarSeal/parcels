@@ -11,6 +11,7 @@ const levelData = {
     floorThickness: 0.25,
     physics: [
         {
+            id: 'tempFloor',
             name: 'floor',
             type: 'box',
             size: [20, 0.25, 20],
@@ -19,6 +20,7 @@ const levelData = {
             helperColor: 0xcc00cc,
         },
         {
+            id: 'tempWall01',
             name: 'wall',
             type: 'box',
             size: [20, 2, 1],
@@ -27,6 +29,7 @@ const levelData = {
             helperColor: 0xcc0000,
         },
         {
+            id: 'tempWall02',
             name: 'wall',
             type: 'box',
             size: [20, 2, 1],
@@ -35,6 +38,7 @@ const levelData = {
             helperColor: 0xcc0000,
         },
         {
+            id: 'tempWall03',
             name: 'wall',
             type: 'box',
             size: [1, 2, 20],
@@ -43,6 +47,7 @@ const levelData = {
             helperColor: 0xcc0000,
         },
         {
+            id: 'tempWall04',
             name: 'wall',
             type: 'box',
             size: [1, 2, 20],

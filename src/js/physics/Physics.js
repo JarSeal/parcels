@@ -4,6 +4,7 @@ class Physics {
         this.workerSendTime = 0;
         this.worker = new Worker('./webworkers/physics.js');
         this.tempShapes = {};
+        this.lastTempShapesCheck = performance.now();
         sceneState.additionalPhysicsData = [];
         this._initPhysicsWorker(runMainApp);
     }
@@ -80,14 +81,20 @@ class Physics {
             }
             if(s.updateFn) s.updateFn(s);
         }
-        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
+
+        const now = performance.now();
+        const delay = this.sceneState.physics.timeStep * 1000 - (now - this.workerSendTime);
         setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
+        if(now > this.lastTempShapesCheck + 100) {
+            this.tempShapes = {};
+        }
     }
 
     _handleAdditionalsForMainThread(additionals) {
         const aLength = additionals.length;
         let i;
         for(i=0; i<aLength; i++) {
+            this.lastTempShapesCheck = performance.now();
             const a = additionals[i];
             if(a.phase === 'addShape') {
                 const s = this.tempShapes[a.shape.id];
@@ -106,16 +113,16 @@ class Physics {
                 }
             }
         }
-        this.tempShapes = {};
     }
 
     addShape = (shapeData) => {
         if(!shapeData) this.sceneState.logger.error('Trying to add new shape, but shapeData is missing (Root.js).');
         let id = shapeData.id;
         if(!id) {
-            id = 'phyShape-' + performance.now();
+            id = 'phyShape_' + Math.random().toString().replace('.', '');
             shapeData.id = id;
         }
+        this.lastTempShapesCheck = performance.now();
         this.tempShapes[id] = shapeData;
         this.sceneState.additionalPhysicsData.push({
             phase: 'addShape',
