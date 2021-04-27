@@ -30,7 +30,7 @@ const userPlayerData = {
         data.mesh = pMesh;
         sceneState.scenes[sceneState.curScene].add(pMesh);
 
-        sceneState.physics.newShape({
+        sceneState.physicsClass.addShape({
             id,
             type: 'box',
             moving: true,

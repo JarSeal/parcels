@@ -42,7 +42,7 @@ class Player {
         mesh.position.set(position[0], position[1], position[2]);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
-        this.sceneState.physics.newShape({
+        this.sceneState.physicsClass.addShape({
             id: 'dummy-box-01',
             type: 'box',
             moving: true,
@@ -108,7 +108,7 @@ class Player {
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
         this.data.moveStartTimes = startTimes;
-        this.sceneState.additionalWorkerData.push({
+        this.sceneState.additionalPhysicsData.push({
             phase: 'moveChar',
             data: {
                 id: this.data.id,

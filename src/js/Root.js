@@ -1,7 +1,5 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import CannonHelper from './vendor/CannonHelper';
 import Settings from './settings/Settings';
 import Utils from './utils/Utils';
 import Logger from './utils/Logger';
@@ -12,7 +10,7 @@ import ModelLoader from './loaders/ModelLoader';
 import LevelLoader from './loaders/LevelLoader';
 import Player from './players/Player';
 import UserControls from './controls/UserControls';
-// import Worker from 'web-worker';
+import Physics from './physics/Physics';
 
 class Root {
     constructor() {
@@ -72,31 +70,15 @@ class Root {
         // Setup camera and aspect ratio [/END]
 
         // Setup physics (cannon.js) [START]
-        const world = new CANNON.World();
-        world.allowSleep = true;
-        world.gravity.set(0, -9.82, 0);
-        // world.broadphase = new CANNON.SAPBroadphase(world);
-        world.iterations = 10;
-        world.solver.iterations = 10;
         this.sceneState.physics = {};
-        this.sceneState.physics.world = world;
         this.sceneState.physics.timeStep = 1 / 60;
-        this.sceneState.physics.newShape = this.newPhysicsShape;
         this.sceneState.physics.movingShapes = [];
         this.sceneState.physics.movingShapesLength = 0;
         this.sceneState.physics.staticShapes = [];
         this.sceneState.physics.staticShapesLength = 0;
-        this.tempShapes = {};
         this.sceneState.physics.positions = new Float32Array(100 * 7);
         this.sceneState.physics.quaternions = new Float32Array(100 * 7);
-        this.sceneState.physics.removeShape = this.removePhysicsShape;
-        this.sceneState.physics.shapes = [];
-        this.sceneState.physics.shapesLength = 0;
-        // this.sceneState.isGroundMeshes = []; // CHECK WHETHER OR NOT NEEDED!
-        this.world = world;
-        this.sceneState.physics.helper = new CannonHelper(scene, world);
-        this.helper = this.sceneState.physics.helper;
-        this.lastCallTime = performance.now() / 1000;
+        this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
         // Settings [START]
@@ -114,15 +96,12 @@ class Root {
         this._initResizer();
         // Other setup [/END]
 
-        // Webworkers [START]
-        this.workerSendTime = 0;
-        this.worker = new Worker('./webworkers/physics.js');
-        this.sceneState.additionalWorkerData = [];
-        this._initPhysicsWorker(camera);
-        // Webworkers [/ END]
+        this.sceneState.physicsClass = new Physics(this.sceneState, () => {
+            this._runApp(camera);
+        });
     }
 
-    _runApp(camera) {
+    _runApp = (camera) => {
 
         this.levelLoader.load(this.sceneState.curLevelId);
         
@@ -143,27 +122,22 @@ class Root {
 
         this._resize(this.sceneState);
         this.sceneState.settingsClass.endInit();
-        this.lastCallTime = performance.now() / 1000;
         this.renderLoop();
 
     }
 
     renderLoop = () => {
         const ss = this.sceneState;
-        const delta = ss.clock.getDelta();
-        this.requestDelta = ss.clock.getDelta();
+        // const delta = ss.clock.getDelta();
+        // let timeStep = delta; // * 1 = time scale
+        // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
         requestAnimationFrame(() => {
             setTimeout(() => {
                 this.renderLoop();
             }, 0);
         });
-        // const unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta);
-        // let timeStep = unscaledTimeStep; // * 1 = time scale
-        // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
-        this.logicDelta = ss.clock.getDelta(); // Measuring logic time
         ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
-        this.renderDelta = ss.clock.getDelta(); // Measuring render time
     }
 
     _resize(sceneState) {
@@ -194,143 +168,6 @@ class Root {
                 }
             }, 500);
         });
-    }
-
-    newPhysicsShape = (shapeData) => {
-        if(!shapeData) this.sceneState.logger.error('Trying to add new shape, but shapeData is missing (Root.js).');
-        let id = shapeData.id;
-        if(!id) {
-            id = 'phyShape-' + performance.now();
-            shapeData.id = id;
-        }
-        this.tempShapes[id] = shapeData;
-        this.sceneState.additionalWorkerData.push({
-            phase: 'addShape',
-            shape: {
-                type: shapeData.type,
-                id: shapeData.id,
-                moving: shapeData.moving,
-                mass: shapeData.mass,
-                size: shapeData.size,
-                position: shapeData.position,
-                quaternion: shapeData.quaternion,
-                rotation: shapeData.rotation,
-                material: shapeData.material,
-                sleep: shapeData.sleep,
-                characterData: shapeData.characterData
-                    ? {
-                        speed: shapeData.characterData.speed,
-                        direction: shapeData.characterData.direction,
-                        userPlayer: shapeData.characterData.userPlayer,
-                    } : null
-            },
-        });
-    }
-
-    removePhysicsShape = (id) => {
-        id; // TODO
-    }
-
-    _requestPhysicsFromWorker = () => {
-        this.workerSendTime = performance.now();
-        const sendObject = {
-            timeStep: this.sceneState.physics.timeStep,
-            positions: this.sceneState.physics.positions,
-            quaternions: this.sceneState.physics.quaternions,
-        };
-        const additionals = this.sceneState.additionalWorkerData;
-        if(additionals.length) {
-            sendObject.additionals = [ ...additionals ];
-            this.sceneState.additionalWorkerData = [];
-        }
-        this.worker.postMessage(
-            sendObject,
-            [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
-        );
-    }
-
-    _updateRenderShapes(data) {
-        const positions = data.positions;
-        const quaternions = data.quaternions;
-        this.sceneState.physics.positions = positions;
-        this.sceneState.physics.quaternions = quaternions;
-        const shapes = this.sceneState.physics.movingShapes;
-        const shapesL = this.sceneState.physics.movingShapesLength;
-        let i;
-        for(i=0; i<shapesL; i++) {
-            const s = shapes[i];
-            s.mesh.position.set(
-                positions[i * 3],
-                positions[i * 3 + 1],
-                positions[i * 3 + 2]
-            );
-            if(!s.characterData) {
-                s.mesh.quaternion.set(
-                    quaternions[i * 4],
-                    quaternions[i * 4 + 1],
-                    quaternions[i * 4 + 2],
-                    quaternions[i * 4 + 3]
-                );
-            }
-            if(s.updateFn) s.updateFn(s);
-        }
-        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
-        setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
-    }
-
-    _initPhysicsWorker(camera) {
-        this.worker.postMessage({
-            init: true,
-            initParams: {
-                allowSleep: true,
-                gravity: [0, -9.82, 0],
-                iterations: 10,
-                solverTolerance: 0.001,
-            },
-        });
-        this.worker.addEventListener('message', (e) => {
-            if(e.data.loop) {
-                this._updateRenderShapes(e.data);
-            } else if(e.data.additionals && e.data.additionals.length) {
-                this._handleAdditionalsForMainThread(e.data.additionals);
-                this._updateRenderShapes(e.data);
-            } else if(e.data.initPhysicsDone) {
-                this.sceneState.physics.initiated = true;
-                this._requestPhysicsFromWorker();
-            } else if(e.data.error) {
-                this.sceneState.logger.error(e.data.error);
-            }
-        });
-        this.worker.addEventListener('error', (e) => {
-            this.sceneState.logger.error(e.message);
-        });
-
-        this._runApp(camera);
-    }
-
-    _handleAdditionalsForMainThread(additionals) {
-        const aLength = additionals.length;
-        let i;
-        for(i=0; i<aLength; i++) {
-            const a = additionals[i];
-            if(a.phase === 'addShape') {
-                const s = this.tempShapes[a.shape.id];
-                if(s.moving) {
-                    if(s.characterData) {
-                        if(s.characterData.userPlayer) {
-                            this.sceneState.userPlayerIndex = this.sceneState.physics.movingShapesLength;
-                        }
-                        s.characterData.bodyIndex = this.sceneState.physics.movingShapesLength;
-                    }
-                    this.sceneState.physics.movingShapes.push(s);
-                    this.sceneState.physics.movingShapesLength++;
-                } else {
-                    this.sceneState.physics.staticShapes.push(s);
-                    this.sceneState.physics.staticShapesLength++;
-                }
-            }
-        }
-        this.tempShapes = {};
     }
 }
 

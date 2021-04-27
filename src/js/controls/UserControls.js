@@ -96,7 +96,7 @@ class UserControls {
     }
 
     _keyboardMove() {
-        let xPosMulti = 0, zPosMulti = 0, maxSpeedMultiplier = 1;
+        let xPosMulti = 0, zPosMulti = 0;
         const keyCount = this._moveKeysPressedCount();
         if(keyCount === 1) {
             if(this.keydownTimes.a) {
@@ -132,7 +132,6 @@ class UserControls {
             }
             xPosMulti *= 1.5;
             zPosMulti *= 1.5;
-            maxSpeedMultiplier = 1.5;
             this.twoKeyDirection = this.direction;
         } else if(keyCount === 0) {
             if(performance.now() - this.stopTwoKeyPressTime < 50) {

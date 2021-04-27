@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // THIS IS TEMPORARY AND WILL BE REMOVED!
@@ -45,7 +44,7 @@ class ModelLoader {
         for(let i=0; i<phys.length; i++) {
             const obj = phys[i];
             if(obj.type === 'box') {
-                this.sceneState.physics.newShape({
+                this.sceneState.physicsClass.addShape({
                     type: 'box',
                     moving: false,
                     mass: 0,
@@ -62,23 +61,6 @@ class ModelLoader {
                         sleepTimeLimit: 1,
                     },
                 });
-
-                // REMOVE:
-                const material = new CANNON.Material(obj.material);
-                const body = new CANNON.Body({
-                    mass: 0,
-                    position: new CANNON.Vec3(obj.position[0], obj.position[1], obj.position[2]),
-                    shape: new CANNON.Box(new CANNON.Vec3(obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2)),
-                    material: material
-                });
-                body.quaternion.setFromEuler(0, 0, 0, 'XYZ');
-                body.allowSleep = true;
-                body.sleepSpeedLimit = 0.1;
-                body.sleepTimeLimit = 1;
-                this.sceneState.physics.world.addBody(body);
-                if(this.sceneState.settings.physics.showPhysicsHelpers) {
-                    this.sceneState.physics.helper.addVisual(body, obj.helperColor ? obj.helperColor : 0xFF0000);
-                }
             }
         }
     }
