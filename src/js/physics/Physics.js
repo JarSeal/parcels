@@ -1,3 +1,5 @@
+import PhysicsHelpers from './PhysicsHelpers';
+
 class Physics {
     constructor(sceneState, runMainApp) {
         this.sceneState = sceneState;
@@ -5,6 +7,7 @@ class Physics {
         this.worker = new Worker('./webworkers/physics.js');
         this.tempShapes = {};
         sceneState.additionalPhysicsData = [];
+        this.helpers = new PhysicsHelpers(sceneState);
         this._initPhysicsWorker(runMainApp);
     }
 
@@ -78,12 +81,14 @@ class Physics {
                     quaternions[i * 4 + 3]
                 );
             }
+            this.helpers.updatePhysicsHelpers(positions, quaternions, i, s);
             if(s.updateFn) s.updateFn(s);
-            // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
-            if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
-                this.sceneState.physics.positions = new Float32Array(positions.length * 2);
-                this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
-            }
+        }
+
+        // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
+        if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
+            this.sceneState.physics.positions = new Float32Array(positions.length * 2);
+            this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
         }
 
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
@@ -157,14 +162,24 @@ class Physics {
                     } : null
             },
         });
+        this.helpers.createShape(shapeData);
     }
 
     removeShape = (data) => {
-        this.sceneState.additionalPhysicsData.push({
-            phase: 'removeShape',
-            id: data.id,
-            moving: data.moving,
-        });
+        if(typeof data === 'string') {
+            this.sceneState.additionalPhysicsData.push({
+                phase: 'removeShape',
+                id: data,
+            });
+            this.helpers.removeShape({ id: data });
+        } else {
+            this.sceneState.additionalPhysicsData.push({
+                phase: 'removeShape',
+                id: data.id,
+                moving: data.moving,
+            });
+            this.helpers.removeShape(data);
+        }
     }
 }
 
