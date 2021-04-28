@@ -140,6 +140,7 @@ class Physics {
             shape: {
                 type: shapeData.type,
                 id: shapeData.id,
+                compoundParentId: shapeData.compoundParentId,
                 moving: shapeData.moving,
                 mass: shapeData.mass,
                 size: shapeData.size,
