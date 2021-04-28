@@ -80,10 +80,11 @@ class Physics {
                 );
             }
             if(s.updateFn) s.updateFn(s);
-            // meta code:
-            // if (positions.length + quaternions.length) <= shapesL * 7 * 2
-            //     this.sceneState.physics.positions = new Float32Array(positions.length * 2)
-            //     this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2)
+            // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
+            if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
+                this.sceneState.physics.positions = new Float32Array(positions.length * 2);
+                this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
+            }
         }
 
         const now = performance.now();
