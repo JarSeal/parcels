@@ -4,7 +4,6 @@ class Physics {
         this.workerSendTime = 0;
         this.worker = new Worker('./webworkers/physics.js');
         this.tempShapes = {};
-        this.lastTempShapesCheck = performance.now();
         sceneState.additionalPhysicsData = [];
         this._initPhysicsWorker(runMainApp);
     }
@@ -87,12 +86,8 @@ class Physics {
             }
         }
 
-        const now = performance.now();
-        const delay = this.sceneState.physics.timeStep * 1000 - (now - this.workerSendTime);
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
         setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
-        if(now > this.lastTempShapesCheck + 100) {
-            this.tempShapes = {};
-        }
     }
 
     _handleAdditionalsForMainThread(additionals) {
@@ -116,6 +111,7 @@ class Physics {
                     this.sceneState.physics.staticShapes.push(s);
                     this.sceneState.physics.staticShapesLength++;
                 }
+                delete this.tempShapes[a.shape.id];
             }
         }
     }
@@ -127,7 +123,6 @@ class Physics {
             id = 'phyShape_' + Math.random().toString().replace('.', '');
             shapeData.id = id;
         }
-        this.lastTempShapesCheck = performance.now();
         this.tempShapes[id] = shapeData;
         this.sceneState.additionalPhysicsData.push({
             phase: 'addShape',
