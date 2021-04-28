@@ -25,6 +25,13 @@ self.addEventListener('message', (e) => {
                     } else {
                         self.postMessage({ error: newShape.error });
                     }
+                } else if(a[i].phase === 'removeShape') {
+                    const removedShape = removeShape(a[i]);
+                    if(removedShape.removed) {
+                        returnAdditionals.push(removedShape);
+                    } else {
+                        self.postMessage({ error: removedShape.error });
+                    }
                 }
             }
         }
@@ -109,6 +116,7 @@ const addShape = (shape) => {
     body.allowSleep = shape.sleep.allowSleep;
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
+    body.bodyId = shape.id;
     world.addBody(body);
     if(shape.moving) {
         body.moveValues = {
@@ -126,6 +134,62 @@ const addShape = (shape) => {
         body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w,
     ];
     return { shapeAdded: true, shape };
+};
+
+const removeShape = (data) => {
+    let shapeRemoved = false,
+        moving;
+    if(data.moving === undefined) {
+        movingShapes = movingShapes.filter(shape => {
+            if(data.id === shape.bodyId) {
+                world.removeBody(shape);
+                shapeRemoved = true;
+                moving = true;
+            }
+            return data.id !== shape.bodyId;
+        });
+        movingShapesCount = movingShapes.length;
+        if(!shapeRemoved) {
+            staticShapes = staticShapes.filter(shape => {
+                if(data.id === shape.bodyId) {
+                    world.removeBody(shape);
+                    shapeRemoved = true;
+                    moving = false;
+                }
+                return data.id !== shape.bodyId;
+            });
+        }
+    } else {
+        if(data.moving) {
+            movingShapes = movingShapes.filter(shape => {
+                if(data.id === shape.bodyId) {
+                    world.removeBody(shape);
+                    shapeRemoved = true;
+                    moving = true;
+                }
+                return data.id !== shape.bodyId;
+            });
+            movingShapesCount = movingShapes.length;
+        } else {
+            staticShapes = staticShapes.filter(shape => {
+                if(data.id === shape.bodyId) {
+                    world.removeBody(shape);
+                    shapeRemoved = true;
+                    moving = false;
+                }
+                return data.id !== shape.bodyId;
+            });
+        }
+    }
+    return {
+        id: data.id,
+        removed: shapeRemoved,
+        moving,
+        phase: data.phase,
+        error: shapeRemoved
+            ? null
+            : 'Could not find shape/body to remove in physics worker with id: "' + data.id + '" (moving: ' + data.moving + ')',
+    };
 };
 
 const initPhysics = (params) => {

@@ -94,7 +94,6 @@ class Physics {
         const aLength = additionals.length;
         let i;
         for(i=0; i<aLength; i++) {
-            this.lastTempShapesCheck = performance.now();
             const a = additionals[i];
             if(a.phase === 'addShape') {
                 const s = this.tempShapes[a.shape.id];
@@ -106,12 +105,24 @@ class Physics {
                         s.characterData.bodyIndex = this.sceneState.physics.movingShapesLength;
                     }
                     this.sceneState.physics.movingShapes.push(s);
-                    this.sceneState.physics.movingShapesLength++;
+                    this.sceneState.physics.movingShapesLength = this.sceneState.physics.movingShapes.length;
                 } else {
                     this.sceneState.physics.staticShapes.push(s);
-                    this.sceneState.physics.staticShapesLength++;
+                    this.sceneState.physics.staticShapesLength = this.sceneState.physics.staticShapes.length;
                 }
                 delete this.tempShapes[a.shape.id];
+            } else if(a.phase === 'removeShape') {
+                if(a.moving) {
+                    this.sceneState.physics.movingShapes = this.sceneState.physics.movingShapes.filter(
+                        shape => a.id !== shape.id
+                    );
+                    this.sceneState.physics.movingShapesLength = this.sceneState.physics.movingShapes.length;
+                } else {
+                    this.sceneState.physics.staticShapes = this.sceneState.physics.staticShapes.filter(
+                        shape => a.id !== shape.id
+                    );
+                    this.sceneState.physics.staticShapesLength = this.sceneState.physics.staticShapes.length;
+                }
             }
         }
     }
@@ -147,8 +158,12 @@ class Physics {
         });
     }
 
-    removeShape = (id) => {
-        id; // TODO
+    removeShape = (data) => {
+        this.sceneState.additionalPhysicsData.push({
+            phase: 'removeShape',
+            id: data.id,
+            moving: data.moving,
+        });
     }
 }
 
