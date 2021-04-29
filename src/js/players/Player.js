@@ -68,39 +68,52 @@ class Player {
 
     _rotatePlayer(toDir) {
         this.data.rotatingY = true;
-        this.data.direction = toDir;
-        if(this.rotatationTL) {
-            this.rotatationTL.kill();
+        if(this.rotationTL) {
+            this.rotationTL.kill();
         }
-        const from = this.data.direction;
+        this.data.direction = this._bringRotationToRange(this.data.direction);
+        let from = this._makeRotationPositive(this.data.direction);
         if(Math.abs(from - toDir) > Math.PI) {
-            if(toDir > 0) {
-                toDir -= this.twoPI;
+            if(from > Math.PI) {
+                from -= this.twoPI;
             } else {
-                toDir += this.twoPI;
+                from += this.twoPI;
             }
         }
-        this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
+        const mesh = this.data.mesh.children[0];
+        mesh.rotation.y = from;
+        this.rotationTL = new TimelineMax().to(mesh.rotation, 0.2, {
             y: toDir,
             ease: Sine.easeInOut,
+            onUpdate: () => {
+                this.data.direction = this._bringRotationToRange(mesh.rotation.y);
+            },
             onComplete: () => {
                 this.rotationTL = null;
-                this._normaliseRotation();
-                this.data.direction = toDir;
+                this.data.direction = this._bringRotationToRange(toDir);
+                this.data.direction = this._makeRotationPositive(this.data.direction);
+                mesh.rotation.y = this.data.direction;
                 this.data.rotatingY = false;
             },
         });
     }
 
-    _normaliseRotation() {
-        const curRotation = this.data.direction;
-        if(curRotation > Math.PI) {
-            this.data.direction -= this.twoPI;
-            this._normaliseRotation();
-        } else if(curRotation < -Math.PI) {
-            this.data.direction += this.twoPI;
-            this._normaliseRotation();
+    _makeRotationPositive(dir) {
+        if(dir < 0) {
+            dir += this.twoPI;
         }
+        return dir;
+    }
+
+    _bringRotationToRange(curDir) {
+        if(curDir >= this.twoPI) {
+            curDir -= this.twoPI;
+            return this._bringRotationToRange(curDir);
+        } else if(curDir <= this.twoPI * -1) {
+            curDir += this.twoPI;
+            return this._bringRotationToRange(curDir);
+        }
+        return curDir;
     }
 
     movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
@@ -117,6 +130,7 @@ class Player {
                 xPosMulti,
                 zPosMulti,
                 moveStartTimes: startTimes,
+                direction: dir,
             },
         });
     }

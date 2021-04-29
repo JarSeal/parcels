@@ -26,9 +26,12 @@ const userPlayerData = {
         const nMesh = new THREE.Mesh(nGeo, new THREE.MeshLambertMaterial({ color: 0x777777 }));
         nMesh.position.set(data.position[0]+0.2, data.position[1], data.position[2]);
         pMesh.add(nMesh);
-        pMesh.name = id;
-        data.mesh = pMesh;
-        sceneState.scenes[sceneState.curScene].add(pMesh);
+        pMesh.name = id + '-' + 'mainchild';
+        const playerGroup = new THREE.Group();
+        playerGroup.add(pMesh);
+        playerGroup.name = id;
+        data.mesh = playerGroup;
+        sceneState.scenes[sceneState.curScene].add(playerGroup);
 
         sceneState.physicsClass.addShape({
             id,
@@ -77,6 +80,7 @@ const userPlayerData = {
                 }
             },
             mesh: pMesh,
+            fixedRotation: true,
             sleep: {
                 allowSleep: true,
                 sleeSpeedLimit: 0.1,

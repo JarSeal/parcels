@@ -73,7 +73,7 @@ class Physics {
                 positions[i * 3 + 1],
                 positions[i * 3 + 2]
             );
-            if(!s.characterData) {
+            if(!s.fixedRotation) {
                 s.mesh.quaternion.set(
                     quaternions[i * 4],
                     quaternions[i * 4 + 1],
@@ -81,7 +81,7 @@ class Physics {
                     quaternions[i * 4 + 3]
                 );
             }
-            this.helpers.updatePhysicsHelpers(positions, quaternions, i, s);
+            this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
         }
 
@@ -152,6 +152,7 @@ class Physics {
                 position: shapeData.position,
                 quaternion: shapeData.quaternion,
                 rotation: shapeData.rotation,
+                fixedRotation: shapeData.fixedRotation,
                 material: shapeData.material,
                 sleep: shapeData.sleep,
                 characterData: shapeData.characterData

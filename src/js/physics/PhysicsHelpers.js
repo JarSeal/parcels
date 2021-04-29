@@ -9,23 +9,21 @@ class PhysicsHelpers {
         this.staticShapes = [];
     }
 
-    updatePhysicsHelpers(positions, quaternions, i, shape) {
+    updatePhysicsHelpers(positions, quaternions, i) {
         if(!this.enabled) return;
-        for(let i=0; i<this.movingShapes.length; i++) {
-            const s = this.movingShapes[i];
-            s.helperMesh.position.set(
-                positions[i * 3],
-                positions[i * 3 + 1],
-                positions[i * 3 + 2]
+        const s = this.movingShapes[i];
+        s.helperMesh.position.set(
+            positions[i * 3],
+            positions[i * 3 + 1],
+            positions[i * 3 + 2]
+        );
+        if(!s.fixedRotation) {
+            s.helperMesh.quaternion.set(
+                quaternions[i * 4],
+                quaternions[i * 4 + 1],
+                quaternions[i * 4 + 2],
+                quaternions[i * 4 + 3]
             );
-            if(!s.characterData) {
-                s.helperMesh.quaternion.set(
-                    quaternions[i * 4],
-                    quaternions[i * 4 + 1],
-                    quaternions[i * 4 + 2],
-                    quaternions[i * 4 + 3]
-                );
-            }
         }
     }
 

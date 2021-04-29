@@ -117,6 +117,10 @@ const addShape = (shape) => {
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
     body.bodyId = shape.id;
+    if(shape.fixedRotation) {
+        body.fixedRotation = true;
+        body.updateMassProperties();
+    }
     world.addBody(body);
     if(shape.moving) {
         body.moveValues = {
