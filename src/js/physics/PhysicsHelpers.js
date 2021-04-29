@@ -59,7 +59,11 @@ class PhysicsHelpers {
 
     createShape(data) {
         if(!this.enabled) return;
-        let mesh;
+        let mesh, compound;
+        if(data.compoundParentId) {
+            compound = this._getCompoundParentById(data.compoundParentId);
+            data.parentData = compound;
+        }
         switch(data.type) {
         case 'box':
             mesh = this._createBox(data);
@@ -67,11 +71,14 @@ class PhysicsHelpers {
         case 'sphere':
             mesh = this._createSphere(data);
             break;
+        case 'cylinder':
+            mesh = this._createCylinder(data);
+            break;
         case 'compound':
             mesh = this._createCompound(data);
         }
-        if(data.compoundParentId) {
-            const compound = this._getCompoundParentById(data.compoundParentId);
+        this._setMeshColor(mesh, data);
+        if(data.compoundParentId) {      
             if(compound) {
                 compound.helperMesh.add(mesh);
             } else { this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.'); }
@@ -93,11 +100,6 @@ class PhysicsHelpers {
             data.size[2] * 2
         );
         const mat = new THREE.MeshLambertMaterial();
-        if(data.moving) {
-            mat.color.set(0xaabb33);
-        } else {
-            mat.color.set(0xff7711);
-        }
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
         return mesh;
@@ -106,11 +108,19 @@ class PhysicsHelpers {
     _createSphere(data) {
         const geo = new THREE.SphereGeometry(data.radius, 32, 32);
         const mat = new THREE.MeshLambertMaterial();
-        if(data.moving) {
-            mat.color.set(0xaabb33);
-        } else {
-            mat.color.set(0xff7711);
-        }
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        return mesh;
+    }
+
+    _createCylinder(data) {
+        const geo = new THREE.CylinderGeometry(
+            data.radiusTop,
+            data.radiusBottom,
+            data.height,
+            data.numSegments
+        );
+        const mat = new THREE.MeshLambertMaterial();
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
         return mesh;
@@ -122,6 +132,16 @@ class PhysicsHelpers {
         group.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
         group.name = data.id;
         return group;
+    }
+
+    _setMeshColor(mesh, data) {
+        if(data.type === 'compound') return;
+        const color = data.helperColor;
+        if(data.moving || (data.parentData && data.parentData.moving)) {
+            mesh.material.color.set(color || 0xaabb33);
+        } else {
+            mesh.material.color.set(color || 0xff7711);
+        }
     }
 
     _getCompoundParentById(id) {

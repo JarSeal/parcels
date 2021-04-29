@@ -109,6 +109,16 @@ const addShape = (shape) => {
             mass: shape.mass,
             shape: new CANNON.Sphere(shape.radius),
         });
+    } else if(shape.type === 'cylinder') {
+        body = new CANNON.Body({
+            mass: shape.mass,
+            shape: new CANNON.Cylinder(
+                shape.radiusTop,
+                shape.radiusBottom,
+                shape.height,
+                shape.numSegments
+            ),
+        });
     } else if(shape.type === 'compound') {
         body = new CANNON.Body({ mass: shape.mass });
     } else {
@@ -154,6 +164,13 @@ const addShapeToCompound = (shape) => {
         cShape = new CANNON.Box(new CANNON.Vec3(shape.size[0], shape.size[1], shape.size[2]));
     } else if(shape.type === 'sphere') {
         cShape = new CANNON.Sphere(shape.radius);
+    } else if(shape.type === 'cylinder') {
+        cShape = new CANNON.Cylinder(
+            shape.radiusTop,
+            shape.radiusBottom,
+            shape.height,
+            shape.numSegments
+        );
     } else {
         return {
             shapeAdded: false,
