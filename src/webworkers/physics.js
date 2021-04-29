@@ -18,7 +18,9 @@ self.addEventListener('message', (e) => {
                 if(a[i].phase === 'moveChar') {
                     moveChar(a[i].data);
                 } else if(a[i].phase === 'addShape') {
-                    const newShape = addShape(a[i].shape);
+                    const newShape = a[i].shape.compoundParentId
+                        ? addShapeToCompound(a[i].shape)
+                        : addShape(a[i].shape);
                     if(newShape.shapeAdded) {
                         a[i].shape = newShape.shape;
                         returnAdditionals.push(a[i]);
@@ -96,15 +98,19 @@ const moveChar = (data) => {
 };
 
 const addShape = (shape) => {
-    const material = new CANNON.Material(shape.material);
     let body;
     if(shape.type === 'box') {
         body = new CANNON.Body({
             mass: shape.mass,
-            position: new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]),
             shape: new CANNON.Box(new CANNON.Vec3(shape.size[0], shape.size[1], shape.size[2])),
-            material: material
         });
+    } else if(shape.type === 'sphere') {
+        body = new CANNON.Body({
+            mass: shape.mass,
+            shape: new CANNON.Sphere(shape.radius),
+        });
+    } else if(shape.type === 'compound') {
+        body = new CANNON.Body({ mass: shape.mass });
     } else {
         return {
             shapeAdded: false,
@@ -112,6 +118,8 @@ const addShape = (shape) => {
         };
     }
     body.shapeData = shape;
+    body.material = new CANNON.Material(shape.material);
+    body.position = new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]);
     body.quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
     body.allowSleep = shape.sleep.allowSleep;
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
@@ -137,6 +145,30 @@ const addShape = (shape) => {
     shape.quaternions = [
         body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w,
     ];
+    return { shapeAdded: true, shape };
+};
+
+const addShapeToCompound = (shape) => {
+    let cShape;
+    if(shape.type === 'box') {
+        cShape = new CANNON.Box(new CANNON.Vec3(shape.size[0], shape.size[1], shape.size[2]));
+    } else if(shape.type === 'sphere') {
+        cShape = new CANNON.Sphere(shape.radius);
+    } else {
+        return {
+            shapeAdded: false,
+            error: 'Compound child shape could not be added to the physics, type unknown (type: ' + shape.type + ').',
+        };
+    }
+    const parent = getShapeById(shape.compoundParentId, shape.moving);
+    if(parent) {
+        parent.addShape(cShape, new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]));
+    } else {
+        return {
+            shapeAdded: false,
+            error: 'Compound parent was not found (compoundParentId: "' + shape.compoundParentId + '", child id: "' + shape.id + '").',
+        };
+    }
     return { shapeAdded: true, shape };
 };
 
@@ -202,6 +234,37 @@ const initPhysics = (params) => {
     world.gravity.set(params.gravity[0], params.gravity[1], params.gravity[2]);
     world.iterations = params.iterations;
     world.solver.iterations = params.iterations;
-    // world.solver.tolerance = params.solverTolerance;
+    world.solver.tolerance = params.solverTolerance;
     self.postMessage({ initPhysicsDone: true });
+};
+
+const getShapeById = (id, moving) => {
+    let i;
+    if(moving === undefined) {
+        for(i=0; i<movingShapesCount; i++) {
+            if(movingShapes[i].bodyId === id) {
+                return movingShapes[i];
+            }
+        }
+        for(i=0; i<staticShapes.length; i++) {
+            if(staticShapes[i].bodyId === id) {
+                return staticShapes[i];
+            }
+        }
+    } else {
+        if(moving) {
+            for(i=0; i<movingShapesCount; i++) {
+                if(movingShapes[i].bodyId === id) {
+                    return movingShapes[i];
+                }
+            }
+        } else {
+            for(i=0; i<staticShapes.length; i++) {
+                if(staticShapes[i].bodyId === id) {
+                    return staticShapes[i];
+                }
+            }
+        }
+    }
+    return null;
 };

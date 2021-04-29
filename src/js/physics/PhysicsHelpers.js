@@ -62,16 +62,27 @@ class PhysicsHelpers {
         let mesh;
         switch(data.type) {
         case 'box':
-        default:
             mesh = this._createBox(data);
             break;
+        case 'sphere':
+            mesh = this._createSphere(data);
+            break;
+        case 'compound':
+            mesh = this._createCompound(data);
         }
-        this.scene.add(mesh);
-        data.helperMesh = mesh;
-        if(data.moving) {
-            this.movingShapes.push(data);
+        if(data.compoundParentId) {
+            const compound = this._getCompoundParentById(data.compoundParentId);
+            if(compound) {
+                compound.helperMesh.add(mesh);
+            } else { this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.'); }
         } else {
-            this.staticShapes.push(data);
+            this.scene.add(mesh);
+            data.helperMesh = mesh;
+            if(data.moving) {
+                this.movingShapes.push(data);
+            } else {
+                this.staticShapes.push(data);
+            }
         }
     }
 
@@ -90,6 +101,42 @@ class PhysicsHelpers {
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
         return mesh;
+    }
+
+    _createSphere(data) {
+        const geo = new THREE.SphereGeometry(data.radius, 32, 32);
+        const mat = new THREE.MeshLambertMaterial();
+        if(data.moving) {
+            mat.color.set(0xaabb33);
+        } else {
+            mat.color.set(0xff7711);
+        }
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        return mesh;
+    }
+
+    _createCompound(data) {
+        const group = new THREE.Group();
+        group.position.set(data.position[0], data.position[1], data.position[2]);
+        group.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
+        group.name = data.id;
+        return group;
+    }
+
+    _getCompoundParentById(id) {
+        let i;
+        for(i=0; i<this.movingShapes.length; i++) {
+            if(this.movingShapes[i].id === id) {
+                return this.movingShapes[i];
+            }
+        }
+        for(i=0; i<this.staticShapes.length; i++) {
+            if(this.staticShapes[i].id === id) {
+                return this.staticShapes[i];
+            }
+        }
+        return null;
     }
 }
 
