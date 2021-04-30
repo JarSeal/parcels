@@ -68,21 +68,14 @@ const stepTheWorld = (data, returnAdditionals) => {
         quaternions[i * 4 + 3] = body.quaternion.w;
         if(body.moveValues.onTheMove) {
             let multi = 1.5;
-            if(body.moveValues.veloX && body.moveValues.veloZ) {
-                multi = 1;
-            }
+            if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
             body.velocity.x += body.moveValues.veloX / 4;
             body.velocity.z += body.moveValues.veloZ / 4;
-            const maxMoveVelo = 3 * multi;
+            const maxMoveVelo = body.moveValues.speed * multi;
             if(body.velocity.x > maxMoveVelo) body.velocity.x = maxMoveVelo;
             if(body.velocity.z > maxMoveVelo) body.velocity.z = maxMoveVelo;
             if(body.velocity.x < -maxMoveVelo) body.velocity.x = -maxMoveVelo;
             if(body.velocity.z < -maxMoveVelo   ) body.velocity.z = -maxMoveVelo;
-            // body.applyForce(new CANNON.Vec3(
-            //     body.moveValues.veloX * 200,
-            //     0,
-            //     body.moveValues.veloZ * 200
-            // ));
         } else {
             // body.velocity.x = 0;
             // body.velocity.z = 0;
