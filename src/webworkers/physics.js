@@ -292,6 +292,7 @@ const getShapeById = (id, moving) => {
 
 const _addMovementToShape = (body) => {
     if(body.moveValues.onTheMove) {
+        console.log('CONTACTS', world.contacts);
         let multi = 1.5;
         if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
         body.velocity.x += body.moveValues.veloX / 4;
