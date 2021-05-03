@@ -154,6 +154,7 @@ class Physics {
                 radiusBottom: shapeData.radiusBottom,
                 height: shapeData.height,
                 numSegments: shapeData.numSegments,
+                movingShape: shapeData.movingShape,
                 position: shapeData.position,
                 quaternion: shapeData.quaternion,
                 rotation: shapeData.rotation,

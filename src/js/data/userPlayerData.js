@@ -42,6 +42,7 @@ const userPlayerData = {
             position: [pos[0], pos[1], pos[2]],
             rotation: [0, 0, 0],
             material: { friction: 0.07 },
+            movingShape: true,
             updateFn: (shape) => {
                 if(sceneState.settings.debug.cameraFollowsPlayer) {
                     const camera = sceneState.cameras[sceneState.curScene];

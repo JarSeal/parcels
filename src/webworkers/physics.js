@@ -66,19 +66,8 @@ const stepTheWorld = (data, returnAdditionals) => {
         quaternions[i * 4 + 1] = body.quaternion.y;
         quaternions[i * 4 + 2] = body.quaternion.z;
         quaternions[i * 4 + 3] = body.quaternion.w;
-        if(body.moveValues.onTheMove) {
-            let multi = 1.5;
-            if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
-            body.velocity.x += body.moveValues.veloX / 4;
-            body.velocity.z += body.moveValues.veloZ / 4;
-            const maxMoveVelo = body.moveValues.speed * multi;
-            if(body.velocity.x > maxMoveVelo) body.velocity.x = maxMoveVelo;
-            if(body.velocity.z > maxMoveVelo) body.velocity.z = maxMoveVelo;
-            if(body.velocity.x < -maxMoveVelo) body.velocity.x = -maxMoveVelo;
-            if(body.velocity.z < -maxMoveVelo   ) body.velocity.z = -maxMoveVelo;
-        } else {
-            // body.velocity.x = 0;
-            // body.velocity.z = 0;
+        if(body.movingShape) {
+            _addMovementToShape(body);
         }
     }
     let returnMessage = {
@@ -142,6 +131,14 @@ const addShape = (shape) => {
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
     body.bodyId = shape.id;
+    body.movingShape = shape.movingShape;
+    if(body.movingShape) {
+        _setUpCollisionDetector(body);
+    }
+    body.platformVelocity = {
+        x: 0,
+        z: 0,
+    };
     if(shape.fixedRotation) {
         body.fixedRotation = true;
         body.updateMassProperties();
@@ -291,4 +288,37 @@ const getShapeById = (id, moving) => {
         }
     }
     return null;
+};
+
+const _addMovementToShape = (body) => {
+    if(body.moveValues.onTheMove) {
+        let multi = 1.5;
+        if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
+        body.velocity.x += body.moveValues.veloX / 4;
+        body.velocity.z += body.moveValues.veloZ / 4;
+        const maxMoveVelo = body.moveValues.speed * multi;
+        if(body.velocity.x > maxMoveVelo) { body.velocity.x = maxMoveVelo; }
+        else if(body.velocity.x < -maxMoveVelo) { body.velocity.x = -maxMoveVelo; }
+        if(body.velocity.z > maxMoveVelo) { body.velocity.z = maxMoveVelo; }
+        else if(body.velocity.z < -maxMoveVelo) { body.velocity.z = -maxMoveVelo; }
+    }
+};
+
+const _setUpCollisionDetector = (body) => {
+    let contactNormal = new CANNON.Vec3(); // Normal in the contact, pointing *out* of whatever the player touched
+    const upAxis = new CANNON.Vec3(0, 1, 0);
+    body.addEventListener('collide', (e) => {
+        const contact = e.contact;
+        // contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
+        // We do not yet know which one is which! Let's check.
+        if(contact.bi.id == body.id) { // bi is the player body, flip the contact normal
+            contact.ni.negate(contactNormal);
+        } else {
+            contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
+        }
+        // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
+        if(contactNormal.dot(upAxis) > 0.5) { // Use a "good" threshold value between 0 and 1 here!
+            console.log('contact', contact);
+        }
+    });
 };
