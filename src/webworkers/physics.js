@@ -292,18 +292,43 @@ const getShapeById = (id, moving) => {
 
 const _addMovementToShape = (body) => {
     if(body.moveValues.onTheMove) {
-        console.log('CONTACTS', world.contacts);
+        const belowContact = _findBelowContactBody(body.bodyId);
+        console.log('BELOW',
+            belowContact,
+            belowContact.velocity.x,
+            belowContact.velocity.z
+        );
         let multi = 1.5;
         if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
-        body.velocity.x += body.moveValues.veloX / 4;
-        body.velocity.z += body.moveValues.veloZ / 4;
-        const maxMoveVelo = body.moveValues.speed * multi;
-        if(body.velocity.x > maxMoveVelo) { body.velocity.x = maxMoveVelo; }
-        else if(body.velocity.x < -maxMoveVelo) { body.velocity.x = -maxMoveVelo; }
-        if(body.velocity.z > maxMoveVelo) { body.velocity.z = maxMoveVelo; }
-        else if(body.velocity.z < -maxMoveVelo) { body.velocity.z = -maxMoveVelo; }
+        body.velocity.x += body.moveValues.veloX / 4 + belowContact.velocity.x;
+        body.velocity.z += body.moveValues.veloZ / 4 + belowContact.velocity.z;
+        const speedWithMulti = body.moveValues.speed * multi;
+        const maxMoveVeloX = speedWithMulti + belowContact.velocity.x;
+        const maxMoveVeloZ = speedWithMulti + belowContact.velocity.z;
+        if(body.velocity.x > maxMoveVeloX) { body.velocity.x = maxMoveVeloX; }
+        else if(body.velocity.x < -maxMoveVeloX) { body.velocity.x = -maxMoveVeloX; }
+        if(body.velocity.z > maxMoveVeloZ) { body.velocity.z = maxMoveVeloZ; }
+        else if(body.velocity.z < -maxMoveVeloZ) { body.velocity.z = -maxMoveVeloZ; }
     }
 };
+
+const _findBelowContactBody = (id) => {
+    const contacts = world.contacts,
+        contactsL = contacts.length,
+        upAxis = new CANNON.Vec3(0, 1, 0);
+    let i, foundContact, contactNormal = new CANNON.Vec3();
+    for(i=0; i<contactsL; i++) {
+        if(contacts[i].bi.bodyId === id) {
+            contacts[i].ni.negate(contactNormal);
+            if(contactNormal.dot(upAxis) > 0.5) {
+                foundContact = contacts[i].bj;
+                break;
+            }
+        }
+    }
+    if(!foundContact) foundContact = { x: 0, z: 0 };
+    return foundContact;
+}
 
 const _setUpCollisionDetector = (body) => {
     let contactNormal = new CANNON.Vec3(); // Normal in the contact, pointing *out* of whatever the player touched
@@ -319,7 +344,7 @@ const _setUpCollisionDetector = (body) => {
         }
         // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
         if(contactNormal.dot(upAxis) > 0.5) { // Use a "good" threshold value between 0 and 1 here!
-            console.log('contact', contact);
+            console.log('HARD contact', contact);
         }
     });
 };
