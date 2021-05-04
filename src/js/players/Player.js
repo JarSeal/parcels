@@ -50,7 +50,7 @@ class Player {
             size: [0.5, 0.5, 0.5],
             position,
             rotation: [0, 0, 0],
-            material: { friction: 0.02 },
+            material: { friction: 0.2 },
             mesh,
             sleep: {
                 allowSleep: true,
@@ -116,6 +116,8 @@ class Player {
 
     movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
         this._rotatePlayer(dir);
+        xPosMulti /= 4;
+        zPosMulti /= 4;
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
         this.data.moveStartTimes = startTimes;
@@ -129,6 +131,19 @@ class Player {
                 zPosMulti,
                 moveStartTimes: startTimes,
                 direction: dir,
+            },
+        });
+    }
+
+    jump(timePressed) {
+        const power = timePressed / timePressed;
+        this.sceneState.additionalPhysicsData.push({
+            phase: 'jumpChar',
+            data: {
+                id: this.data.id,
+                bodyIndex: this.data.bodyIndex,
+                power,
+                jump: power * this.data.jump,
             },
         });
     }

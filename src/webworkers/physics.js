@@ -17,6 +17,8 @@ self.addEventListener('message', (e) => {
             for(let i=0; i<a.length; i++) {
                 if(a[i].phase === 'moveChar') {
                     moveChar(a[i].data);
+                } else if(a[i].phase === 'jumpChar') {
+                    jumpChar(a[i].data);
                 } else if(a[i].phase === 'addShape') {
                     const newShape = a[i].shape.compoundParentId
                         ? addShapeToCompound(a[i].shape)
@@ -88,9 +90,16 @@ const moveChar = (data) => {
     const veloZ = data.zPosMulti * data.speed;
     movingShapes[data.bodyIndex].moveValues.veloX = veloX;
     movingShapes[data.bodyIndex].moveValues.veloZ = veloZ;
-    movingShapes[data.bodyIndex].moveValues.speed = data.speed;
+    let multi = 1.5;
+    if(veloX && veloZ) multi = 1;
+    movingShapes[data.bodyIndex].moveValues.speed = data.speed * multi;
     const onTheMove = veloX === 0 && veloZ === 0 ? false : true;
     movingShapes[data.bodyIndex].moveValues.onTheMove = onTheMove;
+};
+
+const jumpChar = (data) => {
+    movingShapes[data.bodyIndex].moveValues.veloY = data.jump;
+    movingShapes[data.bodyIndex].moveValues.onTheMove = true;
 };
 
 const addShape = (shape) => {
@@ -148,6 +157,7 @@ const addShape = (shape) => {
         body.moveValues = {
             speed: 0,
             veloX: 0,
+            veloY: 0,
             veloZ: 0,
             onTheMove: false,
         };
@@ -293,22 +303,28 @@ const getShapeById = (id, moving) => {
 const _addMovementToShape = (body) => {
     if(body.moveValues.onTheMove) {
         const belowContact = _findBelowContactBody(body.bodyId);
-        console.log('BELOW',
-            belowContact,
-            belowContact.velocity.x,
-            belowContact.velocity.z
-        );
-        let multi = 1.5;
-        if(body.moveValues.veloX && body.moveValues.veloZ) multi = 1;
-        body.velocity.x += body.moveValues.veloX / 4 + belowContact.velocity.x;
-        body.velocity.z += body.moveValues.veloZ / 4 + belowContact.velocity.z;
-        const speedWithMulti = body.moveValues.speed * multi;
+        let airDivision = 1;
+        if(belowContact.inTheAir) airDivision = 2;
+        body.velocity.x += body.moveValues.veloX / airDivision + belowContact.velocity.x;
+        body.velocity.z += body.moveValues.veloZ / airDivision + belowContact.velocity.z;
+        if(belowContact.cannotJump) body.moveValues.veloY = 0;
+        body.velocity.y += body.moveValues.veloY;
+        if(body.moveValues.veloY) body.moveValues.veloY = 0;
+        const speedWithMulti = body.moveValues.speed;
         const maxMoveVeloX = speedWithMulti + belowContact.velocity.x;
         const maxMoveVeloZ = speedWithMulti + belowContact.velocity.z;
         if(body.velocity.x > maxMoveVeloX) { body.velocity.x = maxMoveVeloX; }
         else if(body.velocity.x < -maxMoveVeloX) { body.velocity.x = -maxMoveVeloX; }
         if(body.velocity.z > maxMoveVeloZ) { body.velocity.z = maxMoveVeloZ; }
         else if(body.velocity.z < -maxMoveVeloZ) { body.velocity.z = -maxMoveVeloZ; }
+        const onTheMove = body.moveValues.veloX === 0 && body.moveValues.veloZ === 0 ? false : true;
+        body.moveValues.onTheMove = onTheMove;
+    } else {
+        body.moveValues = {
+            veloX: 0,
+            veloY: 0,
+            veloZ: 0,
+        };
     }
 };
 
@@ -316,7 +332,7 @@ const _findBelowContactBody = (id) => {
     const contacts = world.contacts,
         contactsL = contacts.length,
         upAxis = new CANNON.Vec3(0, 1, 0);
-    let i, foundContact, contactNormal = new CANNON.Vec3();
+    let i, foundContact = {}, contactNormal = new CANNON.Vec3();
     for(i=0; i<contactsL; i++) {
         if(contacts[i].bi.bodyId === id) {
             contacts[i].ni.negate(contactNormal);
@@ -324,11 +340,21 @@ const _findBelowContactBody = (id) => {
                 foundContact = contacts[i].bj;
                 break;
             }
+        } else if(contacts[i].bj.bodyId === id) {
+            contactNormal.copy(contacts[i].ni);
+            if(contactNormal.dot(upAxis) > 0.5) {
+                foundContact = contacts[i].bi;
+                break;
+            }
         }
     }
-    if(!foundContact) foundContact = { x: 0, z: 0 };
+    if(!Object.keys(foundContact).length) {
+        foundContact.velocity = { x: 0, y: 0, z: 0 };
+        foundContact.cannotJump = true;
+        foundContact.inTheAir = true;
+    }
     return foundContact;
-}
+};
 
 const _setUpCollisionDetector = (body) => {
     let contactNormal = new CANNON.Vec3(); // Normal in the contact, pointing *out* of whatever the player touched

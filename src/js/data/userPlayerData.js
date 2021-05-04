@@ -3,9 +3,8 @@ const userPlayerData = {
     name: 'Keijo',
     position: [0, 4.91, 0],
     direction: 0,
-    moveSpeed: 0.25,
-    maxSpeed: 2.5,
     speed: 2.8,
+    jump: 4.8,
     charHeight: 1.82,
     curMovementSpeed: 0,
     moveKeysPressed: 0,
@@ -41,7 +40,7 @@ const userPlayerData = {
             mass: 70,
             position: [pos[0], pos[1], pos[2]],
             rotation: [0, 0, 0],
-            material: { friction: 0.07 },
+            material: { friction: 0.2 },
             movingShape: true,
             updateFn: (shape) => {
                 if(sceneState.settings.debug.cameraFollowsPlayer) {
