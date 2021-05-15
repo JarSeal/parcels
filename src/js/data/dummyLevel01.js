@@ -1,13 +1,15 @@
 const floorFriction = 0.1;
 const wallFriction = 0.001;
 const levelData = {
-    model: 'dummyLevelObject01.glb',
-    path: '/models/dummyLevelObject01/',
+    model: 'cabin_interior.glb',
+    path: '/models/cabin/',
     textureSizes: [512, 1024, 2048, 4096],
     textures: ['AO_AND_DIFFUSE', 'DIFFUSE', 'AO'],
+    textureMapName: 'texture01_bake4',
+    textureNormalMapName: 'texture01_bake_normal',
     ext: 'png',
     size: [10, 2.6, 10],
-    position: [0, -0.125, 0],
+    position: [0, -0.5, 0],
     floorThickness: 0.25,
     physics: [
         {

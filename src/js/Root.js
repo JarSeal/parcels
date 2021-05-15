@@ -27,7 +27,7 @@ class Root {
         const urlParams = new URLSearchParams(window.location.search);
         const rendererAA = urlParams.get('aa');
         const renderer = new THREE.WebGLRenderer({ antialias: rendererAA === '1' });
-        renderer.setClearColor('#ffffff');
+        renderer.setClearColor('#000000');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -60,9 +60,9 @@ class Root {
         controls.update();
         this.controls = controls;
         this.camera = camera;
-        camera.userData.followXOffset = 10;
-        camera.userData.followYOffset = 17;
-        camera.userData.followZOffset = 10;
+        camera.userData.followXOffset = 6;
+        camera.userData.followYOffset = 10;
+        camera.userData.followZOffset = 6;
         this.sceneState.cameras = {
             level: camera,
         };
@@ -107,6 +107,7 @@ class Root {
         
         const modelLoader = new ModelLoader(this.sceneState);
         modelLoader.loadModel(levelData);
+        modelLoader.loadModel(levelData, true);
 
         const userPlayer = new Player(this.sceneState, userPlayerData);
         userPlayer.create();

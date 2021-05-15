@@ -11,7 +11,7 @@ class ModelLoader {
         sceneState.curLevelMesh = null;
     }
 
-    loadModel(data) {
+    loadModel(data, copy) {
         this.modelLoader.load(data.path + data.model, (gltf) => {
             const urlParams = new URLSearchParams(window.location.search);
             let textureSize = urlParams.get('ts');
@@ -23,16 +23,36 @@ class ModelLoader {
             mesh.material.metalness = 0;
             mesh.material.map = this.textureLoader.load(
                 data.path +
-                data.textureSizes[textureSize] + '_' +
-                data.textures[0] +
+                data.textureMapName +
+                '_' + data.textureSizes[textureSize] +
                 '.' + data.ext,
                 (texture) => { texture.flipY = false; }
             );
+            if(copy) {
+                mesh.material.normalMap = this.textureLoader.load(
+                    data.path +
+                    data.textureNormalMapName +
+                    '_' + data.textureSizes[textureSize] +
+                    '.' + data.ext,
+                    (texture) => {
+                        texture.flipY = false;
+                        console.log(texture);
+                    }
+                );
+                mesh.rotation.set(0, Math.PI, 0);
+            }
             mesh.position.set(data.position[0], data.position[1], data.position[2]);
+            if(copy) mesh.position.set(data.position[0], data.position[1], data.position[2] + 5);
             this.sceneState.scenes[this.sceneState.curScene].add(mesh);
             this.sceneState.curLevelMesh = mesh;
-            this._createLevelPhysics(data);
+            if(!copy)
+                this._createLevelPhysics(data);
             if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
+            if(copy) {
+                console.log('COPY', mesh);
+            } else {
+                console.log('ORIGINALs', mesh);
+            }
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
         });
