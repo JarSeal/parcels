@@ -2,6 +2,17 @@ const floorFriction = 0.1;
 const wallFriction = 0.001;
 const levelData = {
     model: 'cabin_interior.glb',
+    models: {
+        interior: {
+            model: 'cabin_interior.glb',
+            textureMapName: 'cabin-interior001',
+        },
+        exterior: {
+            model: 'cabin_exterior.glb',
+            textureMapName: 'cabin-exterior001',
+            textureNormalMapName: 'cabin-exterior001_normal',
+        },
+    },
     path: '/models/cabin/',
     textureSizes: [512, 1024, 2048, 4096],
     textures: ['AO_AND_DIFFUSE', 'DIFFUSE', 'AO'],

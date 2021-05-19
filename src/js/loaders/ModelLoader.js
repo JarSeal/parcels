@@ -12,55 +12,107 @@ class ModelLoader {
     }
 
     loadModel(data, copy) {
-        this.modelLoader.load(data.path + data.model, (gltf) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            let textureSize = urlParams.get('ts');
-            if(textureSize && (textureSize < 0 || textureSize > 3)) {
-                alert('Texture sizes must be in range from 0-3. 0 = 512 and 3 = 4096px.');
-            }
-            if(!textureSize) textureSize = 2;
-            const mesh = gltf.scene.children[0];
-            mesh.material.metalness = 0;
-            mesh.material.map = this.textureLoader.load(
-                data.path +
-                data.textureMapName +
-                '_' + data.textureSizes[textureSize] +
-                '.' + data.ext,
-                (texture) => { texture.flipY = false; }
-            );
-            if(copy) {
-                mesh.material.normalMap = this.textureLoader.load(
-                    data.path +
-                    data.textureNormalMapName +
-                    '_' + data.textureSizes[textureSize] +
-                    '.' + data.ext,
-                    (texture) => {
-                        texture.flipY = false;
-                        console.log(texture);
+        for(const k in data.models) {
+            ((key) => {
+                this.modelLoader.load(data.path + data.models[key].model, (gltf) => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    let textureSize = urlParams.get('ts');
+                    if(textureSize && (textureSize < 0 || textureSize > 3)) {
+                        alert('Texture sizes must be in range from 0-3. 0 = 512 and 3 = 4096px.');
                     }
-                );
-                mesh.rotation.set(0, Math.PI, 0);
-            }
-            mesh.position.set(data.position[0], data.position[1], data.position[2]);
-            if(copy) mesh.position.set(data.position[0], data.position[1], data.position[2] + 5);
-            this.sceneState.scenes[this.sceneState.curScene].add(mesh);
-            this.sceneState.curLevelMesh = mesh;
-            if(!copy)
-                this._createLevelPhysics(data);
-            if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
-            if(copy) {
-                console.log('COPY', mesh);
-            } else {
-                console.log('ORIGINALs', mesh);
-            }
-        }, undefined, function(error) {
-            this.sceneState.logger.error(error);
-        });
+                    if(!textureSize) textureSize = 2;
+                    const mesh = gltf.scene.children[0];
+                    // mesh.material.metalness = 0;
+                    mesh.material.dispose();
+                    mesh.material = new THREE.MeshLambertMaterial();
+                    mesh.material.map = this.textureLoader.load(
+                        data.path +
+                        data.models[key].textureMapName +
+                        '_' + data.textureSizes[textureSize] +
+                        '.' + data.ext,
+                        (texture) => { texture.flipY = false; }
+                    );
+                    if(copy && data.models[key].textureNormalMapName) {
+                        mesh.material.normalMap = this.textureLoader.load(
+                            data.path +
+                            data.models[key].textureNormalMapName +
+                            '_' + data.textureSizes[textureSize] +
+                            '.' + data.ext,
+                            (texture) => {
+                                texture.flipY = false;
+                                console.log(texture);
+                            }
+                        );
+                    }
+                    if(copy) mesh.rotation.set(0, Math.PI, 0);
+                    mesh.position.set(data.position[0], data.position[1], data.position[2]);
+                    if(copy) mesh.position.set(data.position[0] + 6, data.position[1], data.position[2] + 5);
+                    this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+                    this.sceneState.curLevelMesh = mesh;
+                    if(!copy)
+                        this._createLevelPhysics(data);
+                    if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
+                    if(copy) {
+                        console.log('COPY', mesh);
+                    } else {
+                        console.log('ORIGINALs', mesh);
+                    }
+                }, undefined, function(error) {
+                    this.sceneState.logger.error(error);
+                });
+            })(k);
+        }
+        // this.modelLoader.load(data.path + data.model, (gltf) => {
+        //     const urlParams = new URLSearchParams(window.location.search);
+        //     let textureSize = urlParams.get('ts');
+        //     if(textureSize && (textureSize < 0 || textureSize > 3)) {
+        //         alert('Texture sizes must be in range from 0-3. 0 = 512 and 3 = 4096px.');
+        //     }
+        //     if(!textureSize) textureSize = 2;
+        //     const mesh = gltf.scene.children[0];
+        //     // mesh.material.metalness = 0;
+        //     mesh.material.dispose();
+        //     mesh.material = new THREE.MeshLambertMaterial();
+        //     mesh.material.map = this.textureLoader.load(
+        //         data.path +
+        //         data.textureMapName +
+        //         '_' + data.textureSizes[textureSize] +
+        //         '.' + data.ext,
+        //         (texture) => { texture.flipY = false; }
+        //     );
+        //     if(copy) {
+        //         mesh.material.normalMap = this.textureLoader.load(
+        //             data.path +
+        //             data.textureNormalMapName +
+        //             '_' + data.textureSizes[textureSize] +
+        //             '.' + data.ext,
+        //             (texture) => {
+        //                 texture.flipY = false;
+        //                 console.log(texture);
+        //             }
+        //         );
+        //         mesh.rotation.set(0, Math.PI, 0);
+        //     }
+        //     mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        //     if(copy) mesh.position.set(data.position[0], data.position[1], data.position[2] + 5);
+        //     this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+        //     this.sceneState.curLevelMesh = mesh;
+        //     if(!copy)
+        //         this._createLevelPhysics(data);
+        //     if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
+        //     if(copy) {
+        //         console.log('COPY', mesh);
+        //     } else {
+        //         console.log('ORIGINALs', mesh);
+        //     }
+        // }, undefined, function(error) {
+        //     this.sceneState.logger.error(error);
+        // });
     }
 
     _createLevelPhysics(data) {
         const phys = data.physics;
-        if(!phys) return;
+        if(!phys || data.physicsCreated) return;
         for(let i=0; i<phys.length; i++) {
             const obj = phys[i];
             if(obj.type === 'box') {
@@ -84,6 +136,7 @@ class ModelLoader {
                 });
             }
         }
+        data.physicsCreated = true;
     }
 }
 
