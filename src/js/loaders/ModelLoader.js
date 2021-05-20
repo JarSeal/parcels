@@ -39,20 +39,23 @@ class ModelLoader {
                     if(key === 'exterior') {
                         setTimeout(() => {
                             mesh.material.envMap = this.sceneState.curSkybox.texture;
+                            mesh.material.envMapIntensity = 2;
+                            mesh.material.roughness = 0.5;
+                            mesh.material.metalness = 0.2;
                         }, 2500);
                     }
-                    if(copy && data.models[key].textureNormalMapName) {
-                        mesh.material.normalMap = this.textureLoader.load(
-                            data.path +
-                            data.models[key].textureNormalMapName +
-                            '_' + data.textureSizes[textureSize] +
-                            '.' + data.ext,
-                            (texture) => {
-                                texture.flipY = false;
-                                console.log(texture);
-                            }
-                        );
-                    }
+                    // if(data.models[key].textureNormalMapName) {
+                    //     mesh.material.normalMap = this.textureLoader.load(
+                    //         data.path +
+                    //         data.models[key].textureNormalMapName +
+                    //         '_' + data.textureSizes[textureSize] +
+                    //         '.' + data.ext,
+                    //         (texture) => {
+                    //             texture.flipY = false;
+                    //             console.log(texture);
+                    //         }
+                    //     );
+                    // }
                     if(copy) mesh.rotation.set(0, Math.PI, 0);
                     mesh.position.set(data.position[0], data.position[1], data.position[2]);
                     if(copy) mesh.position.set(data.position[0] + 6, data.position[1], data.position[2] + 5);
