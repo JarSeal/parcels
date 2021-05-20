@@ -12,18 +12,6 @@ const defaultSettings = {
         cameraFollowsPlayer: true,
     },
 
-    // Antialiasing
-    aa: {
-        fxaa: true,
-        smaa: true,
-    },
-
-    // Ambient Occlusion
-    ao: {
-        sao: true,
-        ssao: false,
-    },
-
     // Physics
     physics: {
         showPhysicsHelpers: false,

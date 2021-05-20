@@ -24,9 +24,7 @@ class Root {
         this.sceneState.logger = new Logger(this.sceneState);
 
         // Setup renderer [START]
-        const urlParams = new URLSearchParams(window.location.search);
-        const rendererAA = urlParams.get('aa');
-        const renderer = new THREE.WebGLRenderer({ antialias: rendererAA === '1' });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setClearColor('#000000');
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
@@ -34,9 +32,6 @@ class Root {
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
         this.sceneState.renderer = renderer;
-        this.requestDelta = 0;
-        this.logicDelta = 0;
-        this.renderDelta = 0;
         // Setup renderer [/END]
 
         // Setup scene and basic lights [START]
@@ -84,7 +79,6 @@ class Root {
         // Settings [START]
         const settings = new Settings(this.sceneState);
         this.stats = settings.createStats();
-        settings.setAA(rendererAA);
         this.sceneState.settingsClass = settings;
         // Settings [/END]
 
@@ -129,15 +123,11 @@ class Root {
 
     renderLoop = () => {
         const ss = this.sceneState;
-        // const delta = ss.clock.getDelta();
-        // let timeStep = delta; // * 1 = time scale
-        // timeStep = Math.max(timeStep, 0.03333333); // = 1 / 30 (min 30 fps)
         requestAnimationFrame(() => {
-            setTimeout(() => {
-                this.renderLoop();
-            }, 0);
+            this.renderLoop();
         });
-        ss.pp.getComposer().render();
+        ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
+        // ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
@@ -149,11 +139,10 @@ class Root {
         sceneState.renderer.setPixelRatio(pixelRatio);
         document.getElementsByTagName('body')[0].style.width = width + 'px';
         document.getElementsByTagName('body')[0].style.height = height + 'px';
-        const curScene = sceneState.curScene;
-        sceneState.cameras[curScene].aspect = width / height;
-        sceneState.cameras[curScene].updateProjectionMatrix();
+        sceneState.cameras.level.aspect = width / height;
+        sceneState.cameras.level.updateProjectionMatrix();
         sceneState.renderer.setSize(width, height);
-        sceneState.pp.getComposer().setSize(width, height);
+        // sceneState.pp.getComposer().setSize(width, height);
     }
 
     _initResizer() {
