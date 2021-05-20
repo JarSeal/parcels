@@ -25,6 +25,7 @@ class LevelLoader {
         new LevelsData(this.sceneState).loadLevelsData(levelId, (data) => {
             this.loadingData = false;
             this._loadAssets(data);
+            this._setSkyBox(data);
         });
     }
 
@@ -79,6 +80,28 @@ class LevelLoader {
         if(totalCount === nowLoadedCount) {
             console.log('ALL ASSETS LOADED!');
         }
+    }
+
+    _setSkyBox(data) {
+        data;
+        const urlParams = new URLSearchParams(window.location.search);
+        let skyboxSize = urlParams.get('sb');
+        if(skyboxSize !== '4096') skyboxSize = '2048';
+        const scene = this.sceneState.scenes[this.sceneState.curScene];
+        scene.background = new THREE.CubeTextureLoader()
+            .setPath('/models/skyboxes/')
+            .load([
+                'purplerain-right_'+skyboxSize+'.png', // right
+                'purplerain-left_'+skyboxSize+'.png', // left
+                'purplerain-top_'+skyboxSize+'.png', // top
+                'purplerain-bottom_'+skyboxSize+'.png', // bottom
+                'purplerain-front_'+skyboxSize+'.png', // front
+                'purplerain-back_'+skyboxSize+'.png', // back
+            ], (cubeMap) => {
+                const blur = new THREE.PMREMGenerator(this.sceneState.renderer);
+                const ibl = blur.fromCubemap(cubeMap);
+                this.sceneState.curSkybox = ibl;
+            });
     }
 }
 

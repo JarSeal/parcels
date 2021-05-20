@@ -22,16 +22,25 @@ class ModelLoader {
                     }
                     if(!textureSize) textureSize = 2;
                     const mesh = gltf.scene.children[0];
-                    // mesh.material.metalness = 0;
-                    mesh.material.dispose();
-                    mesh.material = new THREE.MeshLambertMaterial();
+                    mesh.material.metalness = 0;
+                    if(key === 'interior') {
+                        mesh.material.dispose();
+                        mesh.material = new THREE.MeshLambertMaterial();
+                    }
                     mesh.material.map = this.textureLoader.load(
                         data.path +
                         data.models[key].textureMapName +
                         '_' + data.textureSizes[textureSize] +
                         '.' + data.ext,
-                        (texture) => { texture.flipY = false; }
+                        (texture) => {
+                            texture.flipY = false;
+                        }
                     );
+                    if(key === 'exterior') {
+                        setTimeout(() => {
+                            mesh.material.envMap = this.sceneState.curSkybox.texture;
+                        }, 2500);
+                    }
                     if(copy && data.models[key].textureNormalMapName) {
                         mesh.material.normalMap = this.textureLoader.load(
                             data.path +
