@@ -86,7 +86,7 @@ class LevelLoader {
         data;
         const urlParams = new URLSearchParams(window.location.search);
         let skyboxSize = urlParams.get('sb');
-        if(skyboxSize !== '4096') skyboxSize = '2048';
+        if(skyboxSize !== '4096' && skyboxSize !== '2048' && skyboxSize !== '1024' && skyboxSize !== '512') skyboxSize = '2048';
         const scene = this.sceneState.scenes[this.sceneState.curScene];
         scene.background = new THREE.CubeTextureLoader()
             .setPath('/models/skyboxes/')
