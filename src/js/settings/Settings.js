@@ -13,6 +13,7 @@ class Settings {
     }
 
     _initSettings(sceneState) {
+        sceneState.settings = { ...defaultSettings };
         this._checkLocalStorage(sceneState);
         sceneState.defaultSettings = defaultSettings;
 
@@ -29,7 +30,6 @@ class Settings {
         const ls = sceneState.LStorage,
             defaults = defaultSettings,
             defKeys = Object.keys(defaults);
-        sceneState.settings = {};
         let data, fData;
         defKeys.forEach(key => {
             data = ls.getItem(key);

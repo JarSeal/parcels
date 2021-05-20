@@ -4,7 +4,7 @@ class PhysicsHelpers {
     constructor(sceneState) {
         this.sceneState = sceneState;
         this.scene = this.sceneState.scenes[this.sceneState.curScene];
-        this.enabled = sceneState.settings.showPhysicsHelpers;
+        this.enabled = sceneState.settings.physics.showPhysicsHelpers;
         this.movingShapes = [];
         this.staticShapes = [];
     }

@@ -4,7 +4,6 @@ const defaultSettings = {
     enableGui: true,
     openGuiControls: true,
     openAllGuiFolders: true,
-    showPhysicsHelpers: true,
 
     // Debugging
     debug: {
