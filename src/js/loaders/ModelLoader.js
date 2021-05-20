@@ -22,11 +22,8 @@ class ModelLoader {
                     }
                     if(!textureSize) textureSize = 2;
                     const mesh = gltf.scene.children[0];
-                    mesh.material.metalness = 0;
-                    if(key === 'interior') {
-                        mesh.material.dispose();
-                        mesh.material = new THREE.MeshLambertMaterial();
-                    }
+                    mesh.material.dispose();
+                    mesh.material = new THREE.MeshLambertMaterial();
                     mesh.material.map = this.textureLoader.load(
                         data.path +
                         data.models[key].textureMapName +
