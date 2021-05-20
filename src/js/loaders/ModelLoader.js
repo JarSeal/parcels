@@ -36,14 +36,14 @@ class ModelLoader {
                             texture.flipY = false;
                         }
                     );
-                    if(key === 'exterior') {
-                        setTimeout(() => {
-                            mesh.material.envMap = this.sceneState.curSkybox.texture;
-                            mesh.material.envMapIntensity = 2;
-                            mesh.material.roughness = 0.5;
-                            mesh.material.metalness = 0.2;
-                        }, 2500);
-                    }
+                    // if(key === 'exterior') {
+                    //     setTimeout(() => {
+                    //         mesh.material.envMap = this.sceneState.curSkybox.texture;
+                    //         mesh.material.envMapIntensity = 2;
+                    //         mesh.material.roughness = 0.5;
+                    //         mesh.material.metalness = 0.2;
+                    //     }, 2500);
+                    // }
                     // if(data.models[key].textureNormalMapName) {
                     //     mesh.material.normalMap = this.textureLoader.load(
                     //         data.path +
