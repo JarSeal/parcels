@@ -2,36 +2,37 @@ const moduleData = {
     id: 'dummyModule01',
     name: 'Dummy module 01',
     turn: 0,
-    boundingDims: [1, 6, 6],
+    boundingDims: [1, 5, 8],
     tiles: [
         [
-            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:1},{t:2},{t:1},],
-            [{t:1},{t:2},{t:1},{t:1},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:1},{t:1},{t:3},{t:1},{t:1},],
+            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
+            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:3},{t:1},{t:1},],
         ],
     ],
-    path: '/models/dlo02/',
+    path: '/models/modules/cabin001/',
     models: [
         {
-            exterior: 'ext-dlo02.glb',
-            interior: 'int-dlo02.glb',
-            roof: 'roof-dlo02.glb',
-            bottom: 'bottom-dlo02.glb',
+            exterior: 'cabin_exterior_001.glb',
+            interior: 'cabin_interior_001.glb',
+            roof: null,
+            bottom: null, // maybe..
             details: null, // maybe..
         },
     ],
     textures: [
         {
-            exterior: 'dlo02-ext-diff.png',
-            interior: 'dlo02-int-diff.png',
-            roof: 'dlo02-roof-diff.png',
-            bottom: 'dlo02-bottom-diff.png',
+            exterior: 'cabin-exterior001',
+            interior: 'cabin-interior001',
+            roof: null,
+            bottom: null, // maybe..
             details: null, // maybe..
         },
     ],
+    textureExt: 'png',
+    textureSizes: [512, 1024, 2048, 4096],
 };
 
 export default moduleData;
