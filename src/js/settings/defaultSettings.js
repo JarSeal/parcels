@@ -1,4 +1,7 @@
 const defaultSettings = {
+
+    // Assets
+    assetsUrl: 'https://parcels.netlify.app',
     
     // GUI
     enableGui: true,

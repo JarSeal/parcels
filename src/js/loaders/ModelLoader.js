@@ -13,8 +13,9 @@ class ModelLoader {
 
     loadModel(data, copy) {
         for(const k in data.models) {
-            ((key) => {
-                this.modelLoader.load(data.path + data.models[key].model, (gltf) => {
+            ((key, ss) => {
+                const asset = ss.settings.assetsUrl + data.path + data.models[key].model;
+                this.modelLoader.load(asset, (gltf) => {
                     const urlParams = new URLSearchParams(window.location.search);
                     let textureSize = urlParams.get('ts');
                     if(textureSize && (textureSize < 0 || textureSize > 3)) {
@@ -25,6 +26,7 @@ class ModelLoader {
                     mesh.material.dispose();
                     mesh.material = new THREE.MeshLambertMaterial();
                     mesh.material.map = this.textureLoader.load(
+                        ss.settings.assetsUrl +
                         data.path +
                         data.models[key].textureMapName +
                         '_' + data.textureSizes[textureSize] +
@@ -35,7 +37,7 @@ class ModelLoader {
                     );
                     // if(key === 'exterior') {
                     //     setTimeout(() => {
-                    //         mesh.material.envMap = this.sceneState.curSkybox.texture;
+                    //         mesh.material.envMap = ss.curSkybox.texture;
                     //         mesh.material.envMapIntensity = 2;
                     //         mesh.material.roughness = 0.5;
                     //         mesh.material.metalness = 0.2;
@@ -56,19 +58,19 @@ class ModelLoader {
                     if(copy) mesh.rotation.set(0, Math.PI, 0);
                     mesh.position.set(data.position[0], data.position[1], data.position[2]);
                     if(copy) mesh.position.set(data.position[0] + 6, data.position[1], data.position[2] + 5);
-                    this.sceneState.scenes[this.sceneState.curScene].add(mesh);
-                    this.sceneState.curLevelMesh = mesh;
+                    ss.scenes[ss.curScene].add(mesh);
+                    ss.curLevelMesh = mesh;
                     if(!copy) this._createLevelPhysics(data);
-                    if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
+                    if(ss.settings.physics.showPhysicsHelpers) mesh.visible = false;
                     if(copy) {
                         console.log('COPY', mesh);
                     } else {
                         console.log('ORIGINALs', mesh);
                     }
                 }, undefined, function(error) {
-                    this.sceneState.logger.error(error);
+                    ss.logger.error(error);
                 });
-            })(k);
+            })(k, this.sceneState);
         }
     }
 

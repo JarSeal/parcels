@@ -13,7 +13,7 @@ class Settings {
     }
 
     _initSettings(sceneState) {
-        sceneState.settings = { ...defaultSettings };
+        sceneState.settings = Object.assign({}, defaultSettings);
         this._checkLocalStorage(sceneState);
         sceneState.defaultSettings = defaultSettings;
 
@@ -38,8 +38,11 @@ class Settings {
                 const value = ls.convertValue(defaults[key], data);
                 sceneState.settings[key] = value;
             } else {
-                const folderKeys = Object.keys(defaults[key]);
-                if(folderKeys.length) sceneState.settings[key] = {};
+                let folderKeys = [];
+                if(typeof defaults[key] !== 'string') {
+                    folderKeys = Object.keys(defaults[key]);
+                    if(folderKeys.length) sceneState.settings[key] = {};
+                }
                 folderKeys.forEach(fKey => {
                     fData = ls.getItem(fKey);
                     if(fData) {

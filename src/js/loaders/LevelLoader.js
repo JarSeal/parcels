@@ -87,16 +87,17 @@ class LevelLoader {
         const urlParams = new URLSearchParams(window.location.search);
         let skyboxSize = urlParams.get('sb');
         if(skyboxSize !== '4096' && skyboxSize !== '2048' && skyboxSize !== '1024' && skyboxSize !== '512') skyboxSize = '2048';
+        const cubeLoader = new THREE.CubeTextureLoader();
         const scene = this.sceneState.scenes[this.sceneState.curScene];
-        scene.background = new THREE.CubeTextureLoader()
-            .setPath('/models/skyboxes/')
+        scene.background = cubeLoader
+            .setPath(this.sceneState.settings.assetsUrl + '/skyboxes/purpleBlue/')
             .load([
-                'purplerain-right_'+skyboxSize+'.png', // right
-                'purplerain-left_'+skyboxSize+'.png', // left
-                'purplerain-top_'+skyboxSize+'.png', // top
-                'purplerain-bottom_'+skyboxSize+'.png', // bottom
-                'purplerain-front_'+skyboxSize+'.png', // front
-                'purplerain-back_'+skyboxSize+'.png', // back
+                'posx_'+skyboxSize+'.png', // right
+                'negx_'+skyboxSize+'.png', // left
+                'posy_'+skyboxSize+'.png', // top
+                'negy_'+skyboxSize+'.png', // bottom
+                'posz_'+skyboxSize+'.png', // front
+                'negz_'+skyboxSize+'.png', // back
             ], (cubeMap) => {
                 const blur = new THREE.PMREMGenerator(this.sceneState.renderer);
                 const ibl = blur.fromCubemap(cubeMap);
