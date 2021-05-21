@@ -53,7 +53,15 @@ class LevelLoader {
                 const mKeys = Object.keys(m);
                 for(let i=0; i<mKeys.length; i++) {
                     if(m[mKeys[i]]) {
-                        this._loadModel(urlAndPath + m[mKeys[i]], mKeys[i]+'Modules', module.pos, modIndex, mIndex);
+                        this._loadModel(
+                            urlAndPath + m[mKeys[i]],
+                            mKeys[i]+'Modules',
+                            module.pos,
+                            module.turn,
+                            modIndex,
+                            mIndex,
+                            module.boundingDims
+                        );
                     }
                 }
             }
@@ -62,37 +70,54 @@ class LevelLoader {
                 const tKeys = Object.keys(t);
                 for(let i=0; i<tKeys.length; i++) {
                     if(t[tKeys[i]]) {
-                        this._loadTexture(urlAndPath + t[tKeys[i]], tKeys[i]+'Textures', module.textureExt, modIndex, tIndex);
+                        this._loadTexture(
+                            urlAndPath + t[tKeys[i]],
+                            tKeys[i]+'Textures',
+                            module.textureExt,
+                            modIndex,
+                            tIndex
+                        );
                     }
                 }
             }
         }
     }
 
-    _loadModel = (url, type, pos, modIndex, partIndex) => {
+    _loadModel = (url, type, pos, turn, modIndex, partIndex, dims) => {
         this.modelsToLoad++;
         this.modelLoader.load(url, (gltf) => {
-            console.log('M loaded', gltf);
-            this.modelsLoaded++;
             const mesh = gltf.scene.children[0];
             mesh.material.dispose();
             mesh.material = new THREE.MeshLambertMaterial();
-            mesh.position.set(pos[2]-0.5, pos[0], pos[1]-0.5);
-            console.log('MESH', mesh, modIndex);
+            this._setMeshPosition(mesh, pos, turn, dims);
+            mesh.rotation.set(0, turn * (Math.PI / 2), 0);
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
+            this.modelsLoaded++;
             this._checkLoadingStatus();
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
         });
     }
 
+    _setMeshPosition = (mesh, pos, turn, dims) => {
+        if(turn === 1) {
+            mesh.position.set(pos[2], pos[0], pos[1]+dims[1]);
+        } else if(turn === 2) {
+            mesh.position.set(pos[2]+dims[2], pos[0], pos[1]+dims[1]);
+        } else if(turn === 3) {
+            mesh.position.set(pos[2]+dims[2], pos[0], pos[1]);
+        } else {
+            mesh.position.set(pos[2], pos[0], pos[1]);
+        }
+    }
+
     _loadTexture(url, type, ext, modIndex, partIndex) {
         this.texturesToLoad++;
-        const size = 512;
+        const size = 512; // Replace with texture size setting
         this.textureLoader.load(url+'_'+size+'.'+ext, (texture) => {
-            this.texturesLoaded++;
             texture.flipY = false; // <-- Important for importing GLTF models!
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
+            this.texturesLoaded++;
             this._checkLoadingStatus();
         }, undefined, function(error) {
             this.sceneState.logger.error(error);

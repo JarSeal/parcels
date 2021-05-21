@@ -7,8 +7,13 @@ const levelData = {
     modules: [
         {
             id: 'dummyModule01',
+            turn: 3,
+            pos: [0, 0, 0],
+        },
+        {
+            id: 'dummyModule01',
             turn: 0,
-            pos: [0, 1, 2],
+            pos: [0, 10, 4],
         },
     ],
 };

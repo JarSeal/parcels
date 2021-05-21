@@ -1,7 +1,6 @@
 const moduleData = {
     id: 'dummyModule01',
     name: 'Dummy module 01',
-    turn: 0,
     boundingDims: [1, 5, 8],
     tiles: [
         [
@@ -9,7 +8,7 @@ const moduleData = {
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:3},{t:1},{t:1},],
+            [{t:1},{t:1},{t:1},{t:1},{t:2},{t:1},{t:1},{t:1},],
         ],
     ],
     path: '/models/modules/cabin001/',
