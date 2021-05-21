@@ -16,13 +16,9 @@ canvas {
 }
 $loadingInputColor: #555;
 @keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-  }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 #levelLoadingScreen {
     background: #111;
     width: 100vw;
