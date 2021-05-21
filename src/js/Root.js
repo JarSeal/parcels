@@ -97,28 +97,28 @@ class Root {
 
     _runApp = (camera) => {
 
-        this.levelLoader.load(this.sceneState.curLevelId);
+        this.levelLoader.load(this.sceneState.curLevelId, () => {
+            // const userPlayer = new Player(this.sceneState, userPlayerData);
+            // userPlayer.create();
+            // new UserControls(this.sceneState, userPlayer);
+
+            // const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
+            const playerPos = [0, 0, 0]; // temp
+            camera.position.set(
+                camera.userData.followXOffset + playerPos[0],
+                camera.userData.followYOffset + playerPos[1],
+                camera.userData.followZOffset + playerPos[2]
+            );
+            camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
+    
+            this._resize(this.sceneState);
+            this.sceneState.settingsClass.endInit();
+            this.renderLoop();
+        });
         
         // const modelLoader = new ModelLoader(this.sceneState);
         // modelLoader.loadModel(levelData);
         // modelLoader.loadModel(levelData, true);
-
-        // const userPlayer = new Player(this.sceneState, userPlayerData);
-        // userPlayer.create();
-        // new UserControls(this.sceneState, userPlayer);
-
-        // const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
-        const playerPos = [0, 0, 0]; // temp
-        camera.position.set(
-            camera.userData.followXOffset + playerPos[0],
-            camera.userData.followYOffset + playerPos[1],
-            camera.userData.followZOffset + playerPos[2]
-        );
-        camera.lookAt(new THREE.Vector3(playerPos[0], playerPos[1], playerPos[2]));
-
-        this._resize(this.sceneState);
-        this.sceneState.settingsClass.endInit();
-        this.renderLoop();
 
     }
 

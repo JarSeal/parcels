@@ -13,6 +13,7 @@ class LevelLoader {
         this.modelsLoaded = 0;
         this.texturesToLoad = 0;
         this.texturesLoaded = 0;
+        this.skyboxLoaded = false;
         this.modelLoader = new GLTFLoader();
         this.textureLoader = new THREE.TextureLoader();
         this.cubeLoader = new THREE.CubeTextureLoader();
@@ -25,26 +26,29 @@ class LevelLoader {
             roofTextures: {},
         };
         sceneState.curLevelMesh = null;
+        this.loadingScreenId = 'levelLoadingScreen';
     }
 
-    load(levelId) {
+    load(levelId, callback) {
+        this._updateLoadingScreen(true);
         this.modelsToLoad = 0;
         this.modelsLoaded = 0;
         this.texturesToLoad = 0;
         this.texturesLoaded = 0;
+        this.skyboxLoaded = false;
         this.sceneState.loadingLevel = true;
         this.loadingData = true;
         new LevelsData(this.sceneState).loadLevelsData(levelId, (data) => {
             this.loadingData = false;
             this.loadingModels = true;
             this.loadingTextures = true;
-            this._loadModules(data);
-            this._setSkyBox(data);
+            this._loadModules(data, callback);
+            this._setSkyBox(callback);
         });
     }
 
-    _loadModules(data) {
-        console.log(data);
+    _loadModules(data, callback) {
+        this.sceneState.logger.log('Level data:', data); // Show level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
@@ -60,7 +64,8 @@ class LevelLoader {
                             module.turn,
                             modIndex,
                             mIndex,
-                            module.boundingDims
+                            module.boundingDims,
+                            callback
                         );
                     }
                 }
@@ -75,7 +80,8 @@ class LevelLoader {
                             tKeys[i]+'Textures',
                             module.textureExt,
                             modIndex,
-                            tIndex
+                            tIndex,
+                            callback
                         );
                     }
                 }
@@ -83,7 +89,7 @@ class LevelLoader {
         }
     }
 
-    _loadModel = (url, type, pos, turn, modIndex, partIndex, dims) => {
+    _loadModel = (url, type, pos, turn, modIndex, partIndex, dims, callback) => {
         this.modelsToLoad++;
         this.modelLoader.load(url, (gltf) => {
             const mesh = gltf.scene.children[0];
@@ -92,8 +98,9 @@ class LevelLoader {
             this._setMeshPosition(mesh, pos, turn, dims);
             mesh.rotation.set(0, turn * (Math.PI / 2), 0);
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
+            if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
             this.modelsLoaded++;
-            this._checkLoadingStatus();
+            this._checkLoadingStatus(callback);
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
         });
@@ -111,23 +118,23 @@ class LevelLoader {
         }
     }
 
-    _loadTexture(url, type, ext, modIndex, partIndex) {
+    _loadTexture(url, type, ext, modIndex, partIndex, callback) {
         this.texturesToLoad++;
         const size = 512; // Replace with texture size setting
         this.textureLoader.load(url+'_'+size+'.'+ext, (texture) => {
             texture.flipY = false; // <-- Important for importing GLTF models!
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
             this.texturesLoaded++;
-            this._checkLoadingStatus();
+            this._checkLoadingStatus(callback);
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
         });
     }
 
-    _checkLoadingStatus() {
+    _checkLoadingStatus(callback) {
         if(this.modelsLoaded === this.modelsToLoad) this.loadingModels = false;
         if(this.texturesLoaded === this.texturesToLoad) this.loadingTextures = false;
-        if(!this.loadingModels && !this.loadingTextures) {
+        if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded) {
             const extMods = this.sceneState.levelAssets.exteriorModules;
             const intMods = this.sceneState.levelAssets.interiorModules;
             const roofMods = this.sceneState.levelAssets.roofModules;
@@ -146,64 +153,14 @@ class LevelLoader {
                     this.sceneState.scenes[this.sceneState.curScene].add(roofMods[extKeys[i]]);
                 }
             }
+            this._updateLoadingScreen(false);
+            callback();
+        } else {
+            this._updateLoadingScreen(true);
         }
     }
 
-    _loadAssets(data) {
-        const modules = data.modules;
-        let modelKeys,
-            textureKeys,
-            path,
-            tSize;
-        // Load all assets (modules, textures)
-        this.sceneState.logger.log('Start loading assets...', data);
-        for(let m=0; m<modules.length; m++) {
-            path = modules[m].path;
-            tSize = '512_';
-            const textures = modules[m].textures;
-            for(let t=0; t<textures.length; t++) {
-                textureKeys = Object.keys(textures[t]);
-                for(let tk=0; tk<textureKeys.length; tk++) {
-                    if(textures[t][textureKeys[tk]]) {
-                        this.totalTextures++;
-                        let tFile = path + tSize + textures[t][textureKeys[tk]];
-                        this.textureLoader.load(tFile, (texture) => {
-                            texture.flipY = false; // <-- Important for importing GLTF models!
-                            this.texturesLoaded++;
-                            this._checkAssetsLoading();
-                        });
-                    }
-                }
-            }
-            const models = modules[m].models;
-            for(let d=0; d<models.length; d++) {
-                modelKeys = Object.keys(models[d]);
-                for(let tk=0; tk<modelKeys.length; tk++) {
-                    if(models[d][modelKeys[tk]]) {
-                        this.totalModules++;
-                        let mFile = path + models[d][modelKeys[tk]];
-                        this.modelLoader.load(mFile, (gltf) => {
-                            gltf;
-                            this.modulesLoaded++;
-                            this._checkAssetsLoading();
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    _checkAssetsLoading() {
-        const totalCount = this.totalTextures + this.totalModels;
-        const nowLoadedCount = this.texturesLoaded + this.modelsLoaded;
-        console.log('Assets loaded: ' + nowLoadedCount + ' / ' + totalCount);
-        if(totalCount === nowLoadedCount) {
-            console.log('ALL ASSETS LOADED!');
-        }
-    }
-
-    _setSkyBox(data) {
-        data;
+    _setSkyBox(callback) {
         const urlParams = new URLSearchParams(window.location.search);
         let skyboxSize = urlParams.get('sb');
         if(skyboxSize !== '4096' && skyboxSize !== '2048' && skyboxSize !== '1024' && skyboxSize !== '512') skyboxSize = '2048';
@@ -222,7 +179,36 @@ class LevelLoader {
                 const blur = new THREE.PMREMGenerator(this.sceneState.renderer);
                 const ibl = blur.fromCubemap(cubeMap);
                 this.sceneState.curSkybox = ibl;
+                this.skyboxLoaded = true;
+                this._checkLoadingStatus(callback);
             });
+    }
+
+    _updateLoadingScreen(show) {
+        let modelsText = '', texturesText = '', skyboxText = '';
+        if(show) {
+            document.getElementById(this.loadingScreenId).style.display = 'block';
+            if(this.loadingModels) {
+                modelsText = 'Loaded ' + this.modelsLoaded + ' of ' + this.modelsToLoad + ' models...';
+            } else {
+                modelsText = 'All models loaded (' + this.modelsLoaded + ' / ' + this.modelsToLoad + ').';
+            }
+            if(this.loadingModels) {
+                texturesText = 'Loaded ' + this.texturesLoaded + ' of ' + this.texturesToLoad + ' textures...';
+            } else {
+                texturesText = 'All textures loaded (' + this.texturesLoaded + ' / ' + this.texturesToLoad + ').';
+            }
+            if(this.skyboxLoaded) {
+                skyboxText = 'Background loaded.';
+            } else {
+                skyboxText = 'Loading background...';
+            }
+            document.getElementById('loadingModels').textContent = modelsText;
+            document.getElementById('loadingTextures').textContent = texturesText;
+            document.getElementById('loadingBackground').textContent = skyboxText;
+        } else {
+            document.getElementById(this.loadingScreenId).style.display = 'none';
+        }
     }
 }
 
