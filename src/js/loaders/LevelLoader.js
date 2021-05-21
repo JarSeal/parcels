@@ -51,6 +51,7 @@ class LevelLoader {
         this.sceneState.logger.log('Level data:', data); // Show level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
+            this._createLevelPhysics(module);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
                 const m = module.models[mIndex];
@@ -153,7 +154,10 @@ class LevelLoader {
                     this.sceneState.scenes[this.sceneState.curScene].add(roofMods[extKeys[i]]);
                 }
             }
-            this._updateLoadingScreen(false);
+            this._updateLoadingScreen(true);
+            setTimeout(() => {
+                this._updateLoadingScreen(false);
+            }, 500);
             callback();
         } else {
             this._updateLoadingScreen(true);
@@ -209,6 +213,37 @@ class LevelLoader {
         } else {
             document.getElementById(this.loadingScreenId).style.display = 'none';
         }
+    }
+
+    _createLevelPhysics(data) {
+        // const phys = data.physics;
+        console.log('DATA', data);
+        return;
+        // if(!phys || data.physicsCreated) return;
+        // for(let i=0; i<phys.length; i++) {
+        //     const obj = phys[i];
+        //     if(obj.type === 'box') {
+        //         this.sceneState.physicsClass.addShape({
+        //             id: obj.id,
+        //             type: 'box',
+        //             moving: false,
+        //             mass: 0,
+        //             size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
+        //             position: [obj.position[0], obj.position[1], obj.position[2]],
+        //             quaternion: null,
+        //             rotation: [0, 0, 0],
+        //             material: obj.material,
+        //             updateFn: null,
+        //             mesh: null,
+        //             sleep: {
+        //                 allowSleep: true,
+        //                 sleeSpeedLimit: 0.1,
+        //                 sleepTimeLimit: 1,
+        //             },
+        //         });
+        //     }
+        // }
+        // data.physicsCreated = true;
     }
 }
 

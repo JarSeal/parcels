@@ -98,6 +98,8 @@ class Root {
     _runApp = (camera) => {
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {
+            
+
             // const userPlayer = new Player(this.sceneState, userPlayerData);
             // userPlayer.create();
             // new UserControls(this.sceneState, userPlayer);
@@ -115,11 +117,6 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.renderLoop();
         });
-        
-        // const modelLoader = new ModelLoader(this.sceneState);
-        // modelLoader.loadModel(levelData);
-        // modelLoader.loadModel(levelData, true);
-
     }
 
     renderLoop = () => {
