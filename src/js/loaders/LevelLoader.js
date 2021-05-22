@@ -38,6 +38,7 @@ class LevelLoader {
         this.skyboxLoaded = false;
         this.sceneState.loadingLevel = true;
         this.loadingData = true;
+        this._createLevelCompoundShape();
         new LevelsData(this.sceneState).loadLevelsData(levelId, (data) => {
             this.loadingData = false;
             this.loadingModels = true;
@@ -51,7 +52,7 @@ class LevelLoader {
         this.sceneState.logger.log('Level data:', data); // Show level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
-            this._createLevelPhysics(module);
+            this._createLevelPhysics(module, modIndex);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
                 const m = module.models[mIndex];
@@ -99,7 +100,7 @@ class LevelLoader {
             this._setMeshPosition(mesh, pos, turn, dims);
             mesh.rotation.set(0, turn * (Math.PI / 2), 0);
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
-            if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
+            // if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
             this.modelsLoaded++;
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {
@@ -154,10 +155,7 @@ class LevelLoader {
                     this.sceneState.scenes[this.sceneState.curScene].add(roofMods[extKeys[i]]);
                 }
             }
-            this._updateLoadingScreen(true);
-            setTimeout(() => {
-                this._updateLoadingScreen(false);
-            }, 500);
+            this._updateLoadingScreen(false);
             callback();
         } else {
             this._updateLoadingScreen(true);
@@ -215,35 +213,65 @@ class LevelLoader {
         }
     }
 
-    _createLevelPhysics(data) {
-        // const phys = data.physics;
-        console.log('DATA', data);
-        return;
-        // if(!phys || data.physicsCreated) return;
-        // for(let i=0; i<phys.length; i++) {
-        //     const obj = phys[i];
-        //     if(obj.type === 'box') {
-        //         this.sceneState.physicsClass.addShape({
-        //             id: obj.id,
-        //             type: 'box',
-        //             moving: false,
-        //             mass: 0,
-        //             size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
-        //             position: [obj.position[0], obj.position[1], obj.position[2]],
-        //             quaternion: null,
-        //             rotation: [0, 0, 0],
-        //             material: obj.material,
-        //             updateFn: null,
-        //             mesh: null,
-        //             sleep: {
-        //                 allowSleep: true,
-        //                 sleeSpeedLimit: 0.1,
-        //                 sleepTimeLimit: 1,
-        //             },
-        //         });
-        //     }
-        // }
-        // data.physicsCreated = true;
+    _createLevelCompoundShape() {
+        const floorFriction = 0.05;
+        const wallFriction = 0.001;
+        this.sceneState.physicsClass.addShape({
+            id: 'levelCompoundFloors',
+            type: 'compound',
+            moving: false,
+            movingShape: false,
+            mass: 0,
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            material: { friction: floorFriction },
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+        });
+        this.sceneState.physicsClass.addShape({
+            id: 'levelCompoundWalls',
+            type: 'compound',
+            moving: false,
+            movingShape: false,
+            mass: 0,
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            material: { friction: wallFriction },
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+        });
+    }
+
+    _createLevelPhysics(data, index) {
+        const phys = data.physics;
+        for(let i=0; i<phys.length; i++) {
+            let compoundId = null;
+            const obj = phys[i];
+            if(obj.section === 'floor') { compoundId = 'levelCompoundFloors'; } else
+            if(obj.section === 'wall') { compoundId = 'levelCompoundWalls'; }
+            if(obj.type === 'box') {
+                this.sceneState.physicsClass.addShape({
+                    id: 'levelShape_' + obj.id + '_' + index,
+                    compoundParentId: compoundId,
+                    type: 'box',
+                    size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
+                    position: [obj.position[0], obj.position[1], obj.position[2]],
+                    sleep: {
+                        allowSleep: true,
+                        sleeSpeedLimit: 0.1,
+                        sleepTimeLimit: 1,
+                    },
+                    helperColor: obj.helperColor,
+                });
+            }
+        }
+        data.physicsCreated = true;
     }
 }
 

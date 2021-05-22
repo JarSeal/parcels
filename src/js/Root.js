@@ -5,11 +5,11 @@ import Utils from './utils/Utils';
 import Logger from './utils/Logger';
 import PostProcessing from './postProcessing/PostProcessing';
 // import levelData from './data/dummyLevel01';
-// import userPlayerData from './data/userPlayerData';
 // import ModelLoader from './loaders/ModelLoader';
 import LevelLoader from './loaders/LevelLoader';
-// import Player from './players/Player';
-// import UserControls from './controls/UserControls';
+import Player from './players/Player';
+import userPlayerData from './data/userPlayerData';
+import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
 
 class Root {
@@ -100,12 +100,12 @@ class Root {
         this.levelLoader.load(this.sceneState.curLevelId, () => {
             
 
-            // const userPlayer = new Player(this.sceneState, userPlayerData);
-            // userPlayer.create();
-            // new UserControls(this.sceneState, userPlayer);
+            const userPlayer = new Player(this.sceneState, userPlayerData);
+            userPlayer.create();
+            new UserControls(this.sceneState, userPlayer);
 
-            // const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
-            const playerPos = [0, 0, 0]; // temp
+            const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
+            // const playerPos = [0, 0, 0]; // temp
             camera.position.set(
                 camera.userData.followXOffset + playerPos[0],
                 camera.userData.followYOffset + playerPos[1],
