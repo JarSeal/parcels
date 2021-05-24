@@ -18,6 +18,9 @@ class Root {
             curLevelId: 'levelDummy01',
             curScene: 'level',
             curFloor: 0,
+            constants: {
+                FLOOR_HEIGHT: 3,
+            },
         };
         this.utils = new Utils();
         this.sceneState.utils = this.utils;

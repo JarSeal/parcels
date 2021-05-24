@@ -250,18 +250,54 @@ class LevelLoader {
 
     _createLevelPhysics(data, index) {
         const phys = data.physics;
+        const compoundIdExt = data.id + '-' + index;
+        const compoundPos = [data.pos[2], this.sceneState.constants.FLOOR_HEIGHT * data.pos[0], data.pos[1]]
+        this.sceneState.physicsClass.addShape({
+            id: 'floor-' + compoundIdExt,
+            type: 'compound',
+            moving: false,
+            movingShape: false,
+            mass: 0,
+            position: compoundPos,
+            rotation: [0, 0, 0],
+            material: { friction: 0.1 },
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+        });
+        this.sceneState.physicsClass.addShape({
+            id: 'wall-' + compoundIdExt,
+            type: 'compound',
+            moving: false,
+            movingShape: false,
+            mass: 0,
+            position: compoundPos,
+            rotation: [0, 0, 0],
+            material: { friction: 0.001 },
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+        });
         for(let i=0; i<phys.length; i++) {
             let compoundId = null;
             const obj = phys[i];
-            if(obj.section === 'floor') { compoundId = 'levelCompoundFloors'; } else
-            if(obj.section === 'wall') { compoundId = 'levelCompoundWalls'; }
+            if(obj.section === 'floor') { compoundId = 'floor-'+compoundIdExt; } else
+            if(obj.section === 'wall') { compoundId = 'wall-'+compoundIdExt; }
             if(obj.type === 'box') {
                 this.sceneState.physicsClass.addShape({
                     id: 'levelShape_' + obj.id + '_' + index,
                     compoundParentId: compoundId,
                     type: 'box',
                     size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
-                    position: [obj.position[0], obj.position[1], obj.position[2]],
+                    position: [
+                        obj.position[0],
+                        obj.position[1],
+                        obj.position[2],
+                    ],
                     sleep: {
                         allowSleep: true,
                         sleeSpeedLimit: 0.1,
@@ -271,7 +307,6 @@ class LevelLoader {
                 });
             }
         }
-        data.physicsCreated = true;
     }
 }
 
