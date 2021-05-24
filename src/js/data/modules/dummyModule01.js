@@ -222,6 +222,38 @@ const moduleData = {
             position: [1.5, 2.2, 0.9],
             helperColor: 0xf0f933,
         },
+        {
+            id: 'shelf01',
+            section: 'wall',
+            type: 'box',
+            size: [0.9, 2.2, 0.5],
+            position: [2.5, 1.05, 4.3],
+            helperColor: 0x40f9cc,
+        },
+        {
+            id: 'sink01',
+            section: 'wall',
+            type: 'box',
+            size: [1.5, 0.2, 0.5],
+            position: [1.3, 0.93, 4.3],
+            helperColor: 0x40f9cc,
+        },
+        {
+            id: 'pipe01',
+            section: 'wall',
+            type: 'box',
+            size: [2.2, 0.2, 0.2],
+            position: [1.9, 2.35, 4.3],
+            helperColor: 0xfff9cc,
+        },
+        {
+            id: 'pipe02',
+            section: 'wall',
+            type: 'box',
+            size: [1.75, 0.2, 0.2],
+            position: [3.67, 2.35, 4.05],
+            helperColor: 0xfff9cc,
+        },
     ],
 };
 
