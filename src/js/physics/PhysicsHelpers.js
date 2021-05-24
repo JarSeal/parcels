@@ -102,6 +102,9 @@ class PhysicsHelpers {
         const mat = new THREE.MeshLambertMaterial();
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        if(data.rotation) {
+            mesh.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
+        }
         return mesh;
     }
 

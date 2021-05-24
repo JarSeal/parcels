@@ -283,10 +283,11 @@ class LevelLoader {
             },
         });
         for(let i=0; i<phys.length; i++) {
-            let compoundId = null;
+            let compoundId = null, rotation = null;
             const obj = phys[i];
             if(obj.section === 'floor') { compoundId = 'floor-'+compoundIdExt; } else
             if(obj.section === 'wall') { compoundId = 'wall-'+compoundIdExt; }
+            if(obj.rotation) rotation = obj.rotation;
             if(obj.type === 'box') {
                 this.sceneState.physicsClass.addShape({
                     id: 'levelShape_' + obj.id + '_' + index,
@@ -298,6 +299,7 @@ class LevelLoader {
                         obj.position[1],
                         obj.position[2],
                     ],
+                    rotation,
                     sleep: {
                         allowSleep: true,
                         sleeSpeedLimit: 0.1,

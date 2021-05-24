@@ -135,7 +135,6 @@ const addShape = (shape) => {
     body.shapeData = shape;
     body.material = new CANNON.Material(shape.material);
     body.position = new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]);
-    body.quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
     body.allowSleep = shape.sleep.allowSleep;
     body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
     body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
@@ -191,9 +190,17 @@ const addShapeToCompound = (shape) => {
             error: 'Compound child shape could not be added to the physics, type unknown (type: ' + shape.type + ').',
         };
     }
+    let quaternion = new CANNON.Quaternion(0, 0, 0, 1);
+    if(shape.rotation) {
+        quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
+    }
     const parent = getShapeById(shape.compoundParentId, shape.moving);
     if(parent) {
-        parent.addShape(cShape, new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]));
+        parent.addShape(
+            cShape,
+            new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]),
+            quaternion
+        );
     } else {
         return {
             shapeAdded: false,
@@ -370,7 +377,7 @@ const _setUpCollisionDetector = (body) => {
         }
         // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
         if(contactNormal.dot(upAxis) > 0.5) { // Use a "good" threshold value between 0 and 1 here!
-            console.log('HARD contact', contact);
+            // console.log('HARD contact', contact);
         }
     });
 };
