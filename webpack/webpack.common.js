@@ -72,7 +72,6 @@ module.exports = {
         // {from:'src/images',to:'images'},
         // {from:'src/sounds',to:'sounds'},
         {from:'src/js/vendor',to:'js'},
-        {from:'src/models',to:'models'},
         {from:'src/webworkers',to:'webworkers'},
       ],
     }),

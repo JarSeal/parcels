@@ -1,7 +1,7 @@
-import dummyModule01 from './modules/dummyModule01';
+import cabinModule01 from './modules/cabinModule01';
 
 const modulesData = {
-    dummyModule01
+    cabinModule01
 };
 
 export default modulesData;

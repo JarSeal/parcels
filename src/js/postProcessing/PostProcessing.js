@@ -3,20 +3,14 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
-import { SAOPass } from 'three/examples/jsm/postprocessing/SAOPass.js';
-import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
 
 class PostProcessing {
     constructor(sceneState) {
         this.sceneState = sceneState;
-        this.composer = new EffectComposer(sceneState.renderer);
-        this._addRenderPass();
-        
-        this._addSAO();
-        this._addSSAO();
-
-        this._addFXAA();
-        this._addSMAA();
+        // this.composer = new EffectComposer(sceneState.renderer);
+        // this._addRenderPass();
+        // this._addFXAA();
+        // this._addSMAA();
     }
 
     _addRenderPass() {
@@ -68,55 +62,6 @@ class PostProcessing {
             (value) => {
                 smaaPass.enabled = value;
                 ss.LStorage.setItem('smaa', value);
-            }
-        );
-    }
-
-    _addSAO() {
-        const ss = this.sceneState;
-        if(ss.settings.aa.rendererAA) return;
-        const saoPass = new SAOPass(ss.scenes[ss.curScene], ss.cameras[ss.curScene], true, true, 4096);
-        saoPass.params.saoBias = 0.73;
-        saoPass.params.saoIntensity = 0.01;
-        saoPass.params.saoScale = 2.3;
-        saoPass.params.saoKernelRadius = 22;
-        saoPass.params.saoBlurRadius = 60;
-        saoPass.params.saoBlurStdDev = 6.7;
-        saoPass.params.saoBlurDepthCutoff = 0.003;
-        this.composer.addPass(saoPass);
-        saoPass.enabled = ss.settings.ao.sao;
-        ss.settingsClass.addUserSetting(
-            'boolean',
-            ss.settings.ao,
-            'sao',
-            'Use SAO',
-            'AO',
-            (value) => {
-                saoPass.enabled = value;
-                ss.LStorage.setItem('sao', value);
-            }
-        );
-    }
-
-    _addSSAO() {
-        const ss = this.sceneState;
-        if(ss.settings.aa.rendererAA) return;
-        const container = document.getElementById('main-stage');
-        const ssaoPass = new SSAOPass(ss.scenes[ss.curScene], ss.cameras[ss.curScene], container.offsetWidth, container.offsetHeight);
-        ssaoPass.kernelRadius = 0.5;
-        ssaoPass.minDistance = 0.001;
-        ssaoPass.maxDistance = 0.1;
-        this.composer.addPass(ssaoPass);
-        ssaoPass.enabled = ss.settings.ao.ssao;
-        ss.settingsClass.addUserSetting(
-            'boolean',
-            ss.settings.ao,
-            'ssao',
-            'Use SSAO',
-            'AO',
-            (value) => {
-                ssaoPass.enabled = value;
-                ss.LStorage.setItem('ssao', value);
             }
         );
     }

@@ -1,5 +1,5 @@
 import modulesData from './modulesData';
-import levelDummy01 from './levels/levelDummy01';
+import ship01 from './levels/ship01';
 
 // This class mocks the data received from the server (loadLevelsData)
 
@@ -13,9 +13,14 @@ class LevelsData {
     loadLevelsData(id, callBack) {
         // Temp mock data, load the data here eventually with async/await
         const levelsData = {
-            levelDummy01
+            ship01
         };
-        const data = this._unpackData(levelsData[id]);
+        const level = levelsData[id];
+        if(!level) {
+            this.sceneState.logger.error('Unknown level id: ' + id);
+            return null;
+        }
+        const data = this._unpackData(level);
         callBack(data);
     }
 
@@ -25,9 +30,13 @@ class LevelsData {
         for(let i=0; i<modules.length; i++) {
             const mParams = modules[i];
             const moduleData = modulesData[mParams.id];
+            if(!moduleData) {
+                this.sceneState.logger.error('Unknown module: ' + mParams.id);
+                return null;
+            }
             data.modules[i] = Object.assign(data.modules[i], moduleData);
-            this._turnModule(moduleData);
-            this._placeModule(moduleData, mParams.pos, newData);
+            this._turnModule(data.modules[i]);
+            this._placeModule(data.modules[i], mParams.pos, newData);
         }
         return newData;
     }

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
 import { TimelineMax, Sine } from 'gsap-ssr';
 
 class Player {
@@ -13,7 +12,6 @@ class Player {
         data.xPosMulti = 0;
         data.zPosMulti = 0;
         data.direction = 0;
-        data.maxSpeedMultiplier = 1;
         data.moveStartTimes = {
             startX: 0,
             startZ: 0,
@@ -30,40 +28,36 @@ class Player {
         this.data.createPlayerFn(
             this.data,
             this.sceneState,
-            THREE,
-            CANNON
+            THREE
         );
         this._addPushableBox(this.data.position); // TEMPORARY
     }
 
     _addPushableBox(pos) { // TEMPORARY
+        const position = [pos[0]+2, pos[1], pos[2]+2];
+
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
         const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(position[0], position[1], position[2]);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
-        const boxMaterial = new CANNON.Material();
-        boxMaterial.friction = 0.06;
-        const boxBody = new CANNON.Body({
-            mass: 20,
-            position: new CANNON.Vec3(pos[0]-2, 2, pos[2]-2),
-            shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
-            material: boxMaterial,
+        this.sceneState.physicsClass.addShape({
+            id: 'dummy-box-01',
+            type: 'box',
+            moving: true,
+            mass: 50,
+            size: [0.5, 0.5, 0.5],
+            position,
+            rotation: [0, 0, 0],
+            material: { friction: 0.2 },
+            mesh,
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
         });
-        boxBody.allowSleep = true;
-        boxBody.sleepSpeedLimit = 0.1;
-        boxBody.sleepTimeLimit = 1;
-        const updateFn = (shape) => {
-            mesh.position.copy(shape.body.position);
-            mesh.quaternion.copy(shape.body.quaternion);
-        };
-        const id = 'dummy-box-01';
-        this.sceneState.physics.world.addBody(boxBody);
-        this.sceneState.physics.shapes.push({ id, mesh, body: boxBody, updateFn, data: {} });
-        this.sceneState.physics.shapesLength = this.sceneState.physics.shapes.length;
-        if(this.sceneState.settings.physics.showPhysicsHelpers) {
-            this.sceneState.physics.helper.addVisual(boxBody, 0xFFFF00);
-        }
     }
 
     getDirection() {
@@ -72,99 +66,86 @@ class Player {
 
     _rotatePlayer(toDir) {
         this.data.rotatingY = true;
-        if(this.rotatationTL) {
-            this.rotatationTL.kill();
+        if(this.rotationTL) {
+            this.rotationTL.kill();
         }
-        const from = this.data.direction;
+        this.data.direction = this._bringRotationToRange(this.data.direction);
+        let from = this._makeRotationPositive(this.data.direction);
         if(Math.abs(from - toDir) > Math.PI) {
-            if(toDir > 0) {
-                toDir -= this.twoPI;
+            if(from > Math.PI) {
+                from -= this.twoPI;
             } else {
-                toDir += this.twoPI;
+                from += this.twoPI;
             }
         }
-        this.rotationTL = new TimelineMax().to(this.data, 0.1, {
-            direction: toDir,
-            ease: Sine.easeInOut,
-            onComplete: () => {
-                this.rotationTL = null;
-                this._normaliseRotation();
-                this.data.direction = toDir;
-                this.data.rotatingY = false;
-            },
-        });
-    }
-
-    _rotatePlayer2(toDir) {
-        this.data.rotatingY = true;
-        if(this.rotatationTL) {
-            this.rotatationTL.kill();
-        }
-        const from = this.data.mesh.rotation.y;
-        if(Math.abs(from - toDir) > Math.PI) {
-            if(toDir > 0) {
-                toDir -= this.twoPI;
-            } else {
-                toDir += this.twoPI;
-            }
-        }
-        this.rotationTL = new TimelineMax().to(this.data.mesh.rotation, 0.1, {
+        const mesh = this.data.mesh.children[0];
+        mesh.rotation.y = from;
+        this.rotationTL = new TimelineMax().to(mesh.rotation, 0.2, {
             y: toDir,
             ease: Sine.easeInOut,
+            onUpdate: () => {
+                this.data.direction = this._bringRotationToRange(mesh.rotation.y);
+            },
             onComplete: () => {
                 this.rotationTL = null;
-                this._normaliseRotation2();
-                this.data.direction = toDir;
+                this.data.direction = this._bringRotationToRange(toDir);
+                this.data.direction = this._makeRotationPositive(this.data.direction);
+                mesh.rotation.y = this.data.direction;
                 this.data.rotatingY = false;
             },
         });
     }
 
-    _normaliseRotation() {
-        const curRotation = this.data.direction;
-        if(curRotation > Math.PI) {
-            this.data.direction -= this.twoPI;
-            this._normaliseRotation();
-        } else if(curRotation < -Math.PI) {
-            this.data.direction += this.twoPI;
-            this._normaliseRotation();
+    _makeRotationPositive(dir) {
+        if(dir < 0) {
+            dir += this.twoPI;
         }
+        return dir;
     }
 
-    _normaliseRotation2() {
-        const curRotation = this.data.mesh.rotation.y;
-        if(curRotation > Math.PI) {
-            this.data.mesh.rotation.y -= this.twoPI;
-            this._normaliseRotation();
-        } else if(curRotation < -Math.PI) {
-            this.data.mesh.rotation.y += this.twoPI;
-            this._normaliseRotation();
+    _bringRotationToRange(curDir) {
+        if(curDir >= this.twoPI) {
+            curDir -= this.twoPI;
+            return this._bringRotationToRange(curDir);
+        } else if(curDir <= this.twoPI * -1) {
+            curDir += this.twoPI;
+            return this._bringRotationToRange(curDir);
         }
+        return curDir;
     }
 
-    movePlayer(xPosMulti, zPosMulti, dir) {
+    movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
         this._rotatePlayer(dir);
+        xPosMulti /= 4;
+        zPosMulti /= 4;
         this.data.xPosMulti = xPosMulti;
         this.data.zPosMulti = zPosMulti;
-        // this.data.direction = dir;
-    }
-
-    movePlayer2(xPosMulti, zPosMulti, dir, maxSpeedMultiplier, startTimes) {
-        this.data.body.wakeUp();
-        this._rotatePlayer(dir);
-        this.data.xPosMulti = xPosMulti;
-        this.data.zPosMulti = zPosMulti;
-        this.data.maxSpeedMultiplier = maxSpeedMultiplier;
         this.data.moveStartTimes = startTimes;
+        this.sceneState.additionalPhysicsData.push({
+            phase: 'moveChar',
+            data: {
+                id: this.data.id,
+                bodyIndex: this.data.bodyIndex,
+                speed: this.data.speed,
+                xPosMulti,
+                zPosMulti,
+                moveStartTimes: startTimes,
+                direction: dir,
+            },
+        });
     }
 
-    render = (timeStep) => {
-        this.data.renderFn(
-            timeStep,
-            this.data,
-            this.sceneState,
-            THREE
-        );
+    jump(timePressed) {
+        const power = timePressed / timePressed;
+        this.sceneState.additionalPhysicsData.push({
+            phase: 'jumpChar',
+            data: {
+                id: this.data.id,
+                bodyIndex: this.data.bodyIndex,
+                power,
+                jump: power * this.data.jump,
+            },
+        });
     }
 }
 

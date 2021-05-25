@@ -13,6 +13,7 @@ class Settings {
     }
 
     _initSettings(sceneState) {
+        sceneState.settings = Object.assign({}, defaultSettings);
         this._checkLocalStorage(sceneState);
         sceneState.defaultSettings = defaultSettings;
 
@@ -29,7 +30,6 @@ class Settings {
         const ls = sceneState.LStorage,
             defaults = defaultSettings,
             defKeys = Object.keys(defaults);
-        sceneState.settings = {};
         let data, fData;
         defKeys.forEach(key => {
             data = ls.getItem(key);
@@ -38,8 +38,11 @@ class Settings {
                 const value = ls.convertValue(defaults[key], data);
                 sceneState.settings[key] = value;
             } else {
-                const folderKeys = Object.keys(defaults[key]);
-                if(folderKeys.length) sceneState.settings[key] = {};
+                let folderKeys = [];
+                if(typeof defaults[key] !== 'string') {
+                    folderKeys = Object.keys(defaults[key]);
+                    if(folderKeys.length) sceneState.settings[key] = {};
+                }
                 folderKeys.forEach(fKey => {
                     fData = ls.getItem(fKey);
                     if(fData) {
@@ -117,33 +120,6 @@ class Settings {
             );
         }
         return stats;
-    }
-
-    setAA(rendererAA) {
-        let buttonText, url = window.location.href;
-        if(rendererAA === '1') {
-            this.sceneState.settings.aa.rendererAA = true;
-            buttonText = 'Disable renderer AA (refreshes app)';
-            url = url.replace('aa=1', 'aa=0');
-        } else {
-            buttonText = 'Enable renderer AA (refreshes app)';
-            if(url.indexOf('aa=0') > -1) {
-                url = url.replace('aa=0', 'aa=1');
-            } else {
-                url.indexOf('?') > -1 ? url += '&aa=1' : url += '?aa=1';
-            }
-        }
-        this.sceneState.settings.aa.rendererAAFunc = () => {
-            window.location = url;
-        };
-        this.addUserSetting(
-            'button',
-            this.sceneState.settings.aa,
-            'rendererAAFunc',
-            buttonText,
-            'Antialiasing',
-            null
-        );
     }
 
     addGuiElem(type, setting, settingKey, name, folder, onChange) {

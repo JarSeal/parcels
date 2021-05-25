@@ -4,7 +4,7 @@ class UserControls {
         this.player = player;
         this.listeners = {};
         this.keydownTimes = {
-            a: 0, d: 0, w: 0, s: 0
+            a: 0, d: 0, w: 0, s: 0, jump: 0,
         };
         this.direction = player.getDirection();
         this.stopTwoKeyPressTime = 0;
@@ -14,6 +14,7 @@ class UserControls {
 
     _initKeyListeners() {
         this.listeners.keydown = window.addEventListener('keydown', (e) => {
+            if(this.sceneState.loadingLevel) return;
             // console.log('keydown', e);
             switch(e.code) {
             case 'ArrowLeft':
@@ -45,9 +46,13 @@ class UserControls {
                     this._keyboardMove();
                 }
                 break;
+            case 'Space':
+                this.keydownTimes.jump = performance.now();
+                break;
             }
         });
         this.listeners.keyup = window.addEventListener('keyup', (e) => {
+            if(this.sceneState.loadingLevel) return;
             const keyCount = this._moveKeysPressedCount();
             switch(e.code) {
             case 'ArrowLeft':
@@ -82,6 +87,9 @@ class UserControls {
                     this._keyboardMove();
                 }
                 break;
+            case 'Space':
+                this._keyboardJump();
+                break;
             }
         });
     }
@@ -96,7 +104,7 @@ class UserControls {
     }
 
     _keyboardMove() {
-        let xPosMulti = 0, zPosMulti = 0, maxSpeedMultiplier = 1;
+        let xPosMulti = 0, zPosMulti = 0;
         const keyCount = this._moveKeysPressedCount();
         if(keyCount === 1) {
             if(this.keydownTimes.a) {
@@ -132,7 +140,6 @@ class UserControls {
             }
             xPosMulti *= 1.5;
             zPosMulti *= 1.5;
-            maxSpeedMultiplier = 1.5;
             this.twoKeyDirection = this.direction;
         } else if(keyCount === 0) {
             if(performance.now() - this.stopTwoKeyPressTime < 50) {
@@ -140,16 +147,21 @@ class UserControls {
             }
         }
         const startTime = performance.now();
-        this.player.movePlayer2(
+        this.player.movePlayer(
             xPosMulti,
             zPosMulti,
             this.direction,
-            maxSpeedMultiplier,
             {
                 startX: xPosMulti ? startTime : 0,
                 startZ: zPosMulti ? startTime : 0,
             }
         );
+    }
+
+    _keyboardJump() {
+        const timePressed = performance.now() - this.keydownTimes.jump;
+        this.keydownTimes.jump = 0;
+        this.player.jump(timePressed);
     }
 }
 
