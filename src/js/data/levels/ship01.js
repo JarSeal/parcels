@@ -13,7 +13,22 @@ const levelData = {
         {
             id: 'cabinModule01',
             turn: 1,
-            pos: [0, 10, 4],
+            pos: [0, 5, 5],
+        },
+        {
+            id: 'cabinModule01',
+            turn: 2,
+            pos: [0, 0, 5],
+        },
+        {
+            id: 'cabinModule01',
+            turn: 0,
+            pos: [0, -5, 4],
+        },
+        {
+            id: 'cabinModule01',
+            turn: 1,
+            pos: [0, 1, -5],
         },
     ],
 };
