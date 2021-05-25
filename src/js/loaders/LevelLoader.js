@@ -251,7 +251,18 @@ class LevelLoader {
     _createLevelPhysics(data, index) {
         const phys = data.physics;
         const compoundIdExt = data.id + '-' + index;
-        const compoundPos = [data.pos[2], this.sceneState.constants.FLOOR_HEIGHT * data.pos[0], data.pos[1]]
+        let xOffset = 0, zOffset = 0;
+        if(data.turn === 1) { zOffset = data.boundingDims[1]; } else
+        if(data.turn === 2) {
+            zOffset = data.boundingDims[1];
+            xOffset = data.boundingDims[2];
+        } else
+        if(data.turn === 3) { xOffset = data.boundingDims[2]; }
+        const compoundPos = [
+            data.pos[2] + xOffset,
+            this.sceneState.constants.FLOOR_HEIGHT * data.pos[0],
+            data.pos[1] + zOffset
+        ];
         this.sceneState.physicsClass.addShape({
             id: 'floor-' + compoundIdExt,
             type: 'compound',
@@ -259,7 +270,7 @@ class LevelLoader {
             movingShape: false,
             mass: 0,
             position: compoundPos,
-            rotation: [0, 0, 0],
+            rotation: [0, data.turnRadians, 0],
             material: { friction: 0.1 },
             sleep: {
                 allowSleep: true,
@@ -274,7 +285,7 @@ class LevelLoader {
             movingShape: false,
             mass: 0,
             position: compoundPos,
-            rotation: [0, 0, 0],
+            rotation: [0, data.turnRadians, 0],
             material: { friction: 0.001 },
             sleep: {
                 allowSleep: true,

@@ -148,6 +148,9 @@ const addShape = (shape) => {
         x: 0,
         z: 0,
     };
+    if(shape.rotation) {
+        body.quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
+    }
     if(shape.fixedRotation) {
         body.fixedRotation = true;
         body.updateMassProperties();
