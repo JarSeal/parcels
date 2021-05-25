@@ -254,6 +254,14 @@ const moduleData = {
             position: [3.67, 2.35, 4.05],
             helperColor: 0xfff9cc,
         },
+        {
+            id: 'pipe03',
+            section: 'wall',
+            type: 'box',
+            size: [0.2, 0.2, 2.2],
+            position: [0.85, 2.35, 3.18],
+            helperColor: 0xfff9cc,
+        },
     ],
 };
 
