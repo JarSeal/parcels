@@ -63,6 +63,9 @@ module.exports = {
         extensions: ['*', '.js', '.css', '.scss'],
   },
   plugins: [
+    new webpack.EnvironmentPlugin({
+      DEV_ASSETS_URL: 'useProductionCDN'
+    }),
     new webpack.ProgressPlugin(),
     new HtmlWebpackPlugin({
         template: commonPaths.templatePath,

@@ -1,7 +1,9 @@
 const defaultSettings = {
 
     // Assets
-    assetsUrl: 'https://parcels.netlify.app',
+    assetsUrl: process.env.DEV_ASSETS_URL === 'useProductionCDN'
+        ? 'https://parcels.netlify.app'
+        : process.env.DEV_ASSETS_URL,
     
     // GUI
     enableGui: true,
