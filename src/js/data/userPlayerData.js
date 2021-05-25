@@ -1,7 +1,7 @@
 const userPlayerData = {
     id: 'some-unique-player-id',
     name: 'Keijo',
-    position: [2, 4.91, 2],
+    position: [2, 2, 2],
     direction: 0,
     speed: 2.8,
     jump: 4.8,
@@ -61,9 +61,9 @@ const userPlayerData = {
                     alert('WASTED!');
 
                     // // position
-                    // data.body.position.y = 10;
-                    // data.body.position.x = 0;
-                    // data.body.position.z = 0;
+                    // data.body.position.y = 2;
+                    // data.body.position.x = 2;
+                    // data.body.position.z = 2;
 
                     // // orientation
                     // data.body.quaternion.set(0,0,0,1);

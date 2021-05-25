@@ -161,6 +161,7 @@ class Physics {
                 fixedRotation: shapeData.fixedRotation,
                 material: shapeData.material,
                 sleep: shapeData.sleep,
+                roof: shapeData.roof,
                 characterData: shapeData.characterData
                     ? {
                         speed: shapeData.characterData.speed,

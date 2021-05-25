@@ -262,6 +262,15 @@ const moduleData = {
             position: [0.85, 2.35, 3.18],
             helperColor: 0xfff9cc,
         },
+        {
+            id: 'roof01',
+            section: 'floor',
+            roof: true,
+            type: 'box',
+            size: [8, 0.5, 5],
+            position: [4, 3, 2.5],
+            helperColor: 0xff00cc,
+        },
     ],
 };
 

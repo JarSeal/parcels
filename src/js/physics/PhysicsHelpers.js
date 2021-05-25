@@ -94,12 +94,18 @@ class PhysicsHelpers {
     }
 
     _createBox(data) {
+        let mat;
         const geo = new THREE.BoxBufferGeometry(
             data.size[0] * 2,
             data.size[1] * 2,
             data.size[2] * 2
         );
-        const mat = new THREE.MeshLambertMaterial();
+        if(data.roof) {
+            mat = new THREE.MeshBasicMaterial();
+            mat.wireframe = true;
+        } else {
+            mat = new THREE.MeshLambertMaterial();
+        }
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
         if(data.rotation) {

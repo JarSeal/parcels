@@ -14,6 +14,7 @@ class UserControls {
 
     _initKeyListeners() {
         this.listeners.keydown = window.addEventListener('keydown', (e) => {
+            if(this.sceneState.loadingLevel) return;
             // console.log('keydown', e);
             switch(e.code) {
             case 'ArrowLeft':
@@ -51,6 +52,7 @@ class UserControls {
             }
         });
         this.listeners.keyup = window.addEventListener('keyup', (e) => {
+            if(this.sceneState.loadingLevel) return;
             const keyCount = this._moveKeysPressedCount();
             switch(e.code) {
             case 'ArrowLeft':

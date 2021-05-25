@@ -86,6 +86,7 @@ const stepTheWorld = (data, returnAdditionals) => {
 };
 
 const moveChar = (data) => {
+    if(data.bodyIndex === undefined) return;
     const veloX = data.xPosMulti * data.speed;
     const veloZ = data.zPosMulti * data.speed;
     movingShapes[data.bodyIndex].moveValues.veloX = veloX;

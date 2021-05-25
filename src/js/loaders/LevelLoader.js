@@ -5,7 +5,7 @@ import LevelsData from '../data/LevelsData';
 class LevelLoader {
     constructor(sceneState) {
         this.sceneState = sceneState;
-        sceneState.loadingLevel = false;
+        sceneState.loadingLevel = true;
         this.loadingData = false;
         this.loadingModels = false;
         this.loadingTextures = false;
@@ -300,6 +300,7 @@ class LevelLoader {
                         obj.position[2],
                     ],
                     rotation,
+                    roof: obj.roof,
                     sleep: {
                         allowSleep: true,
                         sleeSpeedLimit: 0.1,
