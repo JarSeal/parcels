@@ -100,7 +100,6 @@ class LevelLoader {
             this._setMeshPosition(mesh, pos, turn, dims);
             mesh.rotation.set(0, turn * (Math.PI / 2), 0);
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
-            // if(this.sceneState.settings.physics.showPhysicsHelpers) mesh.visible = false;
             this.modelsLoaded++;
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {

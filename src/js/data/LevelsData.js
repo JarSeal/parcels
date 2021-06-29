@@ -37,6 +37,11 @@ class LevelsData {
             data.modules[i] = Object.assign(data.modules[i], moduleData);
             this._turnModule(data.modules[i]);
             this._placeModule(data.modules[i], mParams.pos, newData);
+            console.log('DATA HERE', data.modules[i], mParams.pos, newData);
+            // 1. normalise (set to start from zero, zero) the minus values and keep them in memory for later usage
+            // 2. start to create ship
+            // 3. offset the ship position by the normalising value..
+            // this._createPhysicsElems();
         }
         return newData;
     }

@@ -1,24 +1,22 @@
 const moduleData = {
-    id: 'CabinL1',
+    id: 'AirLockL1',
     level: 1,
-    name: 'Cabin',
-    boundingDims: [1, 7, 8],
+    name: 'Air Lock',
+    boundingDims: [1, 5, 8],
     tiles: [
         [
             [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
+            [{t:1},{t:1},{t:1},{t:1},{t:2},{t:1},{t:1},{t:1},],
         ],
     ],
     path: '/models/modules/L1/',
     models: [
         {
-            exterior: 'Cabin_L1_EXT.glb',
-            interior: 'Cabin_L1_INT.glb',
+            exterior: 'AirLock_L1_EXT.glb',
+            interior: 'AirLock_L1_INT.glb',
             roof: null,
             bottom: null, // maybe..
             details: null, // maybe..
@@ -26,8 +24,8 @@ const moduleData = {
     ],
     textures: [
         {
-            exterior: 'Cabin_L1_EXT',
-            interior: 'Cabin_L1_INT',
+            exterior: 'AirLock_L1_EXT',
+            interior: 'AirLock_L1_INT',
             roof: null,
             bottom: null, // maybe..
             details: null, // maybe..
@@ -40,8 +38,8 @@ const moduleData = {
             id: 'floor',
             section: 'floor',
             type: 'box',
-            size: [8, 0.5, 7],
-            position: [4, -0.25, 3.5],
+            size: [8, 0.5, 5],
+            position: [4, -0.25, 2.5],
             helperColor: 0xffcc00,
         },
     ],

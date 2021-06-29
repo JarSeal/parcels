@@ -4,6 +4,7 @@ import CargoHallL1 from './modules/L1/CargoHall_L1';
 import HallWay01L1 from './modules/L1/HallWay01_L1';
 import CabinL1 from './modules/L1/Cabin_L1';
 import CockpitL1 from './modules/L1/Cockpit_L1';
+import AirLockL1 from './modules/L1/AirLock_L1';
 
 const modulesData = {
     cabinModule01,
@@ -12,6 +13,7 @@ const modulesData = {
     HallWay01L1,
     CabinL1,
     CockpitL1,
+    AirLockL1
 };
 
 export default modulesData;

@@ -12,7 +12,7 @@ const levelData = {
         },
         {
             id: 'cabinModule01',
-            turn: 1,
+            turn: 0,
             pos: [0, 1, -5],
         },
         {
@@ -64,6 +64,16 @@ const levelData = {
             id: 'CockpitL1',
             turn: 2,
             pos: [0, -13, -8],
+        },
+        {
+            id: 'AirLockL1',
+            turn: 0,
+            pos: [0, -2, -12],
+        },
+        {
+            id: 'AirLockL1',
+            turn: 3,
+            pos: [0, 4, -12],
         },
     ],
 };
