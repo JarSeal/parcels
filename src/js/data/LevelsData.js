@@ -25,10 +25,21 @@ class LevelsData {
     }
 
     _unpackData(data) {
-        let newData = { ...data, tiles: [] };
+        let newData = { ...data, tiles: [] },
+            smallestY = 0,
+            smallestX = 0;
         const modules = data.modules;
+        // Get and save smallest position values (will be used as the offset for the ship's position)
+        for(let i=0; i<modules.length; i++) {
+            console.log('MODULE', modules[i]);
+            const module = modules[i];
+            if(module.pos[1] < smallestY) smallestY = module.pos[1];
+            if(module.pos[2] < smallestX) smallestX = module.pos[2];
+        }
         for(let i=0; i<modules.length; i++) {
             const mParams = modules[i];
+            mParams.pos[1] += smallestY;
+            mParams.pos[2] += smallestX;
             const moduleData = modulesData[mParams.id];
             if(!moduleData) {
                 this.sceneState.logger.error('Unknown module: ' + mParams.id);
@@ -37,12 +48,14 @@ class LevelsData {
             data.modules[i] = Object.assign(data.modules[i], moduleData);
             this._turnModule(data.modules[i]);
             this._placeModule(data.modules[i], mParams.pos, newData);
-            console.log('DATA HERE', data.modules[i], mParams.pos, newData);
+            // console.log('DATA HERE', data.modules[i], mParams.pos, newData);
             // 1. normalise (set to start from zero, zero) the minus values and keep them in memory for later usage
             // 2. start to create ship
             // 3. offset the ship position by the normalising value..
             // this._createPhysicsElems();
         }
+        newData.pos[1] = smallestY;
+        newData.pos[2] = smallestX;
         return newData;
     }
 
