@@ -2,6 +2,7 @@
 class ModulePhysics {
     constructor(sceneState, moduleData, moduleIndex) {
         this._createFloor(sceneState, moduleData, moduleIndex);
+        this._createWalls(sceneState, moduleData, moduleIndex);
         console.log('MOD DATA', moduleData);
     }
 
@@ -14,7 +15,8 @@ class ModulePhysics {
         const totalTilesPerFloor = rows * cols;
         let floorIndex = 0;
 
-        // This algorithm is O(floors*tiles³) / O(ft³), this could propably be optimised with a recursion or some other type of algorithm..
+        // This algorithm is O(floors*tilesPerFloor*rows*cols),
+        // this could propably be optimised with a recursion or some other type of algorithm.
         for(let f=0; f<floors; f++) {
             let x = 0, z = 0,
                 startXSet = false, endXSet = false, startX, endX = cols-1, startZ = 0,
@@ -99,6 +101,8 @@ class ModulePhysics {
 
     _createWalls(sceneState, moduleData, moduleIndex) {
         const COMP_WALLS_ID = 'levelCompoundWalls';
+        COMP_WALLS_ID, sceneState, moduleData, moduleIndex;
+        // TODO: do the walls and doorways creation logic..
     }
 }
 
