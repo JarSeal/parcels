@@ -5,13 +5,13 @@ const moduleData = {
     boundingDims: [1, 7, 8],
     tiles: [
         [
-            [{t:9},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:9},],
+            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
             [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:9},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:9},],
+            [{t:1},{t:2},{t:2},{t:0},{t:2},{t:2},{t:2},{t:1},],
+            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
         ],
     ],
     path: '/models/modules/L1/',
@@ -36,14 +36,14 @@ const moduleData = {
     textureExt: 'png',
     textureSizes: [512, 1024, 2048, 4096],
     physics: [
-        {
-            id: 'floor',
-            section: 'floor',
-            type: 'box',
-            size: [8, 0.5, 7],
-            position: [4, -0.25, 3.5],
-            helperColor: 0xffcc00,
-        },
+        // {
+        //     id: 'floor',
+        //     section: 'floor',
+        //     type: 'box',
+        //     size: [8, 0.5, 7],
+        //     position: [4, -0.25, 3.5],
+        //     helperColor: 0xffcc00,
+        // },
     ],
 };
 

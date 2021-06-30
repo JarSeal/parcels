@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LevelsData from '../data/LevelsData';
+import ModulePhysics from '../physics/ModulePhysics';
 
 class LevelLoader {
     constructor(sceneState) {
@@ -53,6 +54,7 @@ class LevelLoader {
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
             this._createLevelPhysics(module, modIndex);
+            new ModulePhysics(this.sceneState, module, modIndex);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
                 const m = module.models[mIndex];
