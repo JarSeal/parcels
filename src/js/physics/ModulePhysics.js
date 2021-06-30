@@ -11,7 +11,7 @@ class ModulePhysics {
         const floors = moduleData.boundingDims[0];
         const rows = moduleData.boundingDims[1];
         const cols = moduleData.boundingDims[2];
-        const totalTiles = floors * rows * cols;
+        const totalTilesPerFloor = rows * cols;
         let floorIndex = 0;
 
         // This algorithm is O(floors*tiles³) / O(ft³), this could propably be optimised with a recursion or some other type of algorithm..
@@ -20,7 +20,7 @@ class ModulePhysics {
                 startXSet = false, endXSet = false, startX, endX = cols-1, startZ = 0,
                 tilesDone = 0,
                 endRect = false;
-            while(totalTiles !== tilesDone) {
+            while(totalTilesPerFloor !== tilesDone) {
                 for(let r=0; r<rows; r++) {
                     for(let c=0; c<cols; c++) {
                         if(!tiles[f][r][c].p) {
@@ -38,7 +38,7 @@ class ModulePhysics {
                                         endXSet = true;
                                         x = endX - startX + 1;
                                         z++;
-                                    } else if(endX > c) {
+                                    } else if(endX > c-1) {
                                         for(let i=c; i>=startX; i--) {
                                             if(tiles[f][r][i].p) {
                                                 tiles[f][r][i].p = false;
