@@ -97,9 +97,9 @@ class ModulePhysics {
         }
     }
 
-    // _createWalls(sceneState, moduleData, moduleIndex) {
-    //     const COMP_WALLS_ID = 'levelCompoundWalls';
-    // }
+    _createWalls(sceneState, moduleData, moduleIndex) {
+        const COMP_WALLS_ID = 'levelCompoundWalls';
+    }
 }
 
 export default ModulePhysics;
