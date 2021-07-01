@@ -97,12 +97,107 @@ class ModulePhysics {
                 z = 0;
             }
         }
+
+        // reset processed data
+        for(let f=0; f<floors; f++) {
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    tiles[f][r][c].p = false;
+                }
+            }
+        }
     }
 
     _createWalls(sceneState, moduleData, moduleIndex) {
         const COMP_WALLS_ID = 'levelCompoundWalls';
-        COMP_WALLS_ID, sceneState, moduleData, moduleIndex;
-        // TODO: do the walls and doorways creation logic..
+        const tiles = moduleData.tiles;
+        const floors = moduleData.boundingDims[0];
+        const rows = moduleData.boundingDims[1];
+        const cols = moduleData.boundingDims[2];
+        const totalTilesPerFloor = rows * cols;
+        for(let f=0; f<floors; f++) {
+            let tilesDone = 0,
+                wallLength = 0,
+                startX = 0,
+                startZ = 0,
+                directionSet = false,
+                horisontal = true,
+                endWall = false,
+                wallIndex = 0;
+            while(totalTilesPerFloor !== tilesDone) {
+                for(let r=0; r<rows; r++) {
+                    for(let c=0; c<cols; c++) {
+                        if(!tiles[f][r][c].p) {
+                            if(directionSet && !horisontal && startX !== c) continue;
+                            if((horisontal || !directionSet) &&
+                                tiles[f][r][c].t === 1 && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) {
+                                if(!directionSet) {
+                                    horisontal = true;
+                                    directionSet = true;
+                                    startX = c;
+                                    startZ = r;
+                                }
+                                wallLength++;
+                            } else if((!horisontal || !directionSet)
+                                      && tiles[f][r][c].t === 1 && tiles[f][r+1] && tiles[f][r+1][c].t === 1) {
+                                if(!directionSet) {
+                                    horisontal = false;
+                                    directionSet = true;
+                                    startX = c;
+                                    startZ = r;
+                                }
+                                wallLength++;
+                            } else if(tiles[f][r][c].t === 1) {
+                                if(!directionSet) {
+                                    horisontal = true;
+                                    directionSet = true;
+                                    startX = c;
+                                    startZ = r;
+                                }
+                                wallLength++;
+                                endWall = true;
+                            }
+                            tiles[f][r][c].p = true;
+                            tilesDone++;
+                        }
+                        if(endWall) break;
+                    }
+                    if(endWall) break;
+                }
+                const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
+                if(wallLength > 0) {
+                    sceneState.physicsClass.addShape({
+                        id: 'wallShape_' + moduleData.id + '_' + moduleIndex + '_' + wallIndex,
+                        compoundParentId: COMP_WALLS_ID,
+                        type: 'box',
+                        size: horisontal
+                            ? [wallLength / 2, 3 / 2, 0.5]
+                            : [0.5, 3 / 2, wallLength / 2],
+                        position: horisontal
+                            ? [
+                                wallLength / 2 + moduleData.pos[2] + startX,
+                                1.5,
+                                0.5 + moduleData.pos[1] + startZ,
+                            ]
+                            : [
+                                0.5 + moduleData.pos[2] + startX,
+                                1.5,
+                                wallLength / 2 + moduleData.pos[1] + startZ,
+                            ],
+                        sleep: {
+                            allowSleep: true,
+                            sleeSpeedLimit: 0.1,
+                            sleepTimeLimit: 1,
+                        },
+                        helperColor: colors[wallIndex > 5 ? 0 : wallIndex],
+                    });
+                    wallIndex++;
+                }
+                endWall = false;
+                directionSet = false;
+                wallLength = 0;
+            }
+        }
     }
 }
 
