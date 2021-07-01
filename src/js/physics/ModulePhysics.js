@@ -75,7 +75,7 @@ class ModulePhysics {
                 const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
                 if(x > 0 && z > 0) {
                     sceneState.physicsClass.addShape({
-                        id: 'floorShape_' + moduleData.id + '_' + moduleIndex + '_' + floorIndex,
+                        id: 'floorShape_' + 'f' + f + '_' + moduleData.id + '_' + moduleIndex + '_' + floorIndex,
                         compoundParentId: COMP_FLOOR_ID,
                         type: 'box',
                         size: [x / 2, 0.5 / 2, z / 2],
@@ -123,7 +123,13 @@ class ModulePhysics {
                 directionSet = false,
                 horisontal = true,
                 endWall = false,
-                wallIndex = 0;
+                wallIndex = 0,
+                floorNeighbors = {
+                    left: false,
+                    right: false,
+                    top: false,
+                    bottom: false,
+                };
             while(totalTilesPerFloor !== tilesDone) {
                 for(let r=0; r<rows; r++) {
                     for(let c=0; c<cols; c++) {
@@ -136,6 +142,13 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                } else {
+                                    if(tiles[f][r-1] && tiles[f][r-1][c].t === 2) {
+                                        floorNeighbors.top = true;
+                                    }
+                                    if(tiles[f][r+1] && tiles[f][r+1][c].t === 2) {
+                                        floorNeighbors.bottom = true;
+                                    }
                                 }
                                 wallLength++;
                             } else if((!horisontal || !directionSet)
@@ -145,6 +158,13 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                } else {
+                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 2) {
+                                        floorNeighbors.left = true;
+                                    }
+                                    if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 2) {
+                                        floorNeighbors.right = true;
+                                    }
                                 }
                                 wallLength++;
                             } else if(tiles[f][r][c].t === 1) {
@@ -153,6 +173,18 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                }
+                                if(tiles[f][r-1] && tiles[f][r-1][c].t === 2) {
+                                    floorNeighbors.top = true;
+                                }
+                                if(tiles[f][r+1] && tiles[f][r+1][c].t === 2) {
+                                    floorNeighbors.bottom = true;
+                                }
+                                if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 2) {
+                                    floorNeighbors.left = true;
+                                }
+                                if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 2) {
+                                    floorNeighbors.right = true;
                                 }
                                 wallLength++;
                                 endWall = true;
@@ -167,7 +199,7 @@ class ModulePhysics {
                 const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
                 if(wallLength > 0) {
                     sceneState.physicsClass.addShape({
-                        id: 'wallShape_' + moduleData.id + '_' + moduleIndex + '_' + wallIndex,
+                        id: 'wallShape_' + 'f' + f + '_' + moduleData.id + '_' + moduleIndex + '_' + wallIndex,
                         compoundParentId: COMP_WALLS_ID,
                         type: 'box',
                         size: horisontal
@@ -196,6 +228,12 @@ class ModulePhysics {
                 endWall = false;
                 directionSet = false;
                 wallLength = 0;
+                floorNeighbors = {
+                    left: false,
+                    right: false,
+                    top: false,
+                    bottom: false,
+                };
             }
         }
     }
