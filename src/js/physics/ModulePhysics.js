@@ -4,7 +4,6 @@ class ModulePhysics {
     constructor(sceneState, moduleData, moduleIndex) {
         this._createFloor(sceneState, moduleData, moduleIndex);
         this._createWalls(sceneState, moduleData, moduleIndex);
-        console.log('MOD DATA', moduleData);
     }
 
     _createFloor(sceneState, moduleData, moduleIndex) {
@@ -198,6 +197,7 @@ class ModulePhysics {
                         moduleIndex,
                         wallIndex,
                         horisontal,
+                        floorNeighbors,
                         wallLength,
                         startX,
                         startZ,

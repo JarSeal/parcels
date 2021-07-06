@@ -31,7 +31,7 @@ const addWallShape = (data, sceneState) => {
     }
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
     sceneState.physicsClass.addShape({
-        id: 'wallShape_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+        id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         compoundParentId: data.compId,
         type: 'box',
         size: data.horisontal
@@ -55,6 +55,46 @@ const addWallShape = (data, sceneState) => {
         },
         helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
     });
+    sceneState.physicsClass.addShape({
+        id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+        compoundParentId: data.compId,
+        type: 'box',
+        rotation: createWallTilt(data),
+        size: data.horisontal
+            ? [data.wallLength / 2, 3 / 2, 0.5]
+            : [0.5, 3 / 2, data.wallLength / 2],
+        position: data.horisontal
+            ? [
+                data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
+                1.5,
+                0.5 + data.moduleData.pos[1] + data.startZ,
+            ]
+            : [
+                0.5 + data.moduleData.pos[2] + data.startX,
+                1.5,
+                data.wallLength / 2 + data.moduleData.pos[1] + data.startZ,
+            ],
+        sleep: {
+            allowSleep: true,
+            sleeSpeedLimit: 0.1,
+            sleepTimeLimit: 1,
+        },
+        helperColor: 0xcc7700,
+    });
+};
+
+const createWallTilt = (data) => {
+    let tilt = 1;
+    if(data.floorNeighbors.top || data.floorNeighbors.right) {
+        tilt = 4;
+    } else if(data.floorNeighbors.bottom || data.floorNeighbors.left) {
+        tilt = -4;
+    } else {
+        return null;
+    }
+    return data.horisontal
+        ? [Math.PI / tilt, 0, 0]
+        : [0, 0, Math.PI / tilt];
 };
 
 const level1Physics = (type, section, sceneState, data) => {
