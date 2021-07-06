@@ -1,3 +1,4 @@
+import levelTypes from './levelTypes/index';
 
 class ModulePhysics {
     constructor(sceneState, moduleData, moduleIndex) {
@@ -72,24 +73,17 @@ class ModulePhysics {
                 endXSet = false;
                 endX = cols-1;
                 endRect = false;
-                const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
                 if(x > 0 && z > 0) {
-                    sceneState.physicsClass.addShape({
-                        id: 'floorShape_' + 'f' + f + '_' + moduleData.id + '_' + moduleIndex + '_' + floorIndex,
-                        compoundParentId: COMP_FLOOR_ID,
-                        type: 'box',
-                        size: [x / 2, 0.5 / 2, z / 2],
-                        position: [
-                            x / 2 + moduleData.pos[2] + startX,
-                            -0.25,
-                            z / 2 + moduleData.pos[1] + startZ,
-                        ],
-                        sleep: {
-                            allowSleep: true,
-                            sleeSpeedLimit: 0.1,
-                            sleepTimeLimit: 1,
-                        },
-                        helperColor: colors[floorIndex > 5 ? 0 : floorIndex],
+                    levelTypes(moduleData.levelType, 'floor', sceneState, {
+                        compId: COMP_FLOOR_ID,
+                        floor: f,
+                        moduleData,
+                        moduleIndex,
+                        floorIndex,
+                        x,
+                        z,
+                        startX,
+                        startZ,
                     });
                     floorIndex++;
                 }
@@ -196,32 +190,17 @@ class ModulePhysics {
                     }
                     if(endWall) break;
                 }
-                const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
                 if(wallLength > 0) {
-                    sceneState.physicsClass.addShape({
-                        id: 'wallShape_' + 'f' + f + '_' + moduleData.id + '_' + moduleIndex + '_' + wallIndex,
-                        compoundParentId: COMP_WALLS_ID,
-                        type: 'box',
-                        size: horisontal
-                            ? [wallLength / 2, 3 / 2, 0.5]
-                            : [0.5, 3 / 2, wallLength / 2],
-                        position: horisontal
-                            ? [
-                                wallLength / 2 + moduleData.pos[2] + startX,
-                                1.5,
-                                0.5 + moduleData.pos[1] + startZ,
-                            ]
-                            : [
-                                0.5 + moduleData.pos[2] + startX,
-                                1.5,
-                                wallLength / 2 + moduleData.pos[1] + startZ,
-                            ],
-                        sleep: {
-                            allowSleep: true,
-                            sleeSpeedLimit: 0.1,
-                            sleepTimeLimit: 1,
-                        },
-                        helperColor: colors[wallIndex > 5 ? 0 : wallIndex],
+                    levelTypes(moduleData.levelType, 'wall', sceneState, {
+                        compId: COMP_WALLS_ID,
+                        floor: f,
+                        moduleData,
+                        moduleIndex,
+                        wallIndex,
+                        horisontal,
+                        wallLength,
+                        startX,
+                        startZ,
                     });
                     wallIndex++;
                 }

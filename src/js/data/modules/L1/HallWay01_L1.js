@@ -1,6 +1,7 @@
 const moduleData = {
     id: 'HallWay01L1',
     level: 1,
+    levelType: 'level1',
     name: 'Hallway 1',
     boundingDims: [1, 5, 9],
     tiles: [

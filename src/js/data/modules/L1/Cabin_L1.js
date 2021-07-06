@@ -1,6 +1,7 @@
 const moduleData = {
     id: 'CabinL1',
     level: 1,
+    levelType: 'level1',
     name: 'Cabin',
     boundingDims: [1, 7, 8],
     tiles: [
