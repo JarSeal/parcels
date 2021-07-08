@@ -55,7 +55,6 @@ const addWallShape = (data, sceneState) => {
         },
         helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
     });
-    return;
     sceneState.physicsClass.addShape({
         id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         compoundParentId: data.compId,

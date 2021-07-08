@@ -183,9 +183,6 @@ class ModulePhysics {
                                 endWall = true;
                             }
                             tiles[f][r][c].p = true;
-                            if(horisontal && tiles[f][r+1][c].t === 1) {
-                                tiles[f][r][c].p = false;
-                            }
                             tilesDone++;
                         }
                         if(endWall) break;
