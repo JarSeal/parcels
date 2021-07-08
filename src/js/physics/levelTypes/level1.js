@@ -35,16 +35,16 @@ const addWallShape = (data, sceneState) => {
         compoundParentId: data.compId,
         type: 'box',
         size: data.horisontal
-            ? [data.wallLength / 2, 3 / 2, 0.5]
-            : [0.5, 3 / 2, data.wallLength / 2],
+            ? [data.wallLength / 2, 3 / 2, 0.15]
+            : [0.15, 3 / 2, data.wallLength / 2],
         position: data.horisontal
             ? [
                 data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
                 1.5,
-                0.5 + data.moduleData.pos[1] + data.startZ,
+                0.5 + data.moduleData.pos[1] + data.startZ + addWallPosOffset(data.floorNeighbors, data),
             ]
             : [
-                0.5 + data.moduleData.pos[2] + data.startX,
+                0.5 + data.moduleData.pos[2] + data.startX + addWallPosOffset(data.floorNeighbors, data),
                 1.5,
                 data.wallLength / 2 + data.moduleData.pos[1] + data.startZ,
             ],
@@ -55,14 +55,15 @@ const addWallShape = (data, sceneState) => {
         },
         helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
     });
+    return;
     sceneState.physicsClass.addShape({
         id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         compoundParentId: data.compId,
         type: 'box',
         rotation: createWallTilt(data),
         size: data.horisontal
-            ? [data.wallLength / 2, 3 / 2, 0.5]
-            : [0.5, 3 / 2, data.wallLength / 2],
+            ? [data.wallLength / 2, 3 / 2, 0.15]
+            : [0.15, 3 / 2, data.wallLength / 2],
         position: data.horisontal
             ? [
                 data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
@@ -86,15 +87,24 @@ const addWallShape = (data, sceneState) => {
 const createWallTilt = (data) => {
     let tilt = 1;
     if(data.floorNeighbors.top || data.floorNeighbors.right) {
-        tilt = 4;
+        tilt = 12;
     } else if(data.floorNeighbors.bottom || data.floorNeighbors.left) {
-        tilt = -4;
+        tilt = -12;
     } else {
         return null;
     }
     return data.horisontal
         ? [Math.PI / tilt, 0, 0]
         : [0, 0, Math.PI / tilt];
+};
+
+const addWallPosOffset = (neighbors, data) => {
+    const amount = 0.2;
+    let offset = 0;
+    if(neighbors.top || neighbors.left) offset += amount;
+    if(neighbors.bottom || neighbors.right) offset -= amount;
+    if(data.wallIndex === 4 || data.wallIndex === 5) console.log('offset', amount, data);
+    return offset;
 };
 
 const level1Physics = (type, section, sceneState, data) => {
