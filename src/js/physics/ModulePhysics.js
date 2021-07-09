@@ -129,12 +129,16 @@ class ModulePhysics {
                         if(!tiles[f][r][c].p) {
                             if(directionSet && !horisontal && startX !== c) continue;
                             if((horisontal || !directionSet) &&
-                                tiles[f][r][c].t === 1 && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) {
+                                tiles[f][r][c].t === 1 && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1 && !tiles[f][r][c+1].p) {
                                 if(!directionSet) {
                                     horisontal = true;
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1) {
+                                        wallLength++;
+                                        startX = c-1;
+                                    }
                                 } else {
                                     if(tiles[f][r-1] && tiles[f][r-1][c].t === 2) {
                                         floorNeighbors.top = true;
@@ -145,12 +149,16 @@ class ModulePhysics {
                                 }
                                 wallLength++;
                             } else if((!horisontal || !directionSet)
-                                      && tiles[f][r][c].t === 1 && tiles[f][r+1] && tiles[f][r+1][c].t === 1) {
+                                      && tiles[f][r][c].t === 1 && tiles[f][r+1] && tiles[f][r+1][c].t === 1 && !tiles[f][r+1][c].p) {
                                 if(!directionSet) {
                                     horisontal = false;
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                    if(tiles[f][r-1][c] && tiles[f][r-1][c].t === 1) {
+                                        wallLength++;
+                                        startZ = r-1;
+                                    }
                                 } else {
                                     if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 2) {
                                         floorNeighbors.left = true;
@@ -162,10 +170,18 @@ class ModulePhysics {
                                 wallLength++;
                             } else if(tiles[f][r][c].t === 1) {
                                 if(!directionSet) {
-                                    horisontal = true;
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1) {
+                                        wallLength++;
+                                        startX = c-1;
+                                        horisontal = true;
+                                    } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 1) {
+                                        wallLength++;
+                                        startZ = r-1;
+                                        horisontal = false;
+                                    }
                                 }
                                 if(tiles[f][r-1] && tiles[f][r-1][c].t === 2) {
                                     floorNeighbors.top = true;
@@ -182,6 +198,12 @@ class ModulePhysics {
                                 wallLength++;
                                 endWall = true;
                             }
+                            if(endWall) {
+                                if((horisontal && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) || 
+                                    (!horisontal && tiles[f][r+1] && tiles[f][r+1][c].t === 1)) {
+                                    wallLength++;
+                                }
+                            }
                             tiles[f][r][c].p = true;
                             tilesDone++;
                         }
@@ -190,6 +212,7 @@ class ModulePhysics {
                     if(endWall) break;
                 }
                 if(wallLength > 0) {
+                    this._checkFloorNeighbors(floorNeighbors, horisontal, tiles, wallLength, f, startX, startZ);
                     levelTypes(moduleData.levelType, 'wall', sceneState, {
                         compId: COMP_WALLS_ID,
                         floor: f,
@@ -213,6 +236,28 @@ class ModulePhysics {
                     top: false,
                     bottom: false,
                 };
+            }
+        }
+    }
+
+    _checkFloorNeighbors(obj, horisontal, tiles, wallLength, floor, startX, startZ) {
+        if(!obj.top && !obj.bottom && !obj.left && !obj.right) {
+            for(let i=0; i<wallLength; i++) {
+                if(horisontal) {
+                    if(tiles[floor][startZ+1] && tiles[floor][startZ+1][startX].t === 1) {
+                        obj.bottom = true;
+                    }
+                    if(tiles[floor][startZ-1] && tiles[floor][startZ-1][startX].t === 1) {
+                        obj.top = true;
+                    }
+                } else {
+                    if(tiles[floor][startZ][startX+1] && tiles[floor][startZ][startX+1].t === 1) {
+                        obj.right = true;
+                    }
+                    if(tiles[floor][startZ][startX-1] && tiles[floor][startZ][startX-1].t === 1) {
+                        obj.left = true;
+                    }
+                }
             }
         }
     }

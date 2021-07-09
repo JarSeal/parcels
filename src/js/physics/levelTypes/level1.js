@@ -102,7 +102,6 @@ const addWallPosOffset = (neighbors, data) => {
     let offset = 0;
     if(neighbors.top || neighbors.left) offset += amount;
     if(neighbors.bottom || neighbors.right) offset -= amount;
-    if(data.wallIndex === 4 || data.wallIndex === 5) console.log('offset', amount, data);
     return offset;
 };
 
