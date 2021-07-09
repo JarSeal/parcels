@@ -244,17 +244,17 @@ class ModulePhysics {
         if(!obj.top && !obj.bottom && !obj.left && !obj.right) {
             for(let i=0; i<wallLength; i++) {
                 if(horisontal) {
-                    if(tiles[floor][startZ+1] && tiles[floor][startZ+1][startX].t === 1) {
+                    if(tiles[floor][startZ+1] && tiles[floor][startZ+1][startX+i].t === 1) {
                         obj.bottom = true;
                     }
-                    if(tiles[floor][startZ-1] && tiles[floor][startZ-1][startX].t === 1) {
+                    if(tiles[floor][startZ-1] && tiles[floor][startZ-1][startX+i].t === 1) {
                         obj.top = true;
                     }
                 } else {
-                    if(tiles[floor][startZ][startX+1] && tiles[floor][startZ][startX+1].t === 1) {
+                    if(tiles[floor][startZ+i][startX+1] && tiles[floor][startZ+i][startX+1].t === 1) {
                         obj.right = true;
                     }
-                    if(tiles[floor][startZ][startX-1] && tiles[floor][startZ][startX-1].t === 1) {
+                    if(tiles[floor][startZ+i][startX-1] && tiles[floor][startZ+i][startX-1].t === 1) {
                         obj.left = true;
                     }
                 }
