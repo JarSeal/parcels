@@ -168,7 +168,7 @@ class ModulePhysics {
                                     }
                                 }
                                 wallLength++;
-                            } else if(tiles[f][r][c].t === 1) {
+                            } else if(tiles[f][r][c].t === 1 || tiles[f][r][c].t === 3) {
                                 if(!directionSet) {
                                     directionSet = true;
                                     startX = c;
@@ -244,17 +244,17 @@ class ModulePhysics {
         if(!obj.top && !obj.bottom && !obj.left && !obj.right) {
             for(let i=0; i<wallLength; i++) {
                 if(horisontal) {
-                    if(tiles[floor][startZ+1] && tiles[floor][startZ+1][startX+i].t === 1) {
+                    if(tiles[floor][startZ+1] && tiles[floor][startZ+1][startX+i].t === 2) {
                         obj.bottom = true;
                     }
-                    if(tiles[floor][startZ-1] && tiles[floor][startZ-1][startX+i].t === 1) {
+                    if(tiles[floor][startZ-1] && tiles[floor][startZ-1][startX+i].t === 2) {
                         obj.top = true;
                     }
                 } else {
-                    if(tiles[floor][startZ+i][startX+1] && tiles[floor][startZ+i][startX+1].t === 1) {
+                    if(tiles[floor][startZ+i][startX+1] && tiles[floor][startZ+i][startX+1].t === 2) {
                         obj.right = true;
                     }
-                    if(tiles[floor][startZ+i][startX-1] && tiles[floor][startZ+i][startX-1].t === 1) {
+                    if(tiles[floor][startZ+i][startX-1] && tiles[floor][startZ+i][startX-1].t === 2) {
                         obj.left = true;
                     }
                 }

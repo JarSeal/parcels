@@ -86,9 +86,9 @@ const addWallShape = (data, sceneState) => {
 const createWallTilt = (data) => {
     let tilt = 1;
     if(data.floorNeighbors.top || data.floorNeighbors.right) {
-        tilt = 12;
+        tilt = 16;
     } else if(data.floorNeighbors.bottom || data.floorNeighbors.left) {
-        tilt = -12;
+        tilt = -16;
     } else {
         return null;
     }
