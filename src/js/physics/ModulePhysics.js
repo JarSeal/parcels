@@ -192,16 +192,12 @@ class ModulePhysics {
                                     // Door frame tile and checking for door tile direction
                                     if(tiles[f][r][c].t === 3) {
                                         if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 4) {
-                                            console.log('RIGHT');
                                             doorNeighbor.right = true;
                                         } else if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 4) {
-                                            console.log('LEFT');
                                             doorNeighbor.left = true;
                                         } else if(tiles[f][r+1] && tiles[f][r+1][c].t === 4) {
-                                            console.log('BOTTOM');
                                             doorNeighbor.bottom = true;
                                         } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 4) {
-                                            console.log('TOP');
                                             doorNeighbor.top = true;
                                         }
                                     }
@@ -255,6 +251,12 @@ class ModulePhysics {
                 directionSet = false;
                 wallLength = 0;
                 floorNeighbors = {
+                    left: false,
+                    right: false,
+                    top: false,
+                    bottom: false,
+                };
+                doorNeighbor = {
                     left: false,
                     right: false,
                     top: false,

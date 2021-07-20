@@ -42,10 +42,10 @@ const addWallShape = (data, sceneState) => {
             ? [
                 data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
                 1.5,
-                0.5 + data.moduleData.pos[1] + data.startZ + addWallPosOffset(data.floorNeighbors, data),
+                0.5 + data.moduleData.pos[1] + data.startZ + addWallPosOffset(data.floorNeighbors),
             ]
             : [
-                0.5 + data.moduleData.pos[2] + data.startX + addWallPosOffset(data.floorNeighbors, data),
+                0.5 + data.moduleData.pos[2] + data.startX + addWallPosOffset(data.floorNeighbors),
                 1.5,
                 data.wallLength / 2 + data.moduleData.pos[1] + data.startZ,
             ],
@@ -98,7 +98,7 @@ const createWallTilt = (data) => {
         : [0, 0, Math.PI / tilt];
 };
 
-const addWallPosOffset = (neighbors, data) => {
+const addWallPosOffset = (neighbors) => {
     const amount = 0.2;
     let offset = 0;
     if(neighbors.top || neighbors.left) offset += amount;
@@ -108,13 +108,16 @@ const addWallPosOffset = (neighbors, data) => {
 
 const setDoorFrameSizeAndPosition = (data) => {
     if(data.doorNeighbor.top) {
-        // console.log('DATA', data);
+        data.wallLength = 1.8;
+        data.startZ += 0.2;
+        console.log('DATA', data);
     } else if(data.doorNeighbor.bottom) {
-        
+        data.wallLength = 1.8;
     } else if(data.doorNeighbor.left) {
-        
+        data.wallLength = 1.8;
+        data.startX += 0.2;
     } else if(data.doorNeighbor.right) {
-        
+        data.wallLength = 1.8;
     }
 };
 
