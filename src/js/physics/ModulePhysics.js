@@ -117,6 +117,7 @@ class ModulePhysics {
                 horisontal = true,
                 endWall = false,
                 wallIndex = 0,
+                doorTile = false,
                 floorNeighbors = {
                     left: false,
                     right: false,
@@ -216,8 +217,23 @@ class ModulePhysics {
                                 }
                                 wallLength++;
                                 endWall = true;
+                            } else if(tiles[f][r][c].t === 4) {
+                                // Door opening
+                                if(!directionSet && wallLength === 0) {
+                                    directionSet = true;
+                                    startX = c;
+                                    startZ = r;
+                                    if(tiles[f][r][c-1] && (tiles[f][r][c-1].t === 3 || tiles[f][r][c-1].t === 1 || tiles[f][r][c-1].t === 4)) {
+                                        horisontal = true;
+                                    } else {
+                                        horisontal = false;
+                                    }
+                                    doorTile = true;
+                                    wallLength = 1;
+                                    endWall = true;
+                                }
                             }
-                            if(endWall) {
+                            if(endWall && !doorTile) {
                                 if((horisontal && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) || 
                                     (!horisontal && tiles[f][r+1] && tiles[f][r+1][c].t === 1)) {
                                     wallLength++;
@@ -242,6 +258,7 @@ class ModulePhysics {
                         floorNeighbors,
                         doorNeighbor,
                         wallLength,
+                        doorTile,
                         startX,
                         startZ,
                     });
@@ -250,6 +267,7 @@ class ModulePhysics {
                 endWall = false;
                 directionSet = false;
                 wallLength = 0;
+                doorTile = false;
                 floorNeighbors = {
                     left: false,
                     right: false,

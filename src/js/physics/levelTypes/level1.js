@@ -29,24 +29,46 @@ const addWallShape = (data, sceneState) => {
         sceneState.logger.error('Could not find data and/or sceneState at physics/levelTypes addWallShape.');
         return;
     }
-    setDoorFrameSizeAndPosition(data);
+    if(!data.doorTile) {
+        setDoorFrameSizeAndPosition(data);
+    } else {
+        data.wallLength += 0.4;
+        if(data.horisontal) {
+            data.startX -= 0.2;
+        } else {
+            data.startZ -= 0.2;
+        }
+    }
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
+    const doorTopData = {
+        height: 0.37,
+        width: 0.27,
+        yPos: 2.65,
+    };
     sceneState.physicsClass.addShape({
         id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         compoundParentId: data.compId,
         type: 'box',
         size: data.horisontal
-            ? [data.wallLength / 2, 3 / 2, 0.15]
-            : [0.15, 3 / 2, data.wallLength / 2],
+            ? [
+                data.wallLength / 2,
+                data.doorTile ? doorTopData.height : 1.5,
+                data.doorTile ? doorTopData.width : 0.15
+            ]
+            : [
+                data.doorTile ? doorTopData.width : 0.15,
+                data.doorTile ? doorTopData.height : 1.5,
+                data.wallLength / 2
+            ],
         position: data.horisontal
             ? [
                 data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
-                1.5,
+                data.doorTile ? doorTopData.yPos : 1.5,
                 0.5 + data.moduleData.pos[1] + data.startZ + addWallPosOffset(data.floorNeighbors),
             ]
             : [
                 0.5 + data.moduleData.pos[2] + data.startX + addWallPosOffset(data.floorNeighbors),
-                1.5,
+                data.doorTile ? doorTopData.yPos : 1.5,
                 data.wallLength / 2 + data.moduleData.pos[1] + data.startZ,
             ],
         sleep: {
@@ -56,6 +78,7 @@ const addWallShape = (data, sceneState) => {
         },
         helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
     });
+    if(data.doorTile) return;
     sceneState.physicsClass.addShape({
         id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         compoundParentId: data.compId,
