@@ -110,7 +110,6 @@ const setDoorFrameSizeAndPosition = (data) => {
     if(data.doorNeighbor.top) {
         data.wallLength = 1.8;
         data.startZ += 0.2;
-        console.log('DATA', data);
     } else if(data.doorNeighbor.bottom) {
         data.wallLength = 1.8;
     } else if(data.doorNeighbor.left) {
