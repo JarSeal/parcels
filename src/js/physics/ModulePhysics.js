@@ -162,7 +162,7 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
-                                    if(tiles[f][r-1][c] && tiles[f][r-1][c].t === 1) {
+                                    if(tiles[f][r-1] && tiles[f][r-1][c].t === 1) {
                                         wallLength++;
                                         startZ = r-1;
                                     }
