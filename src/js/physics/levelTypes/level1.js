@@ -40,10 +40,11 @@ const addWallShape = (data, sceneState) => {
         }
     }
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
+    if(data.cargoDoor) console.log('CARIGS');
     const doorTopData = {
-        height: 0.37,
-        width: 0.27,
-        yPos: 2.65,
+        height: data.cargoDoor ? 0.25 : 0.37,
+        width: data.cargoDoor ? 0.2 : 0.27,
+        yPos: data.cargoDoor ? 2.7 : 2.65,
     };
     sceneState.physicsClass.addShape({
         id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
@@ -130,6 +131,7 @@ const addWallPosOffset = (neighbors) => {
 };
 
 const setDoorFrameSizeAndPosition = (data) => {
+    if(data.cargoDoor) return;
     if(data.doorNeighbor.top) {
         data.wallLength = 1.8;
         data.startZ += 0.2;

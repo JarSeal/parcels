@@ -118,6 +118,7 @@ class ModulePhysics {
                 endWall = false,
                 wallIndex = 0,
                 doorTile = false,
+                cargoDoor = false,
                 floorNeighbors = {
                     left: false,
                     right: false,
@@ -194,12 +195,16 @@ class ModulePhysics {
                                     if(tiles[f][r][c].t === 3) {
                                         if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 4) {
                                             doorNeighbor.right = true;
+                                            if(tiles[f][r][c+1].cargoDoor) cargoDoor = true;
                                         } else if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 4) {
                                             doorNeighbor.left = true;
+                                            if(tiles[f][r][c-1].cargoDoor) cargoDoor = true;
                                         } else if(tiles[f][r+1] && tiles[f][r+1][c].t === 4) {
                                             doorNeighbor.bottom = true;
+                                            if(tiles[f][r+1][c].cargoDoor) cargoDoor = true;
                                         } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 4) {
                                             doorNeighbor.top = true;
+                                            if(tiles[f][r-1][c].cargoDoor) cargoDoor = true;
                                         }
                                     }
                                 }
@@ -227,6 +232,10 @@ class ModulePhysics {
                                         horisontal = true;
                                     } else {
                                         horisontal = false;
+                                    }
+                                    if(tiles[f][r][c].cargoDoor) {
+                                        console.log('CARGOIDOOR', tiles[f][r][c]);
+                                        cargoDoor = true;
                                     }
                                     doorTile = true;
                                     wallLength = 1;
@@ -259,6 +268,7 @@ class ModulePhysics {
                         doorNeighbor,
                         wallLength,
                         doorTile,
+                        cargoDoor,
                         startX,
                         startZ,
                     });
@@ -268,6 +278,7 @@ class ModulePhysics {
                 directionSet = false;
                 wallLength = 0;
                 doorTile = false;
+                cargoDoor = false;
                 floorNeighbors = {
                     left: false,
                     right: false,
