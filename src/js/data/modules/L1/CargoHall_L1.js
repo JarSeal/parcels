@@ -1,15 +1,19 @@
 const moduleData = {
     id: 'CargoHallL1',
     level: 1,
+    levelType: 'level1',
     name: 'Cargo Hall',
-    boundingDims: [1, 5, 8],
+    boundingDims: [1, 8, 8],
     tiles: [
         [
-            [{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:1},],
-            [{t:1},{t:1},{t:1},{t:1},{t:2},{t:1},{t:1},{t:1},],
+            [{t:1},{t:1},{t:3},{t:4},{t:3},{t:1},{t:1},{t:1},],
+            [{t:3},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:3},],
+            [{t:4},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:4},],
+            [{t:3},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:4},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:4},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:4},],
+            [{t:1},{t:2},{t:2},{t:2},{t:2},{t:2},{t:2},{t:3},],
+            [{t:1},{t:1},{t:1},{t:1},{t:3},{t:4},{t:3},{t:1},],
         ],
     ],
     path: '/models/modules/L1/',
@@ -34,14 +38,14 @@ const moduleData = {
     textureExt: 'png',
     textureSizes: [512, 1024, 2048, 4096],
     physics: [
-        {
-            id: 'floor',
-            section: 'floor',
-            type: 'box',
-            size: [8, 0.5, 5],
-            position: [4, -0.25, 2.5],
-            helperColor: 0xffcc00,
-        },
+        // {
+        //     id: 'floor',
+        //     section: 'floor',
+        //     type: 'box',
+        //     size: [8, 0.5, 5],
+        //     position: [4, -0.25, 2.5],
+        //     helperColor: 0xffcc00,
+        // },
     ],
 };
 

@@ -25,6 +25,11 @@ const levelData = {
             turn: 1,
             pos: [0, 15, 13],
         },
+        {
+            id: 'CargoHallL1',
+            turn: 3,
+            pos: [0, 7, 19],
+        },
         // {
         //     id: 'cabinModule01',
         //     turn: 3,
