@@ -122,6 +122,12 @@ class ModulePhysics {
                     right: false,
                     top: false,
                     bottom: false,
+                },
+                doorNeighbor = {
+                    left: false,
+                    right: false,
+                    top: false,
+                    bottom: false,
                 };
             while(totalTilesPerFloor !== tilesDone) {
                 for(let r=0; r<rows; r++) {
@@ -169,6 +175,7 @@ class ModulePhysics {
                                 }
                                 wallLength++;
                             } else if(tiles[f][r][c].t === 1 || tiles[f][r][c].t === 3) {
+                                // Single wall tile, last wall tile, or door frame tile
                                 if(!directionSet) {
                                     directionSet = true;
                                     startX = c;
@@ -181,6 +188,22 @@ class ModulePhysics {
                                         wallLength++;
                                         startZ = r-1;
                                         horisontal = false;
+                                    }
+                                    // Door frame tile and checking for door tile direction
+                                    if(tiles[f][r][c].t === 3) {
+                                        if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 4) {
+                                            console.log('RIGHT');
+                                            doorNeighbor.right = true;
+                                        } else if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 4) {
+                                            console.log('LEFT');
+                                            doorNeighbor.left = true;
+                                        } else if(tiles[f][r+1] && tiles[f][r+1][c].t === 4) {
+                                            console.log('BOTTOM');
+                                            doorNeighbor.bottom = true;
+                                        } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 4) {
+                                            console.log('TOP');
+                                            doorNeighbor.top = true;
+                                        }
                                     }
                                 }
                                 if(tiles[f][r-1] && tiles[f][r-1][c].t === 2) {
@@ -221,6 +244,7 @@ class ModulePhysics {
                         wallIndex,
                         horisontal,
                         floorNeighbors,
+                        doorNeighbor,
                         wallLength,
                         startX,
                         startZ,

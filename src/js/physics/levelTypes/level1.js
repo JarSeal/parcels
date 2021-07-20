@@ -29,6 +29,7 @@ const addWallShape = (data, sceneState) => {
         sceneState.logger.error('Could not find data and/or sceneState at physics/levelTypes addWallShape.');
         return;
     }
+    setDoorFrameSizeAndPosition(data);
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
     sceneState.physicsClass.addShape({
         id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
@@ -103,6 +104,18 @@ const addWallPosOffset = (neighbors, data) => {
     if(neighbors.top || neighbors.left) offset += amount;
     if(neighbors.bottom || neighbors.right) offset -= amount;
     return offset;
+};
+
+const setDoorFrameSizeAndPosition = (data) => {
+    if(data.doorNeighbor.top) {
+        // console.log('DATA', data);
+    } else if(data.doorNeighbor.bottom) {
+        
+    } else if(data.doorNeighbor.left) {
+        
+    } else if(data.doorNeighbor.right) {
+        
+    }
 };
 
 const level1Physics = (type, section, sceneState, data) => {
