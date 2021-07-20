@@ -233,10 +233,7 @@ class ModulePhysics {
                                     } else {
                                         horisontal = false;
                                     }
-                                    if(tiles[f][r][c].cargoDoor) {
-                                        console.log('CARGOIDOOR', tiles[f][r][c]);
-                                        cargoDoor = true;
-                                    }
+                                    if(tiles[f][r][c].cargoDoor) cargoDoor = true;
                                     doorTile = true;
                                     wallLength = 1;
                                     endWall = true;

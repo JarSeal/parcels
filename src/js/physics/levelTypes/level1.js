@@ -40,7 +40,6 @@ const addWallShape = (data, sceneState) => {
         }
     }
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
-    if(data.cargoDoor) console.log('CARIGS');
     const doorTopData = {
         height: data.cargoDoor ? 0.25 : 0.37,
         width: data.cargoDoor ? 0.2 : 0.27,
