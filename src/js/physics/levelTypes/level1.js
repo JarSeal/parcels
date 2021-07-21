@@ -183,6 +183,19 @@ const addSpecialWall = (data, sceneState, colors) => {
             },
             helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
         });
+    } else if(data.special === 2) {
+        console.log('TEST');
+        // sceneState.physicsClass.addShape({
+        //     id: id + '_comp_cylinder',
+        //     compoundParentId: id,
+        //     type: 'cylinder',
+        //     radiusTop: data.charHeight / 4,
+        //     radiusBottom: data.charHeight / 4,
+        //     height: data.charHeight / 2,
+        //     numSegments: 32,
+        //     position: [0, 0, 0],
+        //     helperColor: 0xcc1122,
+        // });
     }
 };
 
