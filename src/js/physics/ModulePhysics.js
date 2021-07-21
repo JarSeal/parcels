@@ -119,6 +119,7 @@ class ModulePhysics {
                 wallIndex = 0,
                 doorTile = false,
                 cargoDoor = false,
+                special = undefined,
                 floorNeighbors = {
                     left: false,
                     right: false,
@@ -136,14 +137,15 @@ class ModulePhysics {
                     for(let c=0; c<cols; c++) {
                         if(!tiles[f][r][c].p) {
                             if(directionSet && !horisontal && startX !== c) continue;
+                            special = tiles[f][r][c].spec;
                             if((horisontal || !directionSet) &&
-                                tiles[f][r][c].t === 1 && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1 && !tiles[f][r][c+1].p) {
+                                tiles[f][r][c].t === 1 && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1 && !tiles[f][r][c+1].p && special === tiles[f][r][c+1].spec) {
                                 if(!directionSet) {
                                     horisontal = true;
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
-                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1) {
+                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1 && special === tiles[f][r][c-1].spec) {
                                         wallLength++;
                                         startX = c-1;
                                     }
@@ -157,13 +159,13 @@ class ModulePhysics {
                                 }
                                 wallLength++;
                             } else if((!horisontal || !directionSet)
-                                      && tiles[f][r][c].t === 1 && tiles[f][r+1] && tiles[f][r+1][c].t === 1 && !tiles[f][r+1][c].p) {
+                                      && tiles[f][r][c].t === 1 && tiles[f][r+1] && tiles[f][r+1][c].t === 1 && !tiles[f][r+1][c].p && special === tiles[f][r+1][c].spec) {
                                 if(!directionSet) {
                                     horisontal = false;
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
-                                    if(tiles[f][r-1] && tiles[f][r-1][c].t === 1) {
+                                    if(tiles[f][r-1] && tiles[f][r-1][c].t === 1 && special === tiles[f][r-1][c].spec) {
                                         wallLength++;
                                         startZ = r-1;
                                     }
@@ -182,13 +184,18 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
-                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1) {
+                                    if(tiles[f][r][c].spec) special = tiles[f][r][c].spec;
+                                    if(tiles[f][r][c-1] && tiles[f][r][c-1].t === 1 && special === tiles[f][r][c-1].spec) {
                                         wallLength++;
                                         startX = c-1;
                                         horisontal = true;
-                                    } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 1) {
+                                    } else if(tiles[f][r-1] && tiles[f][r-1][c].t === 1 && special === tiles[f][r-1][c].spec) {
                                         wallLength++;
                                         startZ = r-1;
+                                        horisontal = false;
+                                    } else if(tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) {
+                                        horisontal = true;
+                                    } else if(tiles[f][r+1] && tiles[f][r+1][c].t === 1) {
                                         horisontal = false;
                                     }
                                     // Door frame tile and checking for door tile direction
@@ -228,6 +235,7 @@ class ModulePhysics {
                                     directionSet = true;
                                     startX = c;
                                     startZ = r;
+                                    if(tiles[f][r][c].spec) special = tiles[f][r][c].spec;
                                     if(tiles[f][r][c-1] && (tiles[f][r][c-1].t === 3 || tiles[f][r][c-1].t === 1 || tiles[f][r][c-1].t === 4)) {
                                         horisontal = true;
                                     } else {
@@ -240,10 +248,14 @@ class ModulePhysics {
                                 }
                             }
                             if(endWall && !doorTile) {
-                                if((horisontal && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1) || 
-                                    (!horisontal && tiles[f][r+1] && tiles[f][r+1][c].t === 1)) {
+                                if((horisontal && tiles[f][r][c+1] && tiles[f][r][c+1].t === 1 && special === tiles[f][r][c+1].spec) || 
+                                    (!horisontal && tiles[f][r+1] && tiles[f][r+1][c].t === 1 && special === tiles[f][r+1][c].spec)) {
                                     wallLength++;
                                 }
+                            }
+                            if(directionSet && special !== tiles[f][r][c].spec) {
+                                endWall = true;
+                                break;
                             }
                             tiles[f][r][c].p = true;
                             tilesDone++;
@@ -266,6 +278,7 @@ class ModulePhysics {
                         wallLength,
                         doorTile,
                         cargoDoor,
+                        special,
                         startX,
                         startZ,
                     });
@@ -276,6 +289,7 @@ class ModulePhysics {
                 wallLength = 0;
                 doorTile = false;
                 cargoDoor = false;
+                special = undefined;
                 floorNeighbors = {
                     left: false,
                     right: false,
