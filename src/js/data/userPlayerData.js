@@ -1,7 +1,7 @@
 const userPlayerData = {
     id: 'some-unique-player-id',
     name: 'Keijo',
-    position: [12, 2, 12],
+    position: [15, 2, 4],
     direction: 0,
     speed: 2.8,
     jump: 4.8,
