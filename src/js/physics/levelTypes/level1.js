@@ -50,7 +50,7 @@ const addWallShape = (data, sceneState) => {
         yPos: data.cargoDoor ? 2.7 : 2.65,
     };
     sceneState.physicsClass.addShape({
-        id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+        id: createWallID(data),
         compoundParentId: data.compId,
         type: 'box',
         size: data.horisontal
@@ -84,7 +84,8 @@ const addWallShape = (data, sceneState) => {
     });
     if(data.doorTile) return;
     sceneState.physicsClass.addShape({
-        id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+        //id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+        id: createWallID(data, '2'),
         compoundParentId: data.compId,
         type: 'box',
         rotation: createWallTilt(data),
@@ -150,8 +151,9 @@ const setDoorFrameSizeAndPosition = (data) => {
 
 const addSpecialWall = (data, sceneState, colors) => {
     if(data.special === 1) {
+        // Engine block
         sceneState.physicsClass.addShape({
-            id: 'wallShape1_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
+            id: createWallID(data),
             compoundParentId: data.compId,
             type: 'box',
             size: data.horisontal
@@ -184,19 +186,33 @@ const addSpecialWall = (data, sceneState, colors) => {
             helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
         });
     } else if(data.special === 2) {
-        console.log('TEST');
-        // sceneState.physicsClass.addShape({
-        //     id: id + '_comp_cylinder',
-        //     compoundParentId: id,
-        //     type: 'cylinder',
-        //     radiusTop: data.charHeight / 4,
-        //     radiusBottom: data.charHeight / 4,
-        //     height: data.charHeight / 2,
-        //     numSegments: 32,
-        //     position: [0, 0, 0],
-        //     helperColor: 0xcc1122,
-        // });
+        // Power source cylinder
+        sceneState.physicsClass.addShape({
+            id: createWallID(data),
+            compoundParentId: data.compId,
+            type: 'cylinder',
+            radiusTop: 0.9,
+            radiusBottom: 0.9,
+            height: 2.5,
+            numSegments: 16,
+            position: [
+                data.startX + data.moduleData.pos[2] + 0.5,
+                1.25,
+                data.startZ + data.moduleData.pos[1] + 0.5,
+            ],
+            helperColor: 0xcc1122,
+        });
     }
+};
+
+const createWallID = (data, nameNumber) => {
+    let nameExt = '0';
+    if(!nameNumber) nameExt = nameNumber;
+    return 'wallShape' + nameExt + '_f' +
+        data.floor + '_' +
+        data.moduleData.id + '_' +
+        data.moduleIndex + '_' +
+        data.wallIndex;
 };
 
 const level1Physics = (type, section, sceneState, data) => {
