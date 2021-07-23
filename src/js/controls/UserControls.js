@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 class UserControls {
     constructor(sceneState, player) {
         this.sceneState = sceneState;
@@ -9,7 +11,25 @@ class UserControls {
         this.direction = player.getDirection();
         this.stopTwoKeyPressTime = 0;
         this.twoKeyDirection = 0;
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.clickPlane = [];
+        this._createClickPlane();
         this._initKeyListeners();
+    }
+
+    _createClickPlane() {
+        const clickPlaneGeo = new THREE.PlaneBufferGeometry(256, 256, 1, 1);
+        const clickPlaneMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+        const clickPlane = new THREE.Mesh(clickPlaneGeo, clickPlaneMat);
+        clickPlane.position.x = 64;
+        clickPlane.position.y = 0;
+        clickPlane.position.z = 64;
+        clickPlane.rotation.x = -Math.PI / 2;
+        clickPlane.material.opacity = 0;
+        clickPlane.material.transparent = true;
+        this.sceneState.scenes[this.sceneState.curScene].add(clickPlane);
+        this.clickPlane.push(clickPlane);
     }
 
     _initKeyListeners() {
@@ -92,6 +112,8 @@ class UserControls {
                 break;
             }
         });
+        this.listeners.mouseup = document.getElementById('main-stage')
+            .addEventListener('mouseup', (e) => { this._mouseClickOnStage(e); });
     }
 
     _moveKeysPressedCount() {
@@ -162,6 +184,18 @@ class UserControls {
         const timePressed = performance.now() - this.keydownTimes.jump;
         this.keydownTimes.jump = 0;
         this.player.jump(timePressed);
+    }
+
+    _mouseClickOnStage(e) {
+        e.preventDefault();
+        this.mouse.x = (parseInt(e.clientX) / document.documentElement.clientWidth) * 2 - 1;
+        this.mouse.y = - (parseInt(e.clientY) / document.documentElement.clientHeight) * 2 + 1;
+        this.raycaster.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
+        const intersects = this.raycaster.intersectObjects(this.clickPlane);
+        const pos = intersects[0].point;
+        const dx = Math.round(pos.x);
+        const dz = Math.round(pos.z);
+        console.log(dx, dz, pos.x, pos.z);
     }
 }
 
