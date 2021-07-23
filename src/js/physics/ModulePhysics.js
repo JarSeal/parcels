@@ -2,11 +2,12 @@ import levelTypes from './levelTypes/index';
 
 class ModulePhysics {
     constructor(sceneState, moduleData, moduleIndex) {
-        this._createFloor(sceneState, moduleData, moduleIndex);
+        this._createFloorAndRoof(sceneState, moduleData, moduleIndex, false);
         this._createWalls(sceneState, moduleData, moduleIndex);
+        this._createFloorAndRoof(sceneState, moduleData, moduleIndex, true);
     }
 
-    _createFloor(sceneState, moduleData, moduleIndex) {
+    _createFloorAndRoof(sceneState, moduleData, moduleIndex, roof) {
         const COMP_FLOOR_ID = 'levelCompoundFloors';
         const tiles = moduleData.tiles;
         const floors = moduleData.boundingDims[0];
@@ -34,7 +35,7 @@ class ModulePhysics {
                             if(c >= startX && c <= endX) {
                                 tiles[f][r][c].p = true;
                                 tilesDone++;
-                                if(tiles[f][r][c].t === 0) {
+                                if(tiles[f][r][c].t === 0 || (roof && tiles[f][r][c].t !== 0 && tiles[f][r][c].noRoof)) {
                                     if(!endXSet) {
                                         endX = c-1;
                                         endXSet = true;
@@ -73,7 +74,7 @@ class ModulePhysics {
                 endX = cols-1;
                 endRect = false;
                 if(x > 0 && z > 0) {
-                    levelTypes(moduleData.levelType, 'floor', sceneState, {
+                    levelTypes(moduleData.levelType, (roof ? 'roof' : 'floor'), sceneState, {
                         compId: COMP_FLOOR_ID,
                         floor: f,
                         moduleData,
@@ -91,14 +92,7 @@ class ModulePhysics {
             }
         }
 
-        // reset processed data
-        for(let f=0; f<floors; f++) {
-            for(let r=0; r<rows; r++) {
-                for(let c=0; c<cols; c++) {
-                    tiles[f][r][c].p = false;
-                }
-            }
-        }
+        this._resetTileProcessingMarker(tiles, floors, rows, cols);
     }
 
     _createWalls(sceneState, moduleData, moduleIndex) {
@@ -304,6 +298,8 @@ class ModulePhysics {
                 };
             }
         }
+
+        this._resetTileProcessingMarker(tiles, floors, rows, cols);
     }
 
     _checkFloorNeighbors(obj, horisontal, tiles, wallLength, floor, startX, startZ) {
@@ -323,6 +319,17 @@ class ModulePhysics {
                     if(tiles[floor][startZ+i][startX-1] && tiles[floor][startZ+i][startX-1].t === 2) {
                         obj.left = true;
                     }
+                }
+            }
+        }
+    }
+
+    _resetTileProcessingMarker(tiles, floors, rows, cols) {
+        // reset processed data
+        for(let f=0; f<floors; f++) {
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    tiles[f][r][c].p = false;
                 }
             }
         }

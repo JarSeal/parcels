@@ -1,18 +1,24 @@
 
-const addFloorShape = (data, sceneState) => {
+const addFloorShape = (data, sceneState, section) => {
     if(!data || !sceneState) {
         sceneState.logger.error('Could not find data and/or sceneState at physics/levelTypes addFloorShape.');
         return;
     }
     const colors = [0xff4400, 0xff0000, 0x44ee00, 0xccaa00, 0xaa00cc, 0xf200a9];
+    let idShapeName = 'floorShape';
+    if(section === 'roof') idShapeName = 'roofShape';
     sceneState.physicsClass.addShape({
-        id: 'floorShape_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.floorIndex,
+        id: idShapeName + '_f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.floorIndex,
         compoundParentId: data.compId,
         type: 'box',
-        size: [data.x / 2, 0.5 / 2, data.z / 2],
+        size: [
+            data.x / 2,
+            section === 'roof' ? 0.1 : 0.25,
+            data.z / 2
+        ],
         position: [
             data.x / 2 + data.moduleData.pos[2] + data.startX,
-            -0.25,
+            section === 'roof' ? 3.08 : -0.25,
             data.z / 2 + data.moduleData.pos[1] + data.startZ,
         ],
         sleep: {
@@ -20,6 +26,7 @@ const addFloorShape = (data, sceneState) => {
             sleeSpeedLimit: 0.1,
             sleepTimeLimit: 1,
         },
+        wireframe: section === 'roof',
         helperColor: colors[data.floorIndex > 5 ? 0 : data.floorIndex],
     });
 };
@@ -218,8 +225,8 @@ const createWallID = (data, nameNumber) => {
 const level1Physics = (type, section, sceneState, data) => {
     if(section === 'wall') {
         addWallShape(data, sceneState);
-    } else if(section === 'floor') {
-        addFloorShape(data, sceneState);
+    } else if(section === 'floor' || section === 'roof') {
+        addFloorShape(data, sceneState, section);
     } else {
         sceneState.logger.error('Level section not defined or unknown (at physics/levelTypes): ' + (section
             ? section
