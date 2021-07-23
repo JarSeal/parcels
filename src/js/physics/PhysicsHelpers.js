@@ -100,7 +100,7 @@ class PhysicsHelpers {
             data.size[1] * 2,
             data.size[2] * 2
         );
-        if(data.roof) {
+        if(data.wireframe) {
             mat = new THREE.MeshBasicMaterial();
             mat.wireframe = true;
         } else {

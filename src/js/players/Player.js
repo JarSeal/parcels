@@ -30,11 +30,11 @@ class Player {
             this.sceneState,
             THREE
         );
-        this._addPushableBox(this.data.position); // TEMPORARY
+        this._addPushableBox(); // TEMPORARY
     }
 
-    _addPushableBox(pos) { // TEMPORARY
-        const position = [pos[0]+2, pos[1], pos[2]+2];
+    _addPushableBox() { // TEMPORARY
+        const position = [21, 2, 8];
 
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
