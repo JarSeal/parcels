@@ -58,7 +58,8 @@ const userPlayerData = {
                 }
                 // Temp death...
                 if(shape.mesh.position.y < -50) {
-                    alert('WASTED!');
+                    // alert('WASTED!');
+                    location.reload();
 
                     // // position
                     // data.body.position.y = 2;
