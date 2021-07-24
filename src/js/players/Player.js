@@ -151,7 +151,21 @@ class Player {
     actionClick(pos) {
         const curPosX = this.data.mesh.children[0].position.x;
         const curPosZ = this.data.mesh.children[0].position.z;
-        console.log('ACTION', pos, this.data, curPosX, curPosZ);
+        const distX = pos.x - curPosX;
+        const distZ = pos.z - curPosZ;
+        let a = Math.atan2(distX, distZ);
+        if(a - this.halfPI < Math.PI) {
+            a += Math.PI * 2 - this.halfPI;
+        } else {
+            a -= this.halfPI;
+        }
+        if(Math.abs(a - this.data.mesh.children[0].rotation.y) > Math.PI) {
+            this.data.mesh.children[0].rotation.y > a
+                ? this.data.mesh.children[0].rotation.y -= this.twoPI
+                : a -= this.twoPI;
+        }
+        this._rotatePlayer(a);
+        console.log('ACTION', distX, distZ, a, 'PLAYER ROTATION', this.data.mesh.children[0].rotation.y);
     }
 }
 
