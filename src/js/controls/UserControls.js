@@ -193,6 +193,8 @@ class UserControls {
         this.raycaster.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
         const intersects = this.raycaster.intersectObjects(this.clickPlane);
         const pos = intersects[0].point;
+        console.log(this.sceneState);
+        this.player.actionClick(pos);
         // const tileX = Math.floor(pos.x);
         // const tileZ = Math.floor(pos.z);
         // const geo = new THREE.PlaneBufferGeometry(1, 1, 1, 1);

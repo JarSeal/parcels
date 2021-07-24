@@ -147,6 +147,12 @@ class Player {
             },
         });
     }
+
+    actionClick(pos) {
+        const curPosX = this.data.mesh.children[0].position.x;
+        const curPosZ = this.data.mesh.children[0].position.z;
+        console.log('ACTION', pos, this.data, curPosX, curPosZ);
+    }
 }
 
 export default Player;
