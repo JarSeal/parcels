@@ -193,9 +193,16 @@ class UserControls {
         this.raycaster.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
         const intersects = this.raycaster.intersectObjects(this.clickPlane);
         const pos = intersects[0].point;
-        const dx = Math.round(pos.x);
-        const dz = Math.round(pos.z);
-        console.log(dx, dz, pos.x, pos.z);
+        // const tileX = Math.floor(pos.x);
+        // const tileZ = Math.floor(pos.z);
+        // const geo = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
+        // const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        // const mesh = new THREE.Mesh(geo, mat);
+        // mesh.rotation.x = -Math.PI / 2;
+        // mesh.position.x = tileX + 0.5;
+        // mesh.position.y = 0.1;
+        // mesh.position.z = tileZ + 0.5;
+        // this.sceneState.scenes[this.sceneState.curScene].add(mesh);
     }
 }
 
