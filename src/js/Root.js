@@ -9,6 +9,7 @@ import Player from './players/Player';
 import userPlayerData from './data/userPlayerData';
 import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
+import Projectiles from './players/weapons/Projectiles';
 
 class Root {
     constructor() {
@@ -100,6 +101,7 @@ class Root {
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
+            this.sceneState.projectiles = new Projectiles(this.sceneState);
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);
