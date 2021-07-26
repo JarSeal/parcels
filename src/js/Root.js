@@ -88,6 +88,8 @@ class Root {
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this._resize];
+        this.sceneState.shadersToUpdate = [];
+        this.sceneState.shadersToUpdateLength = 0;
         this.levelLoader = new LevelLoader(this.sceneState);
         this._initResizer();
         // Other setup [/END]
@@ -123,13 +125,25 @@ class Root {
 
     renderLoop = () => {
         const ss = this.sceneState;
+        const delta = ss.clock.getDelta();
         requestAnimationFrame(() => {
             this.renderLoop();
         });
+        this._updateShaders(ss, delta);
         ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
         // ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
+
+    _updateShaders = (ss, delta) => {
+        let i = 0;
+        const shadersLength = ss.shadersToUpdateLength,
+            now = performance.now();
+        for(i=0; i<shadersLength; i++) {
+            ss.shadersToUpdate[i].material.uniforms.deltaTime.value = delta;
+            ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
+        }
+    };
 
     _resize(sceneState) {
         const reso = new Utils().getScreenResolution();

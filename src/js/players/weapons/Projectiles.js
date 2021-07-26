@@ -4,6 +4,8 @@ class Projectiles {
     constructor(sceneState) {
         this.sceneState = sceneState;
         this.material = this._createParticleShader();
+        sceneState.shadersToUpdate.push({ material: this.material });
+        sceneState.shadersToUpdateLength++;
         this._initProjectiles();
     }
 
@@ -27,14 +29,14 @@ class Projectiles {
         let i = 0;
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
-                positions[i] = p2 + startPosX;
+                positions[i] = startPosX - p2 * 0.04;
                 positions[i+1] = 0.1;
-                positions[i+2] = p1 + startPosZ;
+                positions[i+2] = startPosZ - p1;
                 i += 3;
             }
         }
         const projGeo = new THREE.BufferGeometry();
-        projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); // This is used for the initial unused state (hidden from view)
         const particles = new THREE.Points(projGeo, this.material);
         this.sceneState.scenes[this.sceneState.curScene].add(particles);
     }
@@ -43,8 +45,15 @@ class Projectiles {
         return new THREE.ShaderMaterial({
             uniforms: {
                 color: { value: new THREE.Color(0xffffff) },
+                uTime: { value: 0 },
+                deltaTime: { value: 0 },
+                diffuseTexture: { value: new THREE.TextureLoader().load(
+                    this.sceneState.settings.assetsUrl + '/sprites/white_glow_64x64.png'
+                )},
             },
             vertexShader: `
+                uniform float uTime;
+
                 void main() {
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                     gl_PointSize = 10.0;
@@ -52,7 +61,9 @@ class Projectiles {
                 }
             `,
             fragmentShader: `
+                uniform sampler2D diffuseTexture;
                 uniform vec3 color;
+
                 void main() {
                     if(length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
                     gl_FragColor = vec4(color, 1.0);
