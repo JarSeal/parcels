@@ -24,13 +24,13 @@ class Projectiles {
         const startPosZ = 4;
 
         const projCount = 2;
-        const particlesPerProjectile = 5;
+        const particlesPerProjectile = 15;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         let i = 0;
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
                 positions[i] = startPosX - p2 * 0.04;
-                positions[i+1] = 0.1;
+                positions[i+1] = 1;
                 positions[i+2] = startPosZ - p1;
                 i += 3;
             }
@@ -44,19 +44,23 @@ class Projectiles {
     _createParticleShader() {
         return new THREE.ShaderMaterial({
             uniforms: {
-                color: { value: new THREE.Color(0xffffff) },
+                color: { value: new THREE.Color(0xff0000) },
                 uTime: { value: 0 },
                 deltaTime: { value: 0 },
                 diffuseTexture: { value: new THREE.TextureLoader().load(
-                    this.sceneState.settings.assetsUrl + '/sprites/white_glow_64x64.png'
+                    this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
                 )},
             },
+            depthTest: true,
+            depthWrite: false,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
             vertexShader: `
                 uniform float uTime;
 
                 void main() {
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = 10.0;
+                    gl_PointSize = 20.0;
                     gl_Position = projectionMatrix * mvPosition;
                 }
             `,
@@ -66,7 +70,8 @@ class Projectiles {
 
                 void main() {
                     if(length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
-                    gl_FragColor = vec4(color, 1.0);
+                    // gl_FragColor = vec4(color, 1.0);
+                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(color, 1.0);
                 }
             `,
         });
