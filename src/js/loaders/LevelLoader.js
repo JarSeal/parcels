@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LevelsData from '../data/LevelsData';
 import ModulePhysics from '../physics/ModulePhysics';
+import { TextureMerger } from '../vendor/TextureMerger';
 
 class LevelLoader {
     constructor(sceneState) {
@@ -26,8 +27,10 @@ class LevelLoader {
             exteriorTextures: {},
             interiorTextures: {},
             roofTextures: {},
+            levelTextures: {},
+            mergedMaps: {},
+            levelMesh: null,
         };
-        sceneState.curLevelMesh = null;
         this.loadingScreenId = 'levelLoadingScreen';
     }
 
@@ -45,7 +48,7 @@ class LevelLoader {
             this.loadingData = false;
             this.loadingModels = true;
             this.loadingTextures = true;
-            this.merging
+            this.mergingModules = true;
             this._loadModules(data, callback);
             this._setSkyBox(callback);
         });
@@ -100,7 +103,7 @@ class LevelLoader {
         this.modelLoader.load(url, (gltf) => {
             const mesh = gltf.scene.children[0];
             mesh.material.dispose();
-            mesh.material = new THREE.MeshLambertMaterial();
+            mesh.material = new THREE.MeshBasicMaterial();
             this._setMeshPosition(mesh, pos, turn, dims);
             mesh.rotation.set(0, turn * (Math.PI / 2), 0);
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
@@ -328,7 +331,37 @@ class LevelLoader {
 
     _mergeModelsAndTextures(callback) {
         this.mergingModules = false;
+        const moduleKeys = Object.keys(this.sceneState.levelAssets.exteriorTextures);
+        for(let i=0; i<moduleKeys.length; i++) {
+            const key = moduleKeys[i];
+            this.sceneState.levelAssets.levelTextures[key + '_' + 'ext'] = this.sceneState.levelAssets.exteriorTextures[key];
+            this.sceneState.levelAssets.levelTextures[key + '_' + 'int'] = this.sceneState.levelAssets.interiorTextures[key];
+        }
+        this.sceneState.levelAssets.mergedMaps.level = new TextureMerger(this.sceneState.levelAssets.levelTextures);
         this._checkLoadingStatus(callback);
+    }
+
+    _modifyObjectUV(object, range) {
+        let uvAttribute,
+            i = 0,
+            attrLength = 0;
+        if(!object || !object.geometry || !object.geometry.attributes || !object.geometry.attributes.uv) {
+            this.sceneState.logger.error('ModifyObjectUV, object attribute not found', object);
+            return;
+        }
+        uvAttribute = object.geometry.attributes.uv;
+        attrLength = uvAttribute.count;
+        for(i=0; i<attrLength; i++) {
+
+            let u = uvAttribute.getX(i),
+                v = uvAttribute.getY(i);
+
+            u = u * (range.endU - range.startU) + range.startU;
+            v = v * (range.startV - range.endV) + range.endV;
+
+            uvAttribute.setXY(i, u, v);
+            uvAttribute.needsUpdate = true;
+        }
     }
 }
 
