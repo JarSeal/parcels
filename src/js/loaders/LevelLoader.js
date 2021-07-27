@@ -10,6 +10,7 @@ class LevelLoader {
         this.loadingData = false;
         this.loadingModels = false;
         this.loadingTextures = false;
+        this.mergingModules = false;
         this.modelsToLoad = 0;
         this.modelsLoaded = 0;
         this.texturesToLoad = 0;
@@ -44,6 +45,7 @@ class LevelLoader {
             this.loadingData = false;
             this.loadingModels = true;
             this.loadingTextures = true;
+            this.merging
             this._loadModules(data, callback);
             this._setSkyBox(callback);
         });
@@ -135,9 +137,11 @@ class LevelLoader {
     }
 
     _checkLoadingStatus(callback) {
+        this._updateLoadingScreen(true);
         if(this.modelsLoaded === this.modelsToLoad) this.loadingModels = false;
         if(this.texturesLoaded === this.texturesToLoad) this.loadingTextures = false;
-        if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded) {
+        if(!this.loadingModels && !this.loadingTextures && this.mergingModules) this._mergeModelsAndTextures(callback);
+        if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded && !this.mergingModules) {
             const extMods = this.sceneState.levelAssets.exteriorModules;
             const intMods = this.sceneState.levelAssets.interiorModules;
             const roofMods = this.sceneState.levelAssets.roofModules;
@@ -158,8 +162,6 @@ class LevelLoader {
             }
             this._updateLoadingScreen(false);
             callback();
-        } else {
-            this._updateLoadingScreen(true);
         }
     }
 
@@ -322,6 +324,11 @@ class LevelLoader {
                 });
             }
         }
+    }
+
+    _mergeModelsAndTextures(callback) {
+        this.mergingModules = false;
+        this._checkLoadingStatus(callback);
     }
 }
 
