@@ -28,6 +28,8 @@ class Root {
         // Setup renderer [START]
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setClearColor('#000000');
+        // renderer.gammaOutput = true;
+        // renderer.gammaFactor = 2.2;
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -120,7 +122,7 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
             this.renderLoop();
-            this.sceneState.logger.log('sceneState', this.sceneState);
+            this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
     }
 

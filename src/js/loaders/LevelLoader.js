@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LevelsData from '../data/LevelsData';
 import ModulePhysics from '../physics/ModulePhysics';
@@ -143,26 +144,11 @@ class LevelLoader {
         this._updateLoadingScreen(true);
         if(this.modelsLoaded === this.modelsToLoad) this.loadingModels = false;
         if(this.texturesLoaded === this.texturesToLoad) this.loadingTextures = false;
-        if(!this.loadingModels && !this.loadingTextures && this.mergingModules) this._mergeModelsAndTextures(callback);
+        if(!this.loadingModels && !this.loadingTextures && this.mergingModules) {
+            this._mergeModelsAndTextures(callback);
+            return;
+        }
         if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded && !this.mergingModules) {
-            const extMods = this.sceneState.levelAssets.exteriorModules;
-            const intMods = this.sceneState.levelAssets.interiorModules;
-            const roofMods = this.sceneState.levelAssets.roofModules;
-            const extKeys = Object.keys(this.sceneState.levelAssets.exteriorModules);
-            for(let i=0; i<extKeys.length; i++) {
-                if(extMods[extKeys[i]]) {
-                    extMods[extKeys[i]].material.map = this.sceneState.levelAssets.exteriorTextures[extKeys[i]];
-                    this.sceneState.scenes[this.sceneState.curScene].add(extMods[extKeys[i]]);
-                }
-                if(intMods[extKeys[i]]) {
-                    intMods[extKeys[i]].material.map = this.sceneState.levelAssets.interiorTextures[extKeys[i]];
-                    this.sceneState.scenes[this.sceneState.curScene].add(intMods[extKeys[i]]);
-                }
-                if(roofMods[extKeys[i]]) {
-                    roofMods[extKeys[i]].material.map = this.sceneState.levelAssets.roofTextures[extKeys[i]];
-                    this.sceneState.scenes[this.sceneState.curScene].add(roofMods[extKeys[i]]);
-                }
-            }
             this._updateLoadingScreen(false);
             callback();
         }
@@ -330,14 +316,48 @@ class LevelLoader {
     }
 
     _mergeModelsAndTextures(callback) {
-        this.mergingModules = false;
         const moduleKeys = Object.keys(this.sceneState.levelAssets.exteriorTextures);
+        const geometries = [];
         for(let i=0; i<moduleKeys.length; i++) {
             const key = moduleKeys[i];
             this.sceneState.levelAssets.levelTextures[key + '_' + 'ext'] = this.sceneState.levelAssets.exteriorTextures[key];
             this.sceneState.levelAssets.levelTextures[key + '_' + 'int'] = this.sceneState.levelAssets.interiorTextures[key];
         }
         this.sceneState.levelAssets.mergedMaps.level = new TextureMerger(this.sceneState.levelAssets.levelTextures);
+        this.sceneState.levelAssets.mergedMaps.level.mergedTexture.encoding = THREE.LinearEncoding;
+
+        for(let i=0; i<moduleKeys.length; i++) {
+            const key = moduleKeys[i];
+            const moduleMeshExt = this.sceneState.levelAssets.exteriorModules[key].clone();
+            const moduleMeshInt = this.sceneState.levelAssets.interiorModules[key].clone();
+            this._modifyObjectUV(moduleMeshExt, this.sceneState.levelAssets.mergedMaps.level.ranges[key + '_' + 'ext']);
+            this._modifyObjectUV(moduleMeshInt, this.sceneState.levelAssets.mergedMaps.level.ranges[key + '_' + 'int']);
+            moduleMeshExt.material.dispose();
+            moduleMeshInt.material.dispose();
+            moduleMeshExt.updateMatrix();
+            moduleMeshInt.updateMatrix();
+
+            moduleMeshExt.geometry = moduleMeshExt.geometry.toNonIndexed();
+            moduleMeshInt.geometry = moduleMeshInt.geometry.toNonIndexed();
+            moduleMeshExt.matrix.compose(moduleMeshExt.position, moduleMeshExt.quaternion, moduleMeshExt.scale);
+            moduleMeshInt.matrix.compose(moduleMeshInt.position, moduleMeshInt.quaternion, moduleMeshInt.scale);
+            moduleMeshExt.geometry.applyMatrix4(moduleMeshExt.matrix);
+            moduleMeshInt.geometry.applyMatrix4(moduleMeshInt.matrix);
+            geometries.push(moduleMeshExt.geometry);
+            geometries.push(moduleMeshInt.geometry);
+        }
+
+        this.sceneState.levelAssets.levelMesh = new THREE.Mesh(
+            BufferGeometryUtils.mergeBufferGeometries(geometries, true),
+            new THREE.MeshLambertMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
+        );
+        this.sceneState.levelAssets.levelMesh.name = 'level-mesh';
+        this.sceneState.levelAssets.levelMesh.matrixAutoUpdate = false;
+        this.sceneState.scenes[this.sceneState.curScene].add(
+            this.sceneState.levelAssets.levelMesh
+        );
+
+        this.mergingModules = false;
         this._checkLoadingStatus(callback);
     }
 
