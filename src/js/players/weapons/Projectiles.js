@@ -20,9 +20,6 @@ class Projectiles {
         // Add a HIT uniform (boolean) for each projectile.
         // Every uniform is an array where each index represents a projectile.
 
-        const startPosX = 15;
-        const startPosZ = 4;
-
         const projCount = 2;
         const particlesPerProjectile = 50;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);

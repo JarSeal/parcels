@@ -21,7 +21,6 @@ class Player {
             this.sceneState.playerKeys = [];
             this.sceneState.playerKeysCount = 0;
         }
-        this.line;
     }
 
     create() {

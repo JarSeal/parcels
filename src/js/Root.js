@@ -120,6 +120,7 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
             this.renderLoop();
+            this.sceneState.logger.log('sceneState', this.sceneState);
         });
     }
 
