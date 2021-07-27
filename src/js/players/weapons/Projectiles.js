@@ -24,23 +24,28 @@ class Projectiles {
         const startPosZ = 4;
 
         const projCount = 2;
-        const particlesPerProjectile = 100;
+        const particlesPerProjectile = 50;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
+        const indexes = new Float32Array(projCount * particlesPerProjectile);
         let i = 0;
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
-                positions[i] = startPosX;
-                positions[i+1] = 1;
-                positions[i+2] = startPosZ - p1;
+                indexes[p1*p2+p2] = p1;
+                positions[i] = 0;
+                positions[i+1] = 0;
+                positions[i+2] = 0;
                 delays[p2+p1*particlesPerProjectile] = p2 * 0.04 * Math.random();
                 i += 3;
             }
         }
         const projGeo = new THREE.BufferGeometry();
+        projGeo.setAttribute('index', new THREE.BufferAttribute(indexes, 1));
         projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); // This is used for the initial unused state (hidden from view)
         projGeo.setAttribute('delay', new THREE.BufferAttribute(delays, 1));
         const particles = new THREE.Points(projGeo, this.material);
+        particles.frustumCulled = false;
+        console.log(particles);
         this.sceneState.scenes[this.sceneState.curScene].add(particles);
     }
 
@@ -51,6 +56,8 @@ class Projectiles {
                 uTime: { value: 0 },
                 uStartTime: { value: performance.now() },
                 uDeltaTime: { value: 0 },
+                uFrom: { value: new THREE.Vector3(12, 1, 4) },
+                uTo: { value: new THREE.Vector3(14, 1, 4) },
                 diffuseTexture: { value: new THREE.TextureLoader().load(
                     this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
                 )},
@@ -63,6 +70,8 @@ class Projectiles {
                 attribute float delay;
                 uniform float uStartTime;
                 uniform float uTime;
+                uniform vec3 uFrom;
+                uniform vec3 uTo;
                 varying float timePhase;
                 varying float _delay;
 
@@ -71,10 +80,11 @@ class Projectiles {
                 void main() {
                     float timeElapsed = uTime - uStartTime;
                     timePhase = mod(timeElapsed, LIFETIME * delay);
-                    float newPosX = position.x - 0.002 * timePhase;
-                    vec4 mvPosition = modelViewMatrix * vec4(newPosX, position.y, position.z, 1.0);
+                    float newPosX = uFrom.x + (uTo.x - uFrom.x) * 0.002 * timePhase;
+                    vec4 mvPosition = modelViewMatrix * vec4(newPosX, uFrom.y, uFrom.z, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = 500.0 * (1.0 - (timePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
+                    // gl_PointSize = 500.0 * (1.0 - (timePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
+                    gl_PointSize = 500.0 / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
             `,
