@@ -9,7 +9,6 @@ class Settings {
         sceneState.LStorage = new LStorage();
         this.userSettings = {};
         this._initSettings(sceneState);
-        this._debugSettings(sceneState);
     }
 
     _initSettings(sceneState) {
@@ -24,6 +23,10 @@ class Settings {
             sceneState.gui = gui;
         }
         // GUI setup [/END]
+    }
+
+    createSettingsUI() {
+        this._debugSettings(this.sceneState);
     }
 
     _checkLocalStorage(sceneState) {
@@ -93,6 +96,17 @@ class Settings {
             'Physics',
             (value) => {
                 sceneState.LStorage.setItem('showPhysicsHelpers', value);
+                window.location.reload();
+            }
+        );
+        this.addGuiElem(
+            'boolean',
+            settings.graphics,
+            'antialiasing',
+            'Antialiasing',
+            'Graphics',
+            (value) => {
+                sceneState.LStorage.setItem('antialiasing', value);
                 window.location.reload();
             }
         );
