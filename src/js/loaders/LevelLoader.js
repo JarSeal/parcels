@@ -349,7 +349,10 @@ class LevelLoader {
 
         this.sceneState.levelAssets.levelMesh = new THREE.Mesh(
             BufferGeometryUtils.mergeBufferGeometries(geometries, true),
-            new THREE.MeshLambertMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
+            new THREE.ShaderMaterial(this._createShaderMaterial(
+                this.sceneState.levelAssets.mergedMaps.level.mergedTexture
+            ))
+            //new THREE.MeshBasicMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
         );
         this.sceneState.levelAssets.levelMesh.name = 'level-mesh';
         this.sceneState.levelAssets.levelMesh.matrixAutoUpdate = false;
@@ -382,6 +385,34 @@ class LevelLoader {
             uvAttribute.setXY(i, u, v);
             uvAttribute.needsUpdate = true;
         }
+    }
+
+    _createShaderMaterial(texture) {
+        const uniforms = {
+            mapTexture: { type: 't', value: texture },
+        };
+
+        const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`;
+
+        const fragmentShader = `
+        varying vec2 vUv;
+        uniform sampler2D mapTexture;
+        void main() {
+            float coordX = vUv.x;
+            float coordY = vUv.y;
+            gl_FragColor = texture2D(mapTexture, vec2(coordX, coordY));
+        }`;
+
+        return {
+            uniforms: uniforms,
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
+        };
     }
 }
 
