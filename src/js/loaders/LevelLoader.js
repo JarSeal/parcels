@@ -28,7 +28,10 @@ class LevelLoader {
             exteriorTextures: {},
             interiorTextures: {},
             roofTextures: {},
+            lvlMergesLength: 1,
+            lvlTextures: [],
             levelTextures: {},
+            lvlMeshes: [],
             mergedMaps: {},
             levelMesh: null,
         };
@@ -59,7 +62,7 @@ class LevelLoader {
         this.sceneState.logger.log('Level data:', data); // Show level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
-            this._createLevelPhysics(module, modIndex);
+            this._createLevelPhysics(module, modIndex); // Might be unnecessary, not being used at the moment
             new ModulePhysics(this.sceneState, module, modIndex);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
@@ -89,6 +92,7 @@ class LevelLoader {
                             urlAndPath + t[tKeys[i]],
                             tKeys[i]+'Textures',
                             module.textureExt,
+                            module.textureSizes,
                             modIndex,
                             tIndex,
                             callback
@@ -112,6 +116,7 @@ class LevelLoader {
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
+            throw new Error('**Error stack:**');
         });
     }
 
@@ -127,16 +132,18 @@ class LevelLoader {
         }
     }
 
-    _loadTexture(url, type, ext, modIndex, partIndex, callback) {
+    _loadTexture(url, type, ext, sizes, modIndex, partIndex, callback) {
         this.texturesToLoad++;
-        const size = 512; // Replace with texture size setting
+        let size = sizes[0]; // Replace with texture size setting
         this.textureLoader.load(url+'_'+size+'.'+ext, (texture) => {
             texture.flipY = false; // <-- Important for importing GLTF models!
+            this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture; // RAR
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
             this.texturesLoaded++;
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
+            throw new Error('**Error stack:**');
         });
     }
 
@@ -315,6 +322,11 @@ class LevelLoader {
         }
     }
 
+    _createLevelTextureSet() {
+        // const moduleKeys = Object.keys(this.sceneState.levelAssets.exteriorTextures);
+
+    }
+
     _mergeModelsAndTextures(callback) {
         const moduleKeys = Object.keys(this.sceneState.levelAssets.exteriorTextures);
         const geometries = [];
@@ -323,8 +335,10 @@ class LevelLoader {
             this.sceneState.levelAssets.levelTextures[key + '_' + 'ext'] = this.sceneState.levelAssets.exteriorTextures[key];
             this.sceneState.levelAssets.levelTextures[key + '_' + 'int'] = this.sceneState.levelAssets.interiorTextures[key];
         }
-        this.sceneState.levelAssets.mergedMaps.level = new TextureMerger(this.sceneState.levelAssets.levelTextures);
-        this.sceneState.levelAssets.mergedMaps.level.mergedTexture.encoding = THREE.LinearEncoding;
+        this.sceneState.levelAssets.mergedMaps.level = new TextureMerger(
+            this.sceneState.levelAssets.levelTextures,
+            this.sceneState.logger
+        );
 
         for(let i=0; i<moduleKeys.length; i++) {
             const key = moduleKeys[i];
@@ -352,7 +366,7 @@ class LevelLoader {
             new THREE.ShaderMaterial(this._createShaderMaterial(
                 this.sceneState.levelAssets.mergedMaps.level.mergedTexture
             ))
-            //new THREE.MeshBasicMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
+            // new THREE.MeshBasicMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
         );
         this.sceneState.levelAssets.levelMesh.name = 'level-mesh';
         this.sceneState.levelAssets.levelMesh.matrixAutoUpdate = false;
@@ -370,7 +384,7 @@ class LevelLoader {
             attrLength = 0;
         if(!object || !object.geometry || !object.geometry.attributes || !object.geometry.attributes.uv) {
             this.sceneState.logger.error('ModifyObjectUV, object attribute not found', object);
-            return;
+            throw new Error('**Error stack:**');
         }
         uvAttribute = object.geometry.attributes.uv;
         attrLength = uvAttribute.count;
@@ -403,9 +417,7 @@ class LevelLoader {
         varying vec2 vUv;
         uniform sampler2D mapTexture;
         void main() {
-            float coordX = vUv.x;
-            float coordY = vUv.y;
-            gl_FragColor = texture2D(mapTexture, vec2(coordX, coordY));
+            gl_FragColor = texture2D(mapTexture, vUv);
         }`;
 
         return {

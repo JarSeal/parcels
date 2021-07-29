@@ -38,8 +38,7 @@ var TextureMergerRectangle = function(x, y, width, height){
     return this.x < rect.x + rect.width && this.x + this.width > rect.x && this.y < rect.y + rect.height && this.y + this.height > rect.y;
   }
   
-  var TextureMerger = function(texturesObj){
-  
+  var TextureMerger = function(texturesObj, logger){
     this.MAX_TEXTURE_SIZE = 4096;
   
     if (!texturesObj){
@@ -50,11 +49,12 @@ var TextureMergerRectangle = function(x, y, width, height){
       var txt = texturesObj[textureName];
   
       if (txt instanceof THREE.CompressedTexture){
-        throw new Error("CompressedTextures are not supported.");
+        logger.error('CompressedTextures are not supported.');
+        throw new Error('**Error stack:**');
       }
   
-      if (typeof txt.image.toDataURL == "undefined"){
-        var tmpCanvas = document.createElement("canvas");
+      if (typeof txt.image.toDataURL === 'undefined'){
+        var tmpCanvas = document.createElement('canvas');
         tmpCanvas.width = txt.image.naturalWidth;
         tmpCanvas.height = txt.image.naturalHeight;
         tmpCanvas.getContext('2d').drawImage(txt.image, 0, 0);
@@ -63,11 +63,11 @@ var TextureMergerRectangle = function(x, y, width, height){
         this.dataURLs[textureName] = txt.image.toDataURL();
       }
     }
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.createElement('canvas');
     this.textureCount = 0;
     this.maxWidth = 0;
     this.maxHeight = 0;
-    var explanationStr = "";
+    var explanationStr = '';
     for (textureName in texturesObj){
       this.textureCount ++;
       var texture = texturesObj[textureName];
@@ -78,7 +78,7 @@ var TextureMergerRectangle = function(x, y, width, height){
       if (texture.image.height > this.maxHeight){
         this.maxHeight = texture.image.height;
       }
-      explanationStr += textureName + ",";
+      explanationStr += textureName + ',';
     }
     explanationStr = explanationStr.substring(0, explanationStr.length - 1);
     this.textureCache = new Object();
@@ -92,14 +92,15 @@ var TextureMergerRectangle = function(x, y, width, height){
                                                 this.maxHeight * this.textureCount);
     this.textureOffsets = new Object();
     this.allNodes = [];
-    this.insert(this.node, this.findNextTexture(texturesObj), texturesObj);
+    this.insert(this.node, this.findNextTexture(texturesObj), texturesObj, logger);
   
     this.ranges = new Object();
-    var imgSize = this.calculateImageSize(texturesObj);
+    // var imgSize = this.calculateImageSize(texturesObj);
+    let imgSize = { width: this.MAX_TEXTURE_SIZE, height: this.MAX_TEXTURE_SIZE };
     this.canvas.width = imgSize.width;
     this.canvas.height = imgSize.height;
-    var context = this.canvas.getContext("2d");
-    // context.fillStyle = "blue";
+    var context = this.canvas.getContext('2d');
+    // context.fillStyle = 'blue';
     // context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.context = context;
     for (textureName in this.textureOffsets){
@@ -128,7 +129,6 @@ var TextureMergerRectangle = function(x, y, width, height){
     this.makeCanvasPowerOfTwo();
     this.mergedTexture = new THREE.CanvasTexture(this.canvas);
     this.mergedTexture.flipY = false;
-    this.mergedTexture.encoding = THREE.sRGBEncoding;
     this.mergedTexture.wrapS = THREE.ClampToEdgeWrapping;
     this.mergedTexture.wrapT = THREE.ClampToEdgeWrapping;
     this.mergedTexture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -162,7 +162,7 @@ var TextureMergerRectangle = function(x, y, width, height){
     return false;
   }
   
-  TextureMerger.prototype.insert = function(node, textureName, texturesObj){
+  TextureMerger.prototype.insert = function(node, textureName, texturesObj, logger){
     var texture = texturesObj[textureName];
     var res = this.isTextureAlreadyInserted(textureName, texturesObj);
     if (res){
@@ -233,7 +233,8 @@ var TextureMergerRectangle = function(x, y, width, height){
           this.insert(node, newTextureName, texturesObj);
         }
       }else{
-        throw new Error("Error: Try to use smaller textures.");
+        logger.error('TextureMerger texture overflow. Use smaller textures.');
+        throw new Error('**Error stack:**');
       }
     }else{
       // First node
@@ -267,10 +268,10 @@ var TextureMergerRectangle = function(x, y, width, height){
     var oldHeight = canvas.height;
     var newWidth = Math.pow(2, Math.round(Math.log(oldWidth) / Math.log(2)));
     var newHeight = Math.pow(2, Math.round(Math.log(oldHeight) / Math.log(2)));
-    var newCanvas = document.createElement("canvas");
+    var newCanvas = document.createElement('canvas');
     newCanvas.width = newWidth;
     newCanvas.height = newHeight;
-    newCanvas.getContext("2d").drawImage(canvas, 0, 0, newWidth, newHeight);
+    newCanvas.getContext('2d').drawImage(canvas, 0, 0, newWidth, newHeight);
     if (setCanvas){
       this.canvas = newCanvas;
     }
@@ -292,7 +293,7 @@ var TextureMergerRectangle = function(x, y, width, height){
         height = y + th;
       }
     }
-    return {"width": width, "height": height};
+    return {'width': width, 'height': height};
   }
   
   TextureMerger.prototype.findNextTexture = function(texturesObj){
@@ -315,12 +316,11 @@ var TextureMergerRectangle = function(x, y, width, height){
   }
   
   TextureMerger.prototype.rescale = function(canvas, scale){
-    var resizedCanvas = document.createElement("canvas");
+    var resizedCanvas = document.createElement('canvas');
     resizedCanvas.width = canvas.width * scale;
     resizedCanvas.height = canvas.height * scale;
-    var resizedContext = resizedCanvas.getContext("2d");
+    var resizedContext = resizedCanvas.getContext('2d');
     resizedContext.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, resizedCanvas.width, resizedCanvas.height);
-    //this.debugCanvas(resizedCanvas);
     return resizedCanvas;
   }
 
