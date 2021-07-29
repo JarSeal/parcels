@@ -20,7 +20,12 @@ const defaultSettings = {
     // Physics
     physics: {
         showPhysicsHelpers: false,
-    }
+    },
+
+    // Graphics
+    graphics: {
+        antialiasing: true,
+    },
 };
 
 export default defaultSettings;

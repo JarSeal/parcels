@@ -25,9 +25,18 @@ class Root {
         this.sceneState.utils = this.utils;
         this.sceneState.logger = new Logger(this.sceneState);
 
+        // Settings [START]
+        const settings = new Settings(this.sceneState);
+        this.stats = settings.createStats();
+        this.sceneState.settingsClass = settings;
+        // Settings [/END]
+
         // Setup renderer [START]
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({
+            antialias: this.sceneState.settings.graphics.antialiasing
+        });
         renderer.setClearColor('#000000');
+        renderer.debug.checkShaderErrors = true; // Disable this for production (performance gain)
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';
@@ -78,12 +87,6 @@ class Root {
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
-        // Settings [START]
-        const settings = new Settings(this.sceneState);
-        this.stats = settings.createStats();
-        this.sceneState.settingsClass = settings;
-        // Settings [/END]
-
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
         this.sceneState.pp = new PostProcessing(this.sceneState);
@@ -119,8 +122,9 @@ class Root {
             this._resize(this.sceneState);
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
+            this.sceneState.settingsClass.createSettingsUI();
             this.renderLoop();
-            this.sceneState.logger.log('sceneState', this.sceneState);
+            this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
     }
 

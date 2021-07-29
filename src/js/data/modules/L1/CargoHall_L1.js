@@ -36,7 +36,7 @@ const moduleData = {
         },
     ],
     textureExt: 'png',
-    textureSizes: [512, 1024, 2048, 4096],
+    textureSizes: [1024, 2048, 4096],
     physics: [
         // {
         //     id: 'floor',
