@@ -39,7 +39,7 @@ var TextureMergerRectangle = function(x, y, width, height){
   }
   
   var TextureMerger = function(texturesObj, logger){
-    this.MAX_TEXTURE_SIZE = 4096;
+    this.MAX_TEXTURE_SIZE = 2048;
   
     if (!texturesObj){
       return;
@@ -169,7 +169,7 @@ var TextureMergerRectangle = function(x, y, width, height){
       this.textureOffsets[textureName] = res;
       var newTextureName = this.findNextTexture(texturesObj);
       if (!(newTextureName == null)){
-        this.insert(node, newTextureName, texturesObj);
+        this.insert(node, newTextureName, texturesObj, logger);
       }
       return;
     }
@@ -230,7 +230,7 @@ var TextureMergerRectangle = function(x, y, width, height){
         }
         var newTextureName = this.findNextTexture(texturesObj);
         if (!(newTextureName == null)){
-          this.insert(node, newTextureName, texturesObj);
+          this.insert(node, newTextureName, texturesObj, logger);
         }
       }else{
         logger.error('TextureMerger texture overflow. Use smaller textures.');
@@ -253,7 +253,7 @@ var TextureMergerRectangle = function(x, y, width, height){
       this.allNodes = [node, childNode1, childNode2];
       var newTextureName = this.findNextTexture(texturesObj);
       if (!(newTextureName == null)){
-        this.insert(newNode, newTextureName, texturesObj);
+        this.insert(newNode, newTextureName, texturesObj, logger);
       }
     }
   }
