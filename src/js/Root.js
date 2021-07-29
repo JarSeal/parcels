@@ -36,6 +36,7 @@ class Root {
             antialias: this.sceneState.settings.graphics.antialiasing
         });
         renderer.setClearColor('#000000');
+        renderer.debug.checkShaderErrors = true; // Disable this for production (performance gain)
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
         renderer.domElement.id = 'main-stage';

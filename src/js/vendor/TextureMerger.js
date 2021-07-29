@@ -38,8 +38,8 @@ var TextureMergerRectangle = function(x, y, width, height){
     return this.x < rect.x + rect.width && this.x + this.width > rect.x && this.y < rect.y + rect.height && this.y + this.height > rect.y;
   }
   
-  var TextureMerger = function(texturesObj, logger){
-    this.MAX_TEXTURE_SIZE = 2048;
+  var TextureMerger = function(texturesObj, logger, maxSize){
+    this.MAX_TEXTURE_SIZE = maxSize;
   
     if (!texturesObj){
       return;
@@ -128,7 +128,7 @@ var TextureMergerRectangle = function(x, y, width, height){
   
     this.makeCanvasPowerOfTwo();
     this.mergedTexture = new THREE.CanvasTexture(this.canvas);
-    this.mergedTexture.flipY = false;
+    this.mergedTexture.flipY = false; // <-- Important for importing GLTF models!
     this.mergedTexture.wrapS = THREE.ClampToEdgeWrapping;
     this.mergedTexture.wrapT = THREE.ClampToEdgeWrapping;
     this.mergedTexture.minFilter = THREE.LinearMipmapLinearFilter;

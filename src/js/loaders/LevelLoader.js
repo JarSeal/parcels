@@ -28,14 +28,20 @@ class LevelLoader {
             exteriorTextures: {},
             interiorTextures: {},
             roofTextures: {},
-            lvlMergesLength: 1,
+            lvlMerges: [],
             lvlTextures: [],
+            lvlTextureBundles: [{}],
+            lvlGeoBundles: [],
+            lvlAllModules: {},
             levelTextures: {},
             lvlMeshes: [],
             mergedMaps: {},
             levelMesh: null,
+            curTextureSize: 0,
         };
         this.loadingScreenId = 'levelLoadingScreen';
+        this.MAX_ATLAS_SIZE = 4096;
+        this.MAX_ATLAS_PIXELS = this.MAX_ATLAS_SIZE * this.MAX_ATLAS_SIZE;
     }
 
     load(levelId, callback) {
@@ -111,7 +117,8 @@ class LevelLoader {
             mesh.material = new THREE.MeshBasicMaterial();
             this._setMeshPosition(mesh, pos, turn, dims);
             mesh.rotation.set(0, turn * (Math.PI / 2), 0);
-            this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh;
+            this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = mesh; // RAR
+            this.sceneState.levelAssets.lvlAllModules[this._createModelPartKey(modIndex, partIndex, type)] = mesh;
             this.modelsLoaded++;
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {
@@ -136,15 +143,41 @@ class LevelLoader {
         this.texturesToLoad++;
         let size = sizes[0]; // Replace with texture size setting
         this.textureLoader.load(url+'_'+size+'.'+ext, (texture) => {
-            texture.flipY = false; // <-- Important for importing GLTF models!
             this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture; // RAR
-            this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
+            // this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
+            this.sceneState.levelAssets.lvlTextures.push({
+                key: this._createModelPartKey(modIndex, partIndex, type),
+                type: type,
+                texture: texture,
+                size: size,
+            });
             this.texturesLoaded++;
             this._checkLoadingStatus(callback);
         }, undefined, function(error) {
             this.sceneState.logger.error(error);
             throw new Error('**Error stack:**');
         });
+    }
+
+    _createModelPartKey(modIndex, partIndex, type) {
+        const keyBeginning = 'm' + modIndex + '_p' + partIndex+'_';
+        let t;
+        switch(type) {
+        case 'interiorTextures': t = 'int'; break;
+        case 'exteriorTextures': t = 'ext'; break;
+        case 'roofTextures': t = 'roof'; break;
+        case 'bottomTextures': t = 'bottom'; break;
+        case 'detailsTextures': t = 'details'; break;
+        case 'interiorModules': t = 'int'; break;
+        case 'exteriorModules': t = 'ext'; break;
+        case 'roofModules': t = 'roof'; break;
+        case 'bottomModules': t = 'bottom'; break;
+        case 'detailsModules': t = 'details'; break;
+        default:
+            t = 'unknown';
+            break;
+        }
+        return keyBeginning + t;
     }
 
     _checkLoadingStatus(callback) {
@@ -247,7 +280,7 @@ class LevelLoader {
         });
     }
 
-    _createLevelPhysics(data, index) {
+    _createLevelPhysics(data, index) { // Maybe get rid of, not used at the moment
         const phys = data.physics;
         const compoundIdExt = data.id + '-' + index;
         let xOffset = 0, zOffset = 0;
@@ -328,51 +361,55 @@ class LevelLoader {
     }
 
     _mergeModelsAndTextures(callback) {
-        const moduleKeys = Object.keys(this.sceneState.levelAssets.exteriorTextures);
-        const geometries = [];
-        for(let i=0; i<moduleKeys.length; i++) {
-            const key = moduleKeys[i];
-            this.sceneState.levelAssets.levelTextures[key + '_' + 'ext'] = this.sceneState.levelAssets.exteriorTextures[key];
-            this.sceneState.levelAssets.levelTextures[key + '_' + 'int'] = this.sceneState.levelAssets.interiorTextures[key];
+        for(let i=0; i<this.sceneState.levelAssets.lvlTextures.length; i++) {
+            const item = this.sceneState.levelAssets.lvlTextures[i];
+            const curSize = item.size * item.size;
+            if(this.sceneState.levelAssets.curTextureSize + curSize >= this.MAX_ATLAS_PIXELS) {
+                this.sceneState.levelAssets.lvlMerges.push(new TextureMerger(
+                    this.sceneState.levelAssets.lvlTextureBundles[this.sceneState.levelAssets.lvlTextureBundles.length-1],
+                    this.sceneState.logger,
+                    this.MAX_ATLAS_SIZE
+                ));
+                this.sceneState.levelAssets.curTextureSize = 0;
+                this.sceneState.levelAssets.lvlTextureBundles.push({});
+            }
+            this.sceneState.levelAssets.curTextureSize += curSize;
+            this.sceneState.levelAssets.lvlTextureBundles[this.sceneState.levelAssets.lvlTextureBundles.length-1][item.key] = item.texture;
         }
-        this.sceneState.levelAssets.mergedMaps.level = new TextureMerger(
-            this.sceneState.levelAssets.levelTextures,
-            this.sceneState.logger
-        );
+        this.sceneState.levelAssets.lvlMerges.push(new TextureMerger(
+            this.sceneState.levelAssets.lvlTextureBundles[this.sceneState.levelAssets.lvlTextureBundles.length-1],
+            this.sceneState.logger,
+            this.MAX_ATLAS_SIZE
+        ));
 
-        for(let i=0; i<moduleKeys.length; i++) {
-            const key = moduleKeys[i];
-            const moduleMeshExt = this.sceneState.levelAssets.exteriorModules[key].clone();
-            const moduleMeshInt = this.sceneState.levelAssets.interiorModules[key].clone();
-            this._modifyObjectUV(moduleMeshExt, this.sceneState.levelAssets.mergedMaps.level.ranges[key + '_' + 'ext']);
-            this._modifyObjectUV(moduleMeshInt, this.sceneState.levelAssets.mergedMaps.level.ranges[key + '_' + 'int']);
-            moduleMeshExt.material.dispose();
-            moduleMeshInt.material.dispose();
-            moduleMeshExt.updateMatrix();
-            moduleMeshInt.updateMatrix();
+        for(let i=0; i<this.sceneState.levelAssets.lvlTextureBundles.length; i++) {
+            const keys = Object.keys(this.sceneState.levelAssets.lvlTextureBundles[i]);
+            let geos = [];
+            for(let k=0; k<keys.length; k++) {
+                const curMesh = this.sceneState.levelAssets.lvlAllModules[keys[k]];
+                this._modifyObjectUV(curMesh, this.sceneState.levelAssets.lvlMerges[i].ranges[keys[k]]);
+                curMesh.material.dispose();
+                curMesh.updateMatrix();
+                curMesh.geometry = curMesh.geometry.toNonIndexed();
+                curMesh.matrix.compose(curMesh.position, curMesh.quaternion, curMesh.scale);
+                curMesh.geometry.applyMatrix4(curMesh.matrix);
+                geos.push(curMesh.geometry);
+            }
 
-            moduleMeshExt.geometry = moduleMeshExt.geometry.toNonIndexed();
-            moduleMeshInt.geometry = moduleMeshInt.geometry.toNonIndexed();
-            moduleMeshExt.matrix.compose(moduleMeshExt.position, moduleMeshExt.quaternion, moduleMeshExt.scale);
-            moduleMeshInt.matrix.compose(moduleMeshInt.position, moduleMeshInt.quaternion, moduleMeshInt.scale);
-            moduleMeshExt.geometry.applyMatrix4(moduleMeshExt.matrix);
-            moduleMeshInt.geometry.applyMatrix4(moduleMeshInt.matrix);
-            geometries.push(moduleMeshExt.geometry);
-            geometries.push(moduleMeshInt.geometry);
+            let newMesh = new THREE.Mesh(
+                BufferGeometryUtils.mergeBufferGeometries(geos, true),
+                new THREE.ShaderMaterial(this._createShaderMaterial(
+                    this.sceneState.levelAssets.lvlMerges[i].mergedTexture
+                ))
+                // new THREE.MeshBasicMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
+            );
+            newMesh.name = 'level-mesh' + i;
+            newMesh.matrixAutoUpdate = false;
+            this.sceneState.levelAssets.lvlMeshes.push(newMesh);
+            this.sceneState.scenes[this.sceneState.curScene].add(
+                newMesh
+            );
         }
-
-        this.sceneState.levelAssets.levelMesh = new THREE.Mesh(
-            BufferGeometryUtils.mergeBufferGeometries(geometries, true),
-            new THREE.ShaderMaterial(this._createShaderMaterial(
-                this.sceneState.levelAssets.mergedMaps.level.mergedTexture
-            ))
-            // new THREE.MeshBasicMaterial({ map: this.sceneState.levelAssets.mergedMaps.level.mergedTexture })
-        );
-        this.sceneState.levelAssets.levelMesh.name = 'level-mesh';
-        this.sceneState.levelAssets.levelMesh.matrixAutoUpdate = false;
-        this.sceneState.scenes[this.sceneState.curScene].add(
-            this.sceneState.levelAssets.levelMesh
-        );
 
         this.mergingModules = false;
         this._checkLoadingStatus(callback);

@@ -110,6 +110,17 @@ class Settings {
                 window.location.reload();
             }
         );
+        this.addGuiElem(
+            'button',
+            { show: () => {
+                alert(
+                    JSON.stringify(this.sceneState.renderer.capabilities)
+                );
+            }},
+            'show',
+            'Capabilities',
+            'Renderer'
+        );
     }
 
     createStats() {
