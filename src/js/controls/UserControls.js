@@ -13,7 +13,8 @@ class UserControls {
         this.direction = player.getDirection();
         this.stopTwoKeyPressTime = 0;
         this.twoKeyDirection = 0;
-        this.raycaster = new THREE.Raycaster();
+        this.rayclicker = new THREE.Raycaster();
+        this.rayshooter = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.clickPlane = [];
         this._createClickPlane();
@@ -192,8 +193,8 @@ class UserControls {
         const data = this.player.getPlayerData();
         this.mouse.x = (parseInt(e.clientX) / document.documentElement.clientWidth) * 2 - 1;
         this.mouse.y = - (parseInt(e.clientY) / document.documentElement.clientHeight) * 2 + 1;
-        this.raycaster.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
-        const intersects = this.raycaster.intersectObjects(this.clickPlane);
+        this.rayclicker.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
+        const intersects = this.rayclicker.intersectObjects(this.clickPlane);
         const pos = intersects[0].point;
         const curPosX = data.mesh.children[0].position.x;
         const curPosZ = data.mesh.children[0].position.z;
@@ -212,12 +213,15 @@ class UserControls {
         }
         this.player.rotatePlayer(a);
 
-        this.raycaster.set(data.mesh.position, new THREE.Vector3(pos.x, pos.y, pos.z));
-        const intersectsLevel = this.raycaster.intersectObjects(
+        const startPoint = data.mesh.children[0].position;
+        const direction = new THREE.Vector3();
+        direction.subVectors(new THREE.Vector3(pos.x, pos.y, pos.z), startPoint).normalize();
+        this.rayshooter.set(startPoint, direction);
+        const intersectsLevel = this.rayshooter.intersectObjects(
             this.sceneState.levelAssets.lvlMeshes,
             true
         );
-        console.log('INTERSECT', intersectsLevel);
+        console.log('INTERSECT', intersectsLevel, data.mesh.children[0].position, pos);
 
         // const tileX = Math.floor(pos.x);
         // const tileZ = Math.floor(pos.z);

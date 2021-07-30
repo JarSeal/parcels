@@ -6,7 +6,6 @@ class Player {
         this.sceneState = sceneState;
         this.rotatationTL = null;
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
-        this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
         this.raycast = new THREE.Raycaster();
         data.render = this.render;
@@ -150,28 +149,6 @@ class Player {
                 jump: power * this.data.jump,
             },
         });
-    }
-
-    actionClick(pos) {
-        const curPosX = this.data.mesh.children[0].position.x;
-        const curPosZ = this.data.mesh.children[0].position.z;
-        const distX = pos.x - curPosX;
-        const distZ = pos.z - curPosZ;
-        let a = Math.atan2(distX, distZ);
-        if(a - this.halfPI < Math.PI) {
-            a += Math.PI * 2 - this.halfPI;
-        } else {
-            a -= this.halfPI;
-        }
-        if(Math.abs(a - this.data.mesh.children[0].rotation.y) > Math.PI) {
-            this.data.mesh.children[0].rotation.y > a
-                ? this.data.mesh.children[0].rotation.y -= this.twoPI
-                : a -= this.twoPI;
-        }
-        this.rotatePlayer(a);
-        raycaster.set(startPoint, direction, true);
-        let intersects = raycaster.intersectObject(hitObject, true);
-        console.log('ACTION', distX, distZ, a, 'PLAYER ROTATION', this.data.mesh.children[0].rotation.y);
     }
 }
 
