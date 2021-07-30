@@ -8,6 +8,7 @@ class Player {
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
         this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
+        this.raycast = new THREE.Raycaster();
         data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
@@ -59,11 +60,15 @@ class Player {
         });
     }
 
+    getPlayerData() {
+        return this.data;
+    }
+
     getDirection() {
         return this.data.direction;
     }
 
-    _rotatePlayer(toDir) {
+    rotatePlayer(toDir) {
         this.data.rotatingY = true;
         if(this.rotationTL) {
             this.rotationTL.kill();
@@ -114,7 +119,7 @@ class Player {
     }
 
     movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
-        this._rotatePlayer(dir);
+        this.rotatePlayer(dir);
         xPosMulti /= 4;
         zPosMulti /= 4;
         this.data.xPosMulti = xPosMulti;
@@ -163,7 +168,9 @@ class Player {
                 ? this.data.mesh.children[0].rotation.y -= this.twoPI
                 : a -= this.twoPI;
         }
-        this._rotatePlayer(a);
+        this.rotatePlayer(a);
+        raycaster.set(startPoint, direction, true);
+        let intersects = raycaster.intersectObject(hitObject, true);
         console.log('ACTION', distX, distZ, a, 'PLAYER ROTATION', this.data.mesh.children[0].rotation.y);
     }
 }

@@ -8,6 +8,8 @@ class UserControls {
         this.keydownTimes = {
             a: 0, d: 0, w: 0, s: 0, jump: 0,
         };
+        this.twoPI = sceneState.utils.getCommonPIs('twoPi');
+        this.halfPI = sceneState.utils.getCommonPIs('half');
         this.direction = player.getDirection();
         this.stopTwoKeyPressTime = 0;
         this.twoKeyDirection = 0;
@@ -41,7 +43,6 @@ class UserControls {
             case 'KeyA':
                 if(this.keydownTimes.a === 0) {
                     this.keydownTimes.a = performance.now();
-                    // this._keyboardMove();
                     this._keyboardMove();
                 }
                 break;
@@ -188,13 +189,36 @@ class UserControls {
 
     _mouseClickOnStage(e) {
         e.preventDefault();
+        const data = this.player.getPlayerData();
         this.mouse.x = (parseInt(e.clientX) / document.documentElement.clientWidth) * 2 - 1;
         this.mouse.y = - (parseInt(e.clientY) / document.documentElement.clientHeight) * 2 + 1;
         this.raycaster.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
         const intersects = this.raycaster.intersectObjects(this.clickPlane);
         const pos = intersects[0].point;
-        console.log(this.sceneState);
-        this.player.actionClick(pos);
+        const curPosX = data.mesh.children[0].position.x;
+        const curPosZ = data.mesh.children[0].position.z;
+        const distX = pos.x - curPosX;
+        const distZ = pos.z - curPosZ;
+        let a = Math.atan2(distX, distZ);
+        if(a - this.halfPI < Math.PI) {
+            a += Math.PI * 2 - this.halfPI;
+        } else {
+            a -= this.halfPI;
+        }
+        if(Math.abs(a - data.mesh.children[0].rotation.y) > Math.PI) {
+            data.mesh.children[0].rotation.y > a
+                ? data.mesh.children[0].rotation.y -= this.twoPI
+                : a -= this.twoPI;
+        }
+        this.player.rotatePlayer(a);
+
+        this.raycaster.set(data.mesh.position, new THREE.Vector3(pos.x, pos.y, pos.z));
+        const intersectsLevel = this.raycaster.intersectObjects(
+            this.sceneState.levelAssets.lvlMeshes,
+            true
+        );
+        console.log('INTERSECT', intersectsLevel);
+
         // const tileX = Math.floor(pos.x);
         // const tileZ = Math.floor(pos.z);
         // const geo = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
