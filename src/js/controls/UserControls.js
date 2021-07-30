@@ -213,15 +213,29 @@ class UserControls {
         }
         this.player.rotatePlayer(a);
 
+        const shotHeight = data.mesh.children[0].position.y;
         const startPoint = data.mesh.children[0].position;
+        startPoint.y = shotHeight;
         const direction = new THREE.Vector3();
-        direction.subVectors(new THREE.Vector3(pos.x, pos.y, pos.z), startPoint).normalize();
+        direction.subVectors(new THREE.Vector3(pos.x, shotHeight, pos.z), startPoint).normalize();
         this.rayshooter.set(startPoint, direction);
         const intersectsLevel = this.rayshooter.intersectObjects(
             this.sceneState.levelAssets.lvlMeshes,
             true
         );
         console.log('INTERSECT', intersectsLevel, data.mesh.children[0].position, pos);
+        
+        if(intersectsLevel.length) {
+            const point = intersectsLevel[0].point;
+            // const distance = intersectsLevel[0].distance;
+            const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+            const points = [];
+            points.push(startPoint);
+            points.push(new THREE.Vector3(point.x, shotHeight, point.z));
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            this.sceneState.scenes[this.sceneState.curScene].add(line);
+        }
 
         // const tileX = Math.floor(pos.x);
         // const tileZ = Math.floor(pos.z);
