@@ -223,7 +223,7 @@ class UserControls {
             this.sceneState.levelAssets.lvlMeshes,
             true
         );
-        console.log('INTERSECT', intersectsLevel, data.mesh.children[0].position, pos);
+        console.log('INTERSECT', intersectsLevel);
         
         if(intersectsLevel.length) {
             const point = intersectsLevel[0].point;
@@ -235,6 +235,11 @@ class UserControls {
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, material);
             this.sceneState.scenes[this.sceneState.curScene].add(line);
+            setTimeout(() => {
+                line.material.dispose();
+                geometry.dispose();
+                this.sceneState.scenes[this.sceneState.curScene].remove(line);
+            }, 2000);
         }
 
         // const tileX = Math.floor(pos.x);
