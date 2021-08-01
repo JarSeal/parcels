@@ -60,8 +60,9 @@ const userPlayerData = {
                     ));
                 }
                 // Temp death...
-                if(shape.mesh.position.y < -50) {
+                if(shape.mesh.position.y < -50 && !shape.mesh.userData.reload) {
                     // alert('WASTED!');
+                    shape.mesh.userData.reload = true;
                     location.reload();
 
                     // // position
