@@ -21,6 +21,9 @@ class Player {
             this.sceneState.playerKeys = [];
             this.sceneState.playerKeysCount = 0;
         }
+        this.shooting = {
+            maxDistance: 10, // Temp for now, this needs to be determined by the gun used.
+        };
     }
 
     create() {
@@ -149,6 +152,10 @@ class Player {
                 jump: power * this.data.jump,
             },
         });
+    }
+
+    shoot() {
+
     }
 }
 

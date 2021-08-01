@@ -9,6 +9,9 @@ const userPlayerData = {
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
+    shotHeights: {
+        handgun: [0.2], // index 0 = standing normally, 1 = kneeled, 2 = crouching / crawling
+    },
     createPlayerFn: (data, sceneState, THREE) => {
         const id = data.id;
         sceneState.players[id] = data;

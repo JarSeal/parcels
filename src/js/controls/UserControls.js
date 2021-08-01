@@ -199,6 +199,10 @@ class UserControls {
         this.rayclicker.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
         const intersects = this.rayclicker.intersectObjects(this.clickPlane);
         const pos = intersects[0].point;
+
+        this.player.shoot(pos);
+
+        // MOVE THIS TO PLAYER CLASS:
         const curPosX = data.mesh.children[0].position.x;
         const curPosZ = data.mesh.children[0].position.z;
         const distX = pos.x - curPosX;
