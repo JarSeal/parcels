@@ -93,7 +93,10 @@ class Settings {
             settings.debug,
             'showProjectileStreaks',
             'projectile streaks',
-            'Debug'
+            'Debug',
+            (value) => {
+                sceneState.LStorage.setItem('showProjectileStreaks', value);
+            }
         );
         this.addGuiElem(
             'boolean',
