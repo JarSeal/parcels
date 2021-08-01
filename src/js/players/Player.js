@@ -211,6 +211,7 @@ class Player {
         }
 
         const point = intersectsLevel[0].point;
+        const distance = intersectsLevel[0].distance;
 
         if(this.sceneState.settings.debug.showProjectileStreaks) {
             const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
@@ -226,6 +227,14 @@ class Player {
                 this.sceneState.scenes[this.sceneState.curScene].remove(line);
             }, 2000);
         }
+
+        this.sceneState.projectiles.newProjectile(
+            new THREE.Vector3(curPosX, shotHeight, curPosZ),
+            point,
+            a,
+            distance,
+            this.data.id,
+        );
     }
 }
 

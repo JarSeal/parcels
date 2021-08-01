@@ -89,6 +89,15 @@ class Root {
 
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
+        this.sceneState.atomClock = { // TODO: get synchronised server time
+            time: 0,
+            lastCheck: performance.now(),
+            getTime: () => {
+                return this.sceneState.atomClock.time +
+                    this.sceneState.atomClock.lastCheck +
+                    performance.now();
+            },
+        }
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this._resize];
         this.sceneState.shadersToUpdate = [];

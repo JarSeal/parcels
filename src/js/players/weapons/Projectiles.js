@@ -46,6 +46,10 @@ class Projectiles {
         this.sceneState.scenes[this.sceneState.curScene].add(particles);
     }
 
+    newProjectile(from, to, angle, distance, playerId) {
+        console.log('NEW PROJECTILE', from, to, angle, distance, playerId);
+    }
+
     _createParticleShader() {
         return new THREE.ShaderMaterial({
             uniforms: {
