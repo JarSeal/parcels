@@ -90,6 +90,13 @@ class Settings {
         );
         this.addGuiElem(
             'boolean',
+            settings.debug,
+            'showProjectileStreaks',
+            'projectile streaks',
+            'Debug'
+        );
+        this.addGuiElem(
+            'boolean',
             settings.physics,
             'showPhysicsHelpers',
             'Show helpers',

@@ -15,6 +15,7 @@ const defaultSettings = {
         showStats: true,
         showAxesHelper: false,
         cameraFollowsPlayer: true,
+        showProjectileStreaks: false,
     },
 
     // Physics

@@ -211,18 +211,21 @@ class Player {
         }
 
         const point = intersectsLevel[0].point;
-        const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-        const points = [];
-        points.push(startPoint);
-        points.push(new THREE.Vector3(point.x, shotHeight, point.z));
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(geometry, material);
-        this.sceneState.scenes[this.sceneState.curScene].add(line);
-        setTimeout(() => {
-            line.material.dispose();
-            geometry.dispose();
-            this.sceneState.scenes[this.sceneState.curScene].remove(line);
-        }, 2000);
+
+        if(this.sceneState.settings.debug.showProjectileStreaks) {
+            const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+            const points = [];
+            points.push(startPoint);
+            points.push(new THREE.Vector3(point.x, shotHeight, point.z));
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            this.sceneState.scenes[this.sceneState.curScene].add(line);
+            setTimeout(() => {
+                line.material.dispose();
+                geometry.dispose();
+                this.sceneState.scenes[this.sceneState.curScene].remove(line);
+            }, 2000);
+        }
     }
 }
 
