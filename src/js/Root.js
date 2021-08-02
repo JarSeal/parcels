@@ -94,10 +94,10 @@ class Root {
             lastCheck: performance.now(),
             getTime: () => {
                 return this.sceneState.atomClock.time +
-                    this.sceneState.atomClock.lastCheck +
-                    performance.now();
+                    performance.now() -
+                    this.sceneState.atomClock.lastCheck;
             },
-        }
+        };
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this._resize];
         this.sceneState.shadersToUpdate = [];
