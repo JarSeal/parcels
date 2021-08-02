@@ -154,7 +154,7 @@ class Root {
         const shadersLength = ss.shadersToUpdateLength,
             now = performance.now();
         for(i=0; i<shadersLength; i++) {
-            ss.shadersToUpdate[i].material.uniforms.uDeltaTime.value = delta;
+            // ss.shadersToUpdate[i].material.uniforms.uDeltaTime.value = delta;
             ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
         }
     };

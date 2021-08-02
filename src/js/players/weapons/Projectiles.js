@@ -22,7 +22,7 @@ class Projectiles {
         // Every uniform is an array where each index represents a projectile.
 
         const projCount = 3;
-        const particlesPerProjectile = 2;
+        const particlesPerProjectile = 1;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
         const projIndexes = new Float32Array(projCount * particlesPerProjectile);
@@ -45,6 +45,74 @@ class Projectiles {
         this.particles.frustumCulled = false;
         console.log(this.particles);
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
+    }
+
+    newProjectile(from, to, angle, distance, playerId) {
+        console.log('NEW PROJECTILE', from, to, angle, distance, playerId);
+    }
+
+    _createParticleShader() {
+        return new THREE.ShaderMaterial({
+            uniforms: {
+                uColor: { value: new THREE.Color(0xffffff) }, // RAR
+                uColors: { value: [ new THREE.Color(0xffffff), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
+                uTime: { value: 0 },
+                uStartTime: { value: 0 }, // RAR
+                uStartTimes: { value: [ performance.now(), performance.now(), performance.now() ] },
+                uDistances: { value: [ 0, 0, 0 ] },
+                uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
+                uTos: { value: [ new THREE.Vector3(14, 1, 4), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
+                diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                    this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
+                )},
+            },
+            depthTest: true,
+            depthWrite: false,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            vertexShader: `
+                attribute float delay;
+                attribute float projindex;
+                uniform float uStartTime;
+                uniform float uTime;
+                uniform vec3 uFroms[3];
+                uniform vec3 uTos[3];
+                varying float timePhase;
+                varying float _delay;
+
+                const float LIFETIME = 1000.0;
+
+                void main() {
+                    float timeElapsed = uTime - uStartTime;
+                    timePhase = mod(timeElapsed, LIFETIME * delay);
+                    vec3 from = uFroms[int(projindex)];
+                    vec3 to = uTos[int(projindex)];
+                    float newPosX = from.x + (to.x - from.x) * 0.002 * timePhase;
+                    vec4 mvPosition = modelViewMatrix * vec4(from.x, from.y, from.z, 1.0);
+                    vec4 vertexPosition = projectionMatrix * mvPosition;
+                    // gl_PointSize = 500.0 * (1.0 - (timePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
+                    gl_PointSize = 700.0 / distance(vertexPosition, mvPosition);
+                    gl_Position = vertexPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D diffuseTexture;
+                uniform vec3 uColor;
+                varying float timePhase;
+                varying float _delay;
+
+                void main() {
+                    // if(length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
+                    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                    // gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(
+                    //     1.0 - (timePhase / 1000.0),
+                    //     1.0 - (timePhase / 200.0),
+                    //     1.0 - (timePhase / 200.0)
+                    // , 1.0);
+                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(uColor, 1.0);
+                }
+            `,
+        });
     }
 
     _initProjectiles_old() {
@@ -72,72 +140,6 @@ class Projectiles {
         // particles.frustumCulled = false;
         // console.log(particles);
         // this.sceneState.scenes[this.sceneState.curScene].add(particles);
-    }
-
-    newProjectile(from, to, angle, distance, playerId) {
-        console.log('NEW PROJECTILE', from, to, angle, distance, playerId);
-    }
-
-    _createParticleShader() {
-        return new THREE.ShaderMaterial({
-            uniforms: {
-                uColor: { value: new THREE.Color(0xff0000) },
-                uTime: { value: 0 },
-                uStartTime: { value: performance.now() },
-                uDeltaTime: { value: 0 },
-                uFrom: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
-                uTo: { value: [ new THREE.Vector3(14, 1, 4), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
-                diffuseTexture: { value: new THREE.TextureLoader().load(
-                    this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
-                )},
-            },
-            depthTest: true,
-            depthWrite: false,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            vertexShader: `
-                attribute float delay;
-                attribute float projindex;
-                uniform float uStartTime;
-                uniform float uTime;
-                uniform vec3 uFrom[3];
-                uniform vec3 uTo[3];
-                varying float timePhase;
-                varying float _delay;
-
-                const float LIFETIME = 1000.0;
-
-                void main() {
-                    float timeElapsed = uTime - uStartTime;
-                    timePhase = mod(timeElapsed, LIFETIME * delay);
-                    vec3 from = uFrom[int(projindex)];
-                    vec3 to = uTo[int(projindex)];
-                    float newPosX = from.x + (to.x - from.x) * 0.002 * timePhase;
-                    vec4 mvPosition = modelViewMatrix * vec4(from.x, from.y, from.z, 1.0);
-                    vec4 vertexPosition = projectionMatrix * mvPosition;
-                    // gl_PointSize = 500.0 * (1.0 - (timePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
-                    gl_PointSize = 500.0 / distance(vertexPosition, mvPosition);
-                    gl_Position = vertexPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D diffuseTexture;
-                uniform vec3 uColor;
-                varying float timePhase;
-                varying float _delay;
-
-                void main() {
-                    // if(length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
-                    // gl_FragColor = vec4(color, 1.0);
-                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(
-                        1.0 - (timePhase / 1000.0),
-                        1.0 - (timePhase / 200.0),
-                        1.0 - (timePhase / 200.0)
-                    , 1.0);
-                    // gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(uColor, 1.0);
-                }
-            `,
-        });
     }
     
     _createParticleShader_old() {
