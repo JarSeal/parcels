@@ -55,7 +55,7 @@ class Projectiles {
         return new THREE.ShaderMaterial({
             uniforms: {
                 uColor: { value: new THREE.Color(0xffffff) }, // RAR
-                uColors: { value: [ new THREE.Color(0xffffff), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
+                uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
                 uTime: { value: 0 },
                 uStartTime: { value: 0 }, // RAR
                 uStartTimes: { value: [ performance.now(), performance.now(), performance.now() ] },
@@ -79,10 +79,12 @@ class Projectiles {
                 uniform vec3 uTos[3];
                 varying float timePhase;
                 varying float _delay;
+                varying float _projindex;
 
                 const float LIFETIME = 1000.0;
 
                 void main() {
+                    float _projindex = projindex;
                     float timeElapsed = uTime - uStartTime;
                     timePhase = mod(timeElapsed, LIFETIME * delay);
                     vec3 from = uFroms[int(projindex)];
@@ -98,6 +100,8 @@ class Projectiles {
             fragmentShader: `
                 uniform sampler2D diffuseTexture;
                 uniform vec3 uColor;
+                uniform vec3 uColors[3];
+                varying float _projindex;
                 varying float timePhase;
                 varying float _delay;
 
@@ -109,7 +113,8 @@ class Projectiles {
                     //     1.0 - (timePhase / 200.0),
                     //     1.0 - (timePhase / 200.0)
                     // , 1.0);
-                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(uColor, 1.0);
+                    vec3 color = uColors[int(_projindex)];
+                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(color, 1.0);
                 }
             `,
         });
