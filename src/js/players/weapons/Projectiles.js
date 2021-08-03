@@ -54,7 +54,6 @@ class Projectiles {
     _createParticleShader() {
         return new THREE.ShaderMaterial({
             uniforms: {
-                uColor: { value: new THREE.Color(0xffffff) }, // RAR
                 uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
                 uTime: { value: 0 },
                 uStartTime: { value: 0 }, // RAR
@@ -77,44 +76,43 @@ class Projectiles {
                 uniform float uTime;
                 uniform vec3 uFroms[3];
                 uniform vec3 uTos[3];
-                varying float timePhase;
-                varying float _delay;
-                varying float _projindex;
+                uniform vec3 uColors[3];
+                uniform float uStartTimes[3];
+                varying float vTimePhase;
+                varying vec3 vColor;
 
                 const float LIFETIME = 1000.0;
 
                 void main() {
-                    float _projindex = projindex;
                     float timeElapsed = uTime - uStartTime;
-                    timePhase = mod(timeElapsed, LIFETIME * delay);
-                    vec3 from = uFroms[int(projindex)];
-                    vec3 to = uTos[int(projindex)];
-                    float newPosX = from.x + (to.x - from.x) * 0.002 * timePhase;
+                    vTimePhase = mod(timeElapsed, LIFETIME * delay);
+                    int intIndex = int(projindex);
+                    vec3 from = uFroms[int(intIndex)];
+                    vec3 to = uTos[int(intIndex)];
+                    vColor = uColors[int(intIndex)];
+                    float newPosX = from.x + (to.x - from.x) * 0.002 * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(from.x, from.y, from.z, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    // gl_PointSize = 500.0 * (1.0 - (timePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
+                    // gl_PointSize = 500.0 * (1.0 - (vTimePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
                     gl_PointSize = 700.0 / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
             `,
             fragmentShader: `
                 uniform sampler2D diffuseTexture;
-                uniform vec3 uColor;
-                uniform vec3 uColors[3];
                 varying float _projindex;
-                varying float timePhase;
-                varying float _delay;
+                varying float vTimePhase;
+                varying vec3 vColor;
 
                 void main() {
                     // if(length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
                     // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
                     // gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(
-                    //     1.0 - (timePhase / 1000.0),
-                    //     1.0 - (timePhase / 200.0),
-                    //     1.0 - (timePhase / 200.0)
+                    //     1.0 - (vTimePhase / 1000.0),
+                    //     1.0 - (vTimePhase / 200.0),
+                    //     1.0 - (vTimePhase / 200.0)
                     // , 1.0);
-                    vec3 color = uColors[int(_projindex)];
-                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(color, 1.0);
+                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(vColor, 1.0);
                 }
             `,
         });

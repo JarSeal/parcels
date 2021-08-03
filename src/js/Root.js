@@ -139,17 +139,17 @@ class Root {
 
     renderLoop = () => {
         const ss = this.sceneState;
-        const delta = ss.clock.getDelta();
+        // const delta = ss.clock.getDelta();
         requestAnimationFrame(() => {
             this.renderLoop();
         });
-        this._updateShaders(ss, delta);
+        this._updateShaders(ss);
         ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
         // ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
-    _updateShaders = (ss, delta) => {
+    _updateShaders = (ss) => {
         let i = 0;
         const shadersLength = ss.shadersToUpdateLength,
             now = performance.now();
