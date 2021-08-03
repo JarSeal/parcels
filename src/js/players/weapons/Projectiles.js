@@ -3,10 +3,9 @@ import * as THREE from 'three';
 class Projectiles {
     constructor(sceneState) {
         this.sceneState = sceneState;
-        this.material = this._createParticleShader();
-        sceneState.shadersToUpdate.push({ material: this.material });
-        sceneState.shadersToUpdateLength++;
         this.particles;
+        this.maxProjectiles = 3;
+        this.material = this._createParticleShader();
         this._initProjectiles();
     }
 
@@ -21,7 +20,7 @@ class Projectiles {
         // Add a HIT uniform (boolean) for each projectile.
         // Every uniform is an array where each index represents a projectile.
 
-        const projCount = 3;
+        const projCount = this.maxProjectiles;
         const particlesPerProjectile = 1;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
@@ -30,10 +29,10 @@ class Projectiles {
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
                 projIndexes[p1*particlesPerProjectile+p2] = p1;
+                delays[p1*particlesPerProjectile+p2] = p2 * 0.04 * Math.random();
                 positions[i] = 0;
                 positions[i+1] = 0;
                 positions[i+2] = 0;
-                delays[p1*particlesPerProjectile+p2] = p2 * 0.04 * Math.random();
                 i += 3;
             }
         }
@@ -52,13 +51,12 @@ class Projectiles {
     }
 
     _createParticleShader() {
-        return new THREE.ShaderMaterial({
+        const material = new THREE.ShaderMaterial({
             uniforms: {
                 uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
                 uTime: { value: 0 },
-                uStartTime: { value: 0 }, // RAR
                 uStartTimes: { value: [ performance.now(), performance.now(), performance.now() ] },
-                uDistances: { value: [ 0, 0, 0 ] },
+                uTravelTimes: { value: [ 5, 0, 0 ] },
                 uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
                 uTos: { value: [ new THREE.Vector3(14, 1, 4), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
@@ -74,22 +72,24 @@ class Projectiles {
                 attribute float projindex;
                 uniform float uStartTime;
                 uniform float uTime;
-                uniform vec3 uFroms[3];
-                uniform vec3 uTos[3];
-                uniform vec3 uColors[3];
-                uniform float uStartTimes[3];
+                uniform vec3 uFroms[${this.maxProjectiles}];
+                uniform vec3 uTos[${this.maxProjectiles}];
+                uniform vec3 uColors[${this.maxProjectiles}];
+                uniform float uStartTimes[${this.maxProjectiles}];
+                uniform float uTravelTimes[${this.maxProjectiles}];
                 varying float vTimePhase;
                 varying vec3 vColor;
 
                 const float LIFETIME = 1000.0;
 
                 void main() {
-                    float timeElapsed = uTime - uStartTime;
-                    vTimePhase = mod(timeElapsed, LIFETIME * delay);
                     int intIndex = int(projindex);
-                    vec3 from = uFroms[int(intIndex)];
-                    vec3 to = uTos[int(intIndex)];
-                    vColor = uColors[int(intIndex)];
+                    float startTime = uStartTimes[intIndex];
+                    float timeElapsed = uTime - startTime;
+                    vTimePhase = mod(timeElapsed, LIFETIME * delay);
+                    vec3 from = uFroms[intIndex];
+                    vec3 to = uTos[intIndex];
+                    vColor = uColors[intIndex];
                     float newPosX = from.x + (to.x - from.x) * 0.002 * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(from.x, from.y, from.z, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
@@ -100,7 +100,6 @@ class Projectiles {
             `,
             fragmentShader: `
                 uniform sampler2D diffuseTexture;
-                varying float _projindex;
                 varying float vTimePhase;
                 varying vec3 vColor;
 
@@ -116,6 +115,10 @@ class Projectiles {
                 }
             `,
         });
+
+        this.sceneState.shadersToUpdate.push({ material: material });
+        this.sceneState.shadersToUpdateLength++;
+        return material;
     }
 
     _initProjectiles_old() {
@@ -146,7 +149,7 @@ class Projectiles {
     }
     
     _createParticleShader_old() {
-        return new THREE.ShaderMaterial({
+        const material = new THREE.ShaderMaterial({
             uniforms: {
                 uColor: { value: new THREE.Color(0xff0000) },
                 uTime: { value: 0 },
@@ -202,6 +205,10 @@ class Projectiles {
                 }
             `,
         });
+
+        this.sceneState.shadersToUpdate.push({ material: material });
+        this.sceneState.shadersToUpdateLength++;
+        return material;
     }
 }
 
