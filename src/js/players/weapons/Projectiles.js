@@ -60,6 +60,7 @@ class Projectiles {
                 uDistances: { value: [ 8, 2, 2 ] },
                 uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
                 uTos: { value: [ new THREE.Vector3(20, 1, 6), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
+                uPixelRatio: { value: this.sceneState.settings.graphics.devicePixelRatio },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                     this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
                 )},
@@ -79,6 +80,7 @@ class Projectiles {
                 uniform float uStartTimes[${this.maxProjectiles}];
                 uniform float uSpeeds[${this.maxProjectiles}];
                 uniform float uDistances[${this.maxProjectiles}];
+                uniform float uPixelRatio;
                 varying float vTimePhase;
                 varying vec3 vColor;
 
@@ -97,7 +99,7 @@ class Projectiles {
                     vec3 newPos = from + (to - from) * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = 320.0 / distance(vertexPosition, mvPosition);
+                    gl_PointSize = 320.0 / distance(vertexPosition, mvPosition) * uPixelRatio;
                     gl_Position = vertexPosition;
                 }
             `,

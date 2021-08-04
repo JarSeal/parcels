@@ -26,6 +26,7 @@ const defaultSettings = {
     // Graphics
     graphics: {
         antialiasing: true,
+        devicePixelRatio: window.devicePixelRatio || 1,
     },
 };
 

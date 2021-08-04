@@ -39,6 +39,7 @@ class Root {
         renderer.debug.checkShaderErrors = true; // Disable this for production (performance gain)
         const screenSize = this.utils.getScreenResolution();
         renderer.setSize(screenSize.x, screenSize.y);
+        renderer.setPixelRatio(this.sceneState.settings.graphics.devicePixelRatio);
         renderer.domElement.id = 'main-stage';
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
@@ -163,7 +164,8 @@ class Root {
         const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
-        const pixelRatio = window.devicePixelRatio || 1;
+        const pixelRatio = sceneState.settings.graphics.devicePixelRatio || window.devicePixelRatio || 1;
+        console.log(sceneState.settings.graphics.devicePixelRatio, pixelRatio);
         sceneState.renderer.setPixelRatio(pixelRatio);
         document.getElementsByTagName('body')[0].style.width = width + 'px';
         document.getElementsByTagName('body')[0].style.height = height + 'px';
