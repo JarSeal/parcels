@@ -21,7 +21,7 @@ class Projectiles {
         // Every uniform is an array where each index represents a projectile.
 
         const projCount = this.maxProjectiles;
-        const particlesPerProjectile = 1;
+        const particlesPerProjectile = 30;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
         const projIndexes = new Float32Array(projCount * particlesPerProjectile);
@@ -29,7 +29,7 @@ class Projectiles {
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
                 projIndexes[p1*particlesPerProjectile+p2] = p1;
-                delays[p1*particlesPerProjectile+p2] = p2 * 0.04 * Math.random();
+                delays[p1*particlesPerProjectile+p2] = p2 * 0.02;
                 positions[i] = 0;
                 positions[i+1] = 0;
                 positions[i+2] = 0;
@@ -56,9 +56,10 @@ class Projectiles {
                 uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
                 uTime: { value: 0 },
                 uStartTimes: { value: [ performance.now(), performance.now(), performance.now() ] },
-                uTravelTimes: { value: [ 5000, 10000, 50000 ] },
+                uSpeeds: { value: [ 0.2, 1, 2 ] },
+                uDistances: { value: [ 8, 2, 2 ] },
                 uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
-                uTos: { value: [ new THREE.Vector3(14, 1, 4), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
+                uTos: { value: [ new THREE.Vector3(20, 1, 6), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                     this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
                 )},
@@ -76,7 +77,8 @@ class Projectiles {
                 uniform vec3 uTos[${this.maxProjectiles}];
                 uniform vec3 uColors[${this.maxProjectiles}];
                 uniform float uStartTimes[${this.maxProjectiles}];
-                uniform float uTravelTimes[${this.maxProjectiles}];
+                uniform float uSpeeds[${this.maxProjectiles}];
+                uniform float uDistances[${this.maxProjectiles}];
                 varying float vTimePhase;
                 varying vec3 vColor;
 
@@ -84,18 +86,18 @@ class Projectiles {
 
                 void main() {
                     int intIndex = int(projindex);
-                    float startTime = uStartTimes[intIndex];
+                    vColor = uColors[intIndex];
+                    float speed = uSpeeds[intIndex];
+                    float startTime = uStartTimes[intIndex] + delay * 1000.0 * speed;
+                    float travelTime = speed * uDistances[intIndex] * 1000.0;
                     float timeElapsed = uTime - startTime;
-                    vTimePhase = mod(uTravelTimes[intIndex], timeElapsed);
+                    vTimePhase = mod(timeElapsed, travelTime) / travelTime;
                     vec3 from = uFroms[intIndex];
                     vec3 to = uTos[intIndex];
-                    vColor = uColors[intIndex];
-                    float newPosX = from.x + (to.x - from.x) * 0.002 * vTimePhase;
                     vec3 newPos = from + (to - from) * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    // gl_PointSize = 500.0 * (1.0 - (vTimePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
-                    gl_PointSize = 700.0 / distance(vertexPosition, mvPosition);
+                    gl_PointSize = 320.0 / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
             `,
