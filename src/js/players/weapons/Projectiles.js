@@ -56,7 +56,7 @@ class Projectiles {
                 uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
                 uTime: { value: 0 },
                 uStartTimes: { value: [ performance.now(), performance.now(), performance.now() ] },
-                uTravelTimes: { value: [ 5, 0, 0 ] },
+                uTravelTimes: { value: [ 5000, 10000, 50000 ] },
                 uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
                 uTos: { value: [ new THREE.Vector3(14, 1, 4), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
@@ -86,12 +86,13 @@ class Projectiles {
                     int intIndex = int(projindex);
                     float startTime = uStartTimes[intIndex];
                     float timeElapsed = uTime - startTime;
-                    vTimePhase = mod(timeElapsed, LIFETIME * delay);
+                    vTimePhase = mod(uTravelTimes[intIndex], timeElapsed);
                     vec3 from = uFroms[intIndex];
                     vec3 to = uTos[intIndex];
                     vColor = uColors[intIndex];
                     float newPosX = from.x + (to.x - from.x) * 0.002 * vTimePhase;
-                    vec4 mvPosition = modelViewMatrix * vec4(from.x, from.y, from.z, 1.0);
+                    vec3 newPos = from + (to - from) * vTimePhase;
+                    vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
                     // gl_PointSize = 500.0 * (1.0 - (vTimePhase / LIFETIME * delay)) / distance(vertexPosition, mvPosition);
                     gl_PointSize = 700.0 / distance(vertexPosition, mvPosition);
