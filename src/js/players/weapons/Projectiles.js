@@ -99,7 +99,7 @@ class Projectiles {
                     vec3 newPos = from + (to - from) * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = 320.0 / distance(vertexPosition, mvPosition) * uPixelRatio;
+                    gl_PointSize = (2000.0 * (uPixelRatio / 10.0)) / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
             `,
