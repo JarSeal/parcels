@@ -51,6 +51,8 @@ class Projectiles {
     }
 
     _createParticleShader() {
+        let pixelRatio = this.sceneState.settings.graphics.devicePixelRatio;
+        if(pixelRatio < 1) pixelRatio = 1.5;
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uColors: { value: [ new THREE.Color(0xffff00), new THREE.Color(0xffffff), new THREE.Color(0xff0000) ] },
@@ -60,7 +62,7 @@ class Projectiles {
                 uDistances: { value: [ 8, 2, 2 ] },
                 uFroms: { value: [ new THREE.Vector3(12, 1, 4), new THREE.Vector3(12, 1, 6), new THREE.Vector3(12, 1, 8) ] },
                 uTos: { value: [ new THREE.Vector3(20, 1, 6), new THREE.Vector3(14, 1, 6), new THREE.Vector3(14, 1, 8) ] },
-                uPixelRatio: { value: this.sceneState.settings.graphics.devicePixelRatio },
+                uPixelRatio: { value: pixelRatio },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                     this.sceneState.settings.assetsUrl + '/sprites/orange_glow2_256x256.png'
                 )},
@@ -83,8 +85,6 @@ class Projectiles {
                 uniform float uPixelRatio;
                 varying float vTimePhase;
                 varying vec3 vColor;
-
-                const float LIFETIME = 1000.0;
 
                 void main() {
                     int intIndex = int(projindex);
