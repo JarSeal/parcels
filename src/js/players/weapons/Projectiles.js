@@ -21,9 +21,9 @@ class Projectiles {
         // Every uniform is an array where each index represents a projectile.
 
         const projCount = this.maxProjectiles;
-        const particlesPerProjectile = 35;
-        const trailParticlesStart = 30;
-        const trailParticlesStop = 35;
+        const particlesPerProjectile = 45;
+        const trailParticlesStart = 33;
+        const trailParticlesStop = 40;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
         const projIndexes = new Float32Array(projCount * particlesPerProjectile);
@@ -36,12 +36,12 @@ class Projectiles {
                 positions[i] = 0;
                 positions[i+1] = 0;
                 positions[i+2] = 0;
-                i += 3;
                 if(p2 >= trailParticlesStart-1 && p2 <= trailParticlesStop-1) {
                     trails[p1*particlesPerProjectile+p2] = Math.random();
                 } else {
                     trails[p1*particlesPerProjectile+p2] = 1.1;
                 }
+                i += 3;
             }
         }
         const projGeo = new THREE.BufferGeometry();
@@ -117,7 +117,7 @@ class Projectiles {
                     vec3 newPos = (to - from) * vTimePhase * notTrail;
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    float size = vIsTrail * 10000.0 + notTrail * 4000.0 * (1.0 - delay / 2.0);
+                    float size = vIsTrail * 7000.0 + notTrail * 3000.0 * (1.0 - delay / 2.0);
                     gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
