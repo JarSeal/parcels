@@ -21,9 +21,9 @@ class Projectiles {
         // Every uniform is an array where each index represents a projectile.
 
         const projCount = this.maxProjectiles;
-        const particlesPerProjectile = 30;
-        const trailParticlesStart = 25;
-        const trailParticlesStop = 30;
+        const particlesPerProjectile = 35;
+        const trailParticlesStart = 30;
+        const trailParticlesStop = 35;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
         const projIndexes = new Float32Array(projCount * particlesPerProjectile);
@@ -117,7 +117,7 @@ class Projectiles {
                     vec3 newPos = (to - from) * vTimePhase * notTrail;
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    float size = vIsTrail * 5500.0 + notTrail * 4000.0 * (1.0 - delay / 2.0);
+                    float size = vIsTrail * 10000.0 + notTrail * 4000.0 * (1.0 - delay / 2.0);
                     gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
