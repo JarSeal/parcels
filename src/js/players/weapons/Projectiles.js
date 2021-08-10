@@ -65,7 +65,7 @@ class Projectiles {
     }
 
     _createParticleShader() {
-        let pixelRatio = this.sceneState.settings.graphics.devicePixelRatio;
+        let pixelRatio = window.devicePixelRatio;
         if(pixelRatio < 1) pixelRatio = 1.5;
         const material = new THREE.ShaderMaterial({
             uniforms: {

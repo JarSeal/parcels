@@ -37,9 +37,6 @@ class Root {
         });
         renderer.setClearColor('#000000');
         renderer.debug.checkShaderErrors = true; // Disable this for production (performance gain)
-        const screenSize = this.utils.getScreenResolution();
-        renderer.setSize(screenSize.x, screenSize.y);
-        renderer.setPixelRatio(this.sceneState.settings.graphics.devicePixelRatio);
         renderer.domElement.id = 'main-stage';
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
@@ -61,11 +58,12 @@ class Root {
         // Setup scene and basic lights [/END]
 
         // Setup camera and aspect ratio [START]
+        const screenSize = this.utils.getScreenResolution();
         this.aspectRatio = screenSize.x / screenSize.y;
-        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.5, 128);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.update();
-        this.controls = controls;
+        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.1, 256);
+        const controls = new OrbitControls(camera, renderer.domElement); // Disable this for production (performance gain)
+        controls.update(); // Disable this for production (performance gain)
+        this.controls = controls; // Disable this for production (performance gain)
         this.camera = camera;
         camera.userData.followXOffset = 6;
         camera.userData.followYOffset = 10;
@@ -73,7 +71,7 @@ class Root {
         this.sceneState.cameras = {
             level: camera,
         };
-        this.sceneState.orbitControls = controls;
+        this.sceneState.orbitControls = controls; // Disable this for production (performance gain)
         // Setup camera and aspect ratio [/END]
 
         // Setup physics (cannon.js) [START]
@@ -164,14 +162,13 @@ class Root {
         const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
-        const pixelRatio = sceneState.settings.graphics.devicePixelRatio || window.devicePixelRatio || 1;
-        console.log(sceneState.settings.graphics.devicePixelRatio, pixelRatio);
-        sceneState.renderer.setPixelRatio(pixelRatio);
-        document.getElementsByTagName('body')[0].style.width = width + 'px';
-        document.getElementsByTagName('body')[0].style.height = height + 'px';
+        sceneState.renderer.setSize(
+            width * window.devicePixelRatio | 0,
+            height * window.devicePixelRatio | 0,
+            false
+        );
         sceneState.cameras.level.aspect = width / height;
         sceneState.cameras.level.updateProjectionMatrix();
-        sceneState.renderer.setSize(width, height);
         // sceneState.pp.getComposer().setSize(width, height);
     }
 
