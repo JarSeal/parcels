@@ -43,9 +43,16 @@ class Projectiles {
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
+        setInterval(() => {
+            this.newProjectile(
+                new THREE.Vector3(12, 1, 4),
+                new THREE.Vector3(17, 1, 4),
+                5
+            );
+        }, 1500);
     }
 
-    newProjectile(from, to, angle, distance) {
+    newProjectile(from, to, distance) {
         const index = this.nextProjIndex;
         const speed = 0.1;
         this.material.uniforms.uFroms.value[index] = from;
@@ -66,7 +73,6 @@ class Projectiles {
 
     _createParticleShader() {
         let pixelRatio = window.devicePixelRatio;
-        if(pixelRatio < 1) pixelRatio = 1.5;
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uColors: { value: this._initShaderPart('color') },
@@ -77,7 +83,8 @@ class Projectiles {
                 // Create a uniform for travel time
                 uFroms: { value: this._initShaderPart('position') },
                 uTos: { value: this._initShaderPart('position') },
-                uPixelRatio: { value: pixelRatio / 10 },
+                uPixelRatio: { value: pixelRatio },
+                scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
                 diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                     this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png'
                 )},
@@ -99,6 +106,7 @@ class Projectiles {
                 uniform float uSpeeds[${this.maxProjectiles}];
                 uniform float uDistances[${this.maxProjectiles}];
                 uniform float uPixelRatio;
+                uniform float scale;
                 varying float vTimePhase;
                 varying vec3 vColor;
                 varying float vIsTrail;
@@ -123,9 +131,10 @@ class Projectiles {
                     vec3 newPos = (to - from) * vTimePhase * notTrail;
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    float size = vIsTrail * 5500.0 + notTrail * 3000.0 * (1.0 - delay / 2.0);
+                    float size = vIsTrail * 2.0 + notTrail * 0.58 * (1.0 - delay / 2.0);
                     // gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
-                    gl_PointSize = 500.0 / distance(vertexPosition, mvPosition);
+                    // gl_PointSize = size * scale / distance(vertexPosition, mvPosition);
+                    gl_PointSize = size * (scale / length(mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
             `,
@@ -146,6 +155,7 @@ class Projectiles {
 
         this.sceneState.shadersToUpdate.push({ material: material });
         this.sceneState.shadersToUpdateLength++;
+        this.sceneState.shadersToResize.push({ material: material });
         return material;
     }
 

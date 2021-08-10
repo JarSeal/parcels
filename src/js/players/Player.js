@@ -227,7 +227,6 @@ class Player {
         this.sceneState.projectiles.newProjectile(
             new THREE.Vector3(curPosX, shotHeight, curPosZ),
             point,
-            a,
             distance,
             this.data.id,
         );

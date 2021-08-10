@@ -101,6 +101,7 @@ class Root {
         this.sceneState.resizeFns = [this._resize];
         this.sceneState.shadersToUpdate = [];
         this.sceneState.shadersToUpdateLength = 0;
+        this.sceneState.shadersToResize = [];
         this.levelLoader = new LevelLoader(this.sceneState);
         this._initResizer();
         // Other setup [/END]
@@ -153,7 +154,6 @@ class Root {
         const shadersLength = ss.shadersToUpdateLength,
             now = performance.now();
         for(i=0; i<shadersLength; i++) {
-            // ss.shadersToUpdate[i].material.uniforms.uDeltaTime.value = delta;
             ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
         }
     };
@@ -162,13 +162,17 @@ class Root {
         const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
+        const pixelRatio = window.devicePixelRatio;
         sceneState.renderer.setSize(
-            width * window.devicePixelRatio | 0,
-            height * window.devicePixelRatio | 0,
+            width * pixelRatio | 0,
+            height * pixelRatio | 0,
             false
         );
         sceneState.cameras.level.aspect = width / height;
         sceneState.cameras.level.updateProjectionMatrix();
+        for(let i=0; i<sceneState.shadersToResize.length; i++) {
+            sceneState.shadersToResize[i].material.uniforms.scale.value = height * pixelRatio / 2;
+        }
         // sceneState.pp.getComposer().setSize(width, height);
     }
 
