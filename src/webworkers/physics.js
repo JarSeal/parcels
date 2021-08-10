@@ -155,6 +155,9 @@ const addShape = (shape) => {
         body.fixedRotation = true;
         body.updateMassProperties();
     }
+    if(shape.velocity) {
+        body.velocity = new CANNON.Vec3(shape.velocity[0], shape.velocity[1], shape.velocity[2]);
+    }
     world.addBody(body);
     if(shape.moving) {
         body.moveValues = {

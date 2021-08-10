@@ -1,4 +1,5 @@
 import PhysicsHelpers from './PhysicsHelpers';
+import PhysicsParticles from './PhysicsParticles';
 
 class Physics {
     constructor(sceneState, runMainApp) {
@@ -9,6 +10,47 @@ class Physics {
         sceneState.additionalPhysicsData = [];
         this.helpers = new PhysicsHelpers(sceneState);
         this._initPhysicsWorker(runMainApp);
+        this.particles = new PhysicsParticles(sceneState);
+    }
+
+    addParticles(from, to, speed) {
+        from, to, speed;
+        const startPos = [
+            from.x + (to.x - from.x) * 0.8,
+            from.y + (to.y - from.y) * 0.8,
+            from.z + (to.z - from.z) * 0.8,
+        ];
+        for(let i=0; i<3; i++) {
+            const id = 'physParticle-'+i+'-'+performance.now();
+            const velo = [
+                (to.x - from.x) * speed * 10,
+                (to.y - from.y + 5 * Math.random()) * speed * 10,
+                (to.z - from.z) * speed * 10,
+            ];
+            this.addShape({
+                id: id,
+                type: 'box',
+                moving: true,
+                mass: 1,
+                size: [0.05, 0.05, 0.05],
+                position: startPos,
+                rotation: [0, 0, 0],
+                velocity: velo,
+                material: { friction: 0.2 },
+                particles: true,
+                sleep: {
+                    allowSleep: true,
+                    sleeSpeedLimit: 0.1,
+                    sleepTimeLimit: 1,
+                },
+            });
+            setTimeout(() => {
+                this.removeShape({
+                    id: id,
+                    moving: true,
+                });
+            }, 3000);
+        }
     }
 
     _initPhysicsWorker(runMainApp) {
@@ -32,11 +74,13 @@ class Physics {
                 runMainApp();
                 this._requestPhysicsFromWorker();
             } else if(e.data.error) {
-                this.sceneState.logger.error(e.data.error);
+                this.sceneState.logger.error('From physics worker:', e.data.error);
+                throw new Error('**Error stack:**');
             }
         });
         this.worker.addEventListener('error', (e) => {
-            this.sceneState.logger.error(e.message);
+            this.sceneState.logger.error('Worker event listener:', e.message);
+            throw new Error('**Error stack:**');
         });
     }
 
@@ -68,18 +112,22 @@ class Physics {
         let i;
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
-            s.mesh.position.set(
-                positions[i * 3],
-                positions[i * 3 + 1],
-                positions[i * 3 + 2]
-            );
-            if(!s.fixedRotation) {
-                s.mesh.quaternion.set(
-                    quaternions[i * 4],
-                    quaternions[i * 4 + 1],
-                    quaternions[i * 4 + 2],
-                    quaternions[i * 4 + 3]
+            if(s.particles) {
+
+            } else {
+                s.mesh.position.set(
+                    positions[i * 3],
+                    positions[i * 3 + 1],
+                    positions[i * 3 + 2]
                 );
+                if(!s.fixedRotation) {
+                    s.mesh.quaternion.set(
+                        quaternions[i * 4],
+                        quaternions[i * 4 + 1],
+                        quaternions[i * 4 + 2],
+                        quaternions[i * 4 + 3]
+                    );
+                }
             }
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
@@ -133,10 +181,13 @@ class Physics {
     }
 
     addShape = (shapeData) => {
-        if(!shapeData) this.sceneState.logger.error('Trying to add new shape, but shapeData is missing (Root.js).');
+        if(!shapeData) {
+            this.sceneState.logger.error('Trying to add new shape, but shapeData is missing.');
+            throw new Error('**Error stack:**');
+        }
         let id = shapeData.id;
         if(!id) {
-            id = 'phyShape_' + Math.random().toString().replace('.', '');
+            id = 'phyShape_' + performance.now().toString().replace('.', '_');
             shapeData.id = id;
         }
         this.tempShapes[id] = shapeData;
@@ -158,8 +209,10 @@ class Physics {
                 position: shapeData.position,
                 quaternion: shapeData.quaternion,
                 rotation: shapeData.rotation,
+                velocity: shapeData.velocity,
                 fixedRotation: shapeData.fixedRotation,
                 material: shapeData.material,
+                particles: shapeData.particles,
                 sleep: shapeData.sleep,
                 roof: shapeData.roof,
                 characterData: shapeData.characterData
