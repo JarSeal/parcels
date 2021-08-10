@@ -124,7 +124,9 @@ class Settings {
             'button',
             { show: () => {
                 alert(
-                    JSON.stringify(this.sceneState.renderer.capabilities) + ' devicePixelRatio: ' + window.devicePixelRatio
+                    JSON.stringify(this.sceneState.renderer.capabilities) +
+                    ' devicePixelRatio: ' + window.devicePixelRatio +
+                    ' rendererPixelRatio: ' + this.sceneState.renderer.getPixelRatio()
                 );
             }},
             'show',

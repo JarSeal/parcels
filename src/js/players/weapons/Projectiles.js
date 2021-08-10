@@ -4,7 +4,7 @@ class Projectiles {
     constructor(sceneState) {
         this.sceneState = sceneState;
         this.particles;
-        this.maxProjectiles = 100;
+        this.maxProjectiles = 50;
         this.particlesPerProjectile = 30;
         this.trailParticlesStart = 20;
         this.trailParticlesStop = 26;
@@ -93,7 +93,7 @@ class Projectiles {
                 uTos: { value: this._initShaderPart('position') },
                 uPixelRatio: { value: pixelRatio },
                 scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
-                diffuseTexture: { value: new THREE.TextureLoader().load(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                diffuseTexture: { value: new THREE.TextureLoader().load(
                     this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png'
                 )},
             },
@@ -141,8 +141,9 @@ class Projectiles {
                     newPos.y = newPos.y * (1.0 - floor(vTimePhase)) + 2000.0 * floor(vTimePhase);
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    float size = vIsTrail * 2.0 + notTrail * 0.58 * (1.0 - delay / 2.0);
-                    gl_PointSize = size * (scale / length(mvPosition.xyz));
+                    float pSize = vIsTrail * 2.0 + notTrail * 0.58 * (1.0 - delay / 2.0);
+                    gl_PointSize = pSize * (scale / length(-mvPosition.xyz));
+                    // gl_PointSize = pSize * 50.0;
                     gl_Position = vertexPosition;
                 }
             `,
@@ -157,6 +158,7 @@ class Projectiles {
                 void main() {
                     float alpha = 1.0 - (vTimePhase / clamp(vTrailTime + 0.7, 0.0, 1.0)) * vIsTrail;
                     gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(vColor + (0.5 - vDelay), alpha);
+                    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
                 }
             `,
         });
@@ -187,7 +189,7 @@ class Projectiles {
             }
         } else if(part === 'position') {
             for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(new THREE.Vector3(0, 2000, 0));
+                returnArray.push(new THREE.Vector3(0, 0, 0));
             }
         }
         return returnArray;

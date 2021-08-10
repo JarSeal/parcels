@@ -212,7 +212,7 @@ class Player {
         const distance = intersectsLevel[0].distance;
 
         if(this.sceneState.settings.debug.showProjectileStreaks) {
-            const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const material = new THREE.LineBasicMaterial({ color: 0xff2ccc });
             const points = [];
             points.push(startPoint);
             points.push(new THREE.Vector3(point.x, shotHeight, point.z));
