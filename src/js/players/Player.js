@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TimelineMax, Sine } from 'gsap-ssr';
+import projectileWeapon from '../data/weapons/projectile01';
 
 class Player {
     constructor(sceneState, data) {
@@ -8,6 +9,7 @@ class Player {
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
         this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
+        this.curWeapon = projectileWeapon;
         this.rayshooter = new THREE.Raycaster();
         data.render = this.render;
         data.xPosMulti = 0;
@@ -158,7 +160,7 @@ class Player {
     shoot(pos) {
         const data = this.data;
         const shotHeight = data.mesh.children[0].position.y;
-        const maxDistance = 10;
+        const maxDistance = this.curWeapon.maxDistance;
 
         const curPosX = data.mesh.children[0].position.x;
         const curPosZ = data.mesh.children[0].position.z;
@@ -228,7 +230,7 @@ class Player {
             new THREE.Vector3(curPosX, shotHeight, curPosZ),
             point,
             distance,
-            this.data.id,
+            this.curWeapon,
         );
     }
 }

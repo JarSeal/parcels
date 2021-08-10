@@ -47,18 +47,19 @@ class Projectiles {
             this.newProjectile(
                 new THREE.Vector3(12, 1, 4),
                 new THREE.Vector3(17, 1, 4),
-                5
+                5,
+                { color: 0xfc2f00, speed: 0.2 }
             );
         }, 1500);
     }
 
-    newProjectile(from, to, distance) {
+    newProjectile(from, to, distance, weapon) {
         const index = this.nextProjIndex;
-        const speed = 0.1;
+        this.material.uniforms.uColors.value[index] = new THREE.Color(weapon.color);
         this.material.uniforms.uFroms.value[index] = from;
         this.material.uniforms.uTos.value[index] = to;
         this.material.uniforms.uDistances.value[index] = distance;
-        this.material.uniforms.uSpeeds.value[index] = speed;
+        this.material.uniforms.uSpeeds.value[index] = weapon.speed;
         this.material.uniforms.uStartTimes.value[index] = performance.now();
         this.nextProjIndex++;
         if(this.nextProjIndex > this.maxProjectiles-1) this.nextProjIndex = 0;
@@ -68,7 +69,7 @@ class Projectiles {
             this.material.uniforms.uDistances.value[index] = 0;
             this.material.uniforms.uSpeeds.value[index] = 0;
             this.material.uniforms.uStartTimes.value[index] = performance.now();
-        }, speed * distance * 1000);
+        }, weapon.speed * distance * 1000);
     }
 
     _createParticleShader() {
