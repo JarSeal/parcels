@@ -231,6 +231,7 @@ class Player {
             point,
             distance,
             this.curWeapon,
+            intersectsLevel[0]
         );
     }
 }

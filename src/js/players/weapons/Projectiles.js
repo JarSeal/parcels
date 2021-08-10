@@ -58,7 +58,7 @@ class Projectiles {
         }, 1500);
     }
 
-    newProjectile(from, to, distance, weapon) {
+    newProjectile(from, to, distance, weapon, intersect) {
         const index = this.nextProjIndex;
         this.material.uniforms.uColors.value[index] = new THREE.Color(weapon.color);
         this.material.uniforms.uFroms.value[index] = from;
@@ -68,6 +68,9 @@ class Projectiles {
         this.material.uniforms.uStartTimes.value[index] = performance.now();
         this.nextProjIndex++;
         if(this.nextProjIndex > this.maxProjectiles-1) this.nextProjIndex = 0;
+        if(intersect && intersect.object) {
+            console.log('HITS SOMETHING');
+        }
         setTimeout(() => {
             this.material.uniforms.uFroms.value[index] = new THREE.Vector3(0, 2000, 0);
             this.material.uniforms.uTos.value[index] = new THREE.Vector3(0, 2000, 0);
