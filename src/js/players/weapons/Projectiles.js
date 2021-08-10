@@ -42,12 +42,10 @@ class Projectiles {
         projGeo.setAttribute('trails', new THREE.BufferAttribute(trails, 1));
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
-        console.log(this.particles);
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
     }
 
-    newProjectile(from, to, angle, distance, playerId) {
-        console.log('NEW PROJECTILE', from, to, angle, distance, playerId, this.material);
+    newProjectile(from, to, angle, distance) {
         const index = this.nextProjIndex;
         const speed = 0.1;
         this.material.uniforms.uFroms.value[index] = from;
@@ -55,7 +53,6 @@ class Projectiles {
         this.material.uniforms.uDistances.value[index] = distance;
         this.material.uniforms.uSpeeds.value[index] = speed;
         this.material.uniforms.uStartTimes.value[index] = performance.now();
-        // this.material.uniformsNeedUpdate = true;
         this.nextProjIndex++;
         if(this.nextProjIndex > this.maxProjectiles-1) this.nextProjIndex = 0;
         setTimeout(() => {
@@ -64,7 +61,6 @@ class Projectiles {
             this.material.uniforms.uDistances.value[index] = 0;
             this.material.uniforms.uSpeeds.value[index] = 0;
             this.material.uniforms.uStartTimes.value[index] = performance.now();
-            // this.material.uniformsNeedUpdate = true;
         }, speed * distance * 1000);
     }
 
@@ -128,7 +124,8 @@ class Projectiles {
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
                     float size = vIsTrail * 5500.0 + notTrail * 3000.0 * (1.0 - delay / 2.0);
-                    gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
+                    // gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
+                    gl_PointSize = 500.0 / distance(vertexPosition, mvPosition);
                     gl_Position = vertexPosition;
                 }
             `,

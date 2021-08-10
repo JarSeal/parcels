@@ -201,11 +201,7 @@ class Player {
             dir > 4 ? targetPos[0] = startPoint.x + xLength : targetPos[0] = startPoint.x - xLength;
             dir > 2 && dir < 6 ? targetPos[1] = startPoint.z + zLength : targetPos[1] = startPoint.z - zLength;
             intersectsLevel.push({
-                point: {
-                    x: targetPos[0],
-                    y: shotHeight,
-                    z: targetPos[1],
-                },
+                point: new THREE.Vector3(targetPos[0], shotHeight, targetPos[1]),
                 distance: maxDistance,
             });
         }
@@ -214,7 +210,7 @@ class Player {
         const distance = intersectsLevel[0].distance;
 
         if(this.sceneState.settings.debug.showProjectileStreaks) {
-            const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+            const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
             const points = [];
             points.push(startPoint);
             points.push(new THREE.Vector3(point.x, shotHeight, point.z));
