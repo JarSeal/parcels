@@ -5,6 +5,11 @@ class Projectiles {
         this.sceneState = sceneState;
         this.particles;
         this.maxProjectiles = 100;
+        this.particlesPerProjectile = 30;
+        this.trailParticlesStart = 20;
+        this.trailParticlesStop = 26;
+        this.delayPerParticle = 0.02;
+        this.totalDelayPerProjectile = this.particlesPerProjectile * this.delayPerParticle * 1000;
         this.material = this._createParticleShader();
         this.nextProjIndex = 0;
         this._initProjectiles();
@@ -12,9 +17,9 @@ class Projectiles {
 
     _initProjectiles() {
         const projCount = this.maxProjectiles;
-        const particlesPerProjectile = 30;
-        const trailParticlesStart = 24;
-        const trailParticlesStop = 30;
+        const particlesPerProjectile = this.particlesPerProjectile;
+        const trailParticlesStart = this.trailParticlesStart;
+        const trailParticlesStop = this.trailParticlesStop;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
         const delays = new Float32Array(projCount * particlesPerProjectile);
         const projIndexes = new Float32Array(projCount * particlesPerProjectile);
@@ -48,7 +53,7 @@ class Projectiles {
                 new THREE.Vector3(12, 1, 4),
                 new THREE.Vector3(17, 1, 4),
                 5,
-                { color: 0xfc2f00, speed: 0.2 }
+                { color: 0xfc2f00, speed: 0.8 }
             );
         }, 1500);
     }
@@ -69,7 +74,7 @@ class Projectiles {
             this.material.uniforms.uDistances.value[index] = 0;
             this.material.uniforms.uSpeeds.value[index] = 0;
             this.material.uniforms.uStartTimes.value[index] = performance.now();
-        }, weapon.speed * distance * 1000);
+        }, weapon.speed * distance * 1000 + this.totalDelayPerProjectile);
     }
 
     _createParticleShader() {
@@ -80,8 +85,7 @@ class Projectiles {
                 uTime: { value: 0 },
                 uStartTimes: { value: this._initShaderPart('startTime') },
                 uSpeeds: { value: this._initShaderPart('speed') },
-                uDistances: { value: this._initShaderPart('distance') },
-                // Create a uniform for travel time
+                uDistances: { value: this._initShaderPart('zeros') },
                 uFroms: { value: this._initShaderPart('position') },
                 uTos: { value: this._initShaderPart('position') },
                 uPixelRatio: { value: pixelRatio },
@@ -115,6 +119,7 @@ class Projectiles {
                 varying float vDelay;
 
                 void main() {
+                    float sparkScatterDuration = 3.0;
                     int intIndex = int(projindex);
                     vColor = uColors[intIndex];
                     float speed = uSpeeds[intIndex];
@@ -130,11 +135,10 @@ class Projectiles {
                     vDelay = delay;
                     vec3 trailPos = (to - from) * (trails + 0.2 * vTimePhase) * vIsTrail;
                     vec3 newPos = (to - from) * vTimePhase * notTrail;
+                    newPos.y = newPos.y * (1.0 - floor(vTimePhase)) + 2000.0 * floor(vTimePhase);
                     vec4 mvPosition = modelViewMatrix * vec4(from + newPos + trailPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
                     float size = vIsTrail * 2.0 + notTrail * 0.58 * (1.0 - delay / 2.0);
-                    // gl_PointSize = (size * uPixelRatio) / distance(vertexPosition, mvPosition);
-                    // gl_PointSize = size * scale / distance(vertexPosition, mvPosition);
                     gl_PointSize = size * (scale / length(mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
@@ -174,7 +178,7 @@ class Projectiles {
             for(let i=0; i<this.maxProjectiles; i++) {
                 returnArray.push(0.15);
             }
-        } else if(part === 'distance') {
+        } else if(part === 'zeros') {
             for(let i=0; i<this.maxProjectiles; i++) {
                 returnArray.push(0);
             }
