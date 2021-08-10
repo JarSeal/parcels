@@ -38,6 +38,7 @@ class LevelLoader {
             mergedMaps: {},
             levelMesh: null,
             curTextureSize: 0,
+            fxTextures: {},
         };
         this.loadingScreenId = 'levelLoadingScreen';
         this.MAX_ATLAS_SIZE = 4096;
@@ -59,6 +60,7 @@ class LevelLoader {
             this.loadingModels = true;
             this.loadingTextures = true;
             this.mergingModules = true;
+            this._loadFXTextures(callback);
             this._loadModules(data, callback);
             this._setSkyBox(callback);
         });
@@ -94,7 +96,7 @@ class LevelLoader {
                 const tKeys = Object.keys(t);
                 for(let i=0; i<tKeys.length; i++) {
                     if(t[tKeys[i]]) {
-                        this._loadTexture(
+                        this._loadModuleTexture(
                             urlAndPath + t[tKeys[i]],
                             tKeys[i]+'Textures',
                             module.textureExt,
@@ -139,12 +141,10 @@ class LevelLoader {
         }
     }
 
-    _loadTexture(url, type, ext, sizes, modIndex, partIndex, callback) {
+    _loadModuleTexture(url, type, ext, sizes, modIndex, partIndex, callback) {
         this.texturesToLoad++;
         let size = sizes[0]; // Replace with texture size setting
         this.textureLoader.load(url+'_'+size+'.'+ext, (texture) => {
-            this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture; // RAR
-            // this.sceneState.levelAssets[type]['module'+modIndex+'_part'+partIndex] = texture;
             this.sceneState.levelAssets.lvlTextures.push({
                 key: this._createModelPartKey(modIndex, partIndex, type),
                 type: type,
@@ -157,6 +157,24 @@ class LevelLoader {
             this.sceneState.logger.error(error);
             throw new Error('**Error stack:**');
         });
+    }
+
+    _loadFXTextures(callback) {
+        const keys = Object.keys(this.sceneState.levelAssets.fxTextures);
+        for(let i=0; i<keys.length; i++) {
+            this.texturesToLoad++;
+            ((key) => {
+                const list = this.sceneState.levelAssets.fxTextures;
+                this.textureLoader.load(list[key].url, (texture) => {
+                    list[key].texture = texture;
+                    this.texturesLoaded++;
+                    this._checkLoadingStatus(callback);
+                }, undefined, function(error) {
+                    this.sceneState.logger.error(error);
+                    throw new Error('**Error stack:**');
+                });
+            })(keys[i]);
+        }
     }
 
     _createModelPartKey(modIndex, partIndex, type) {

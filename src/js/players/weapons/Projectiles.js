@@ -10,12 +10,16 @@ class Projectiles {
         this.trailParticlesStop = 26;
         this.delayPerParticle = 0.02;
         this.totalDelayPerProjectile = this.particlesPerProjectile * this.delayPerParticle * 1000;
-        this.material = this._createParticleShader();
         this.nextProjIndex = 0;
-        this._initProjectiles();
+        this.sceneState.levelAssets.fxTextures['projectileBall'] = {
+            url: this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png',
+            texture: null,
+        };
+        this.material;
     }
 
-    _initProjectiles() {
+    initProjectiles() {
+        this.material = this._createParticleShader();
         const projCount = this.maxProjectiles;
         const particlesPerProjectile = this.particlesPerProjectile;
         const trailParticlesStart = this.trailParticlesStart;
@@ -93,9 +97,7 @@ class Projectiles {
                 uTos: { value: this._initShaderPart('position') },
                 uPixelRatio: { value: pixelRatio },
                 scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
-                diffuseTexture: { value: new THREE.TextureLoader().load(
-                    this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png'
-                )},
+                diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.projectileBall.texture },
             },
             depthTest: true,
             depthWrite: false,

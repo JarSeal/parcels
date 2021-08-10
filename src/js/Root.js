@@ -112,10 +112,12 @@ class Root {
     }
 
     _runApp = (camera) => {
+        
+        this.sceneState.projectiles = new Projectiles(this.sceneState);
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
-            this.sceneState.projectiles = new Projectiles(this.sceneState);
+            this.sceneState.projectiles.initProjectiles();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);
