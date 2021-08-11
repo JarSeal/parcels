@@ -1,5 +1,4 @@
 import PhysicsHelpers from './PhysicsHelpers';
-import PhysicsParticles from './PhysicsParticles';
 
 class Physics {
     constructor(sceneState, runMainApp) {
@@ -10,7 +9,6 @@ class Physics {
         sceneState.additionalPhysicsData = [];
         this.helpers = new PhysicsHelpers(sceneState);
         this._initPhysicsWorker(runMainApp);
-        this.particles = new PhysicsParticles(sceneState);
     }
 
     addParticles(from, to, speed) {
@@ -54,7 +52,7 @@ class Physics {
                     phase: 'resetPosition',
                     data: {
                         bodyIndex: particleIndex,
-                        position: [particleIndex, 0, 0],
+                        position: [particleIndex, 2000, 0],
                         sleep: true,
                     },
                 });
@@ -74,7 +72,7 @@ class Physics {
             solverTolerance: 0.001,
             particlesCount: this.sceneState.physics.particlesCount,
             particlesIdPrefix: 'physParticle_',
-            particlesIdlePosition: [0, 0, 0],
+            particlesIdlePosition: [0, 2000, 0],
         };
         this._createParticles(initParams);
         this.worker.postMessage({
@@ -131,7 +129,11 @@ class Physics {
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
             if(s.particles) {
-                s.particles;
+                this.sceneState.physicsParticles.updatePosition(i, [
+                    positions[i * 3],
+                    positions[i * 3 + 1],
+                    positions[i * 3 + 2],
+                ]);
             } else {
                 s.mesh.position.set(
                     positions[i * 3],

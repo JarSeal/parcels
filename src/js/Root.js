@@ -10,6 +10,7 @@ import userPlayerData from './data/userPlayerData';
 import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
 import Projectiles from './players/weapons/Projectiles';
+import PhysicsParticles from './physics/PhysicsParticles';
 
 class Root {
     constructor() {
@@ -81,16 +82,16 @@ class Root {
         this.sceneState.physics.movingShapesLength = 0;
         this.sceneState.physics.staticShapes = [];
         this.sceneState.physics.staticShapesLength = 0;
-        this.sceneState.physics.positions = new Float32Array(1000 * 3);
-        this.sceneState.physics.quaternions = new Float32Array(1000 * 4);
         if(this.sceneState.settings.physics.particleDetailLevel === 'high') {
             this.sceneState.physics.particlesCount = 400;
         } else if(this.sceneState.settings.physics.particleDetailLevel === 'medium') {
             this.sceneState.physics.particlesCount = 150;
         } else {
-            this.sceneState.physics.particlesCount = 50;
+            this.sceneState.physics.particlesCount = 10;
         }
         this.sceneState.physics.nextParticleIndex = 0;
+        this.sceneState.physics.positions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 3);
+        this.sceneState.physics.quaternions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 4);
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
@@ -122,10 +123,12 @@ class Root {
     _runApp = (camera) => {
         
         this.sceneState.projectiles = new Projectiles(this.sceneState);
+        this.sceneState.physicsParticles = new PhysicsParticles(this.sceneState);
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
             this.sceneState.projectiles.initProjectiles();
+            this.sceneState.physicsParticles.initParticles();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);

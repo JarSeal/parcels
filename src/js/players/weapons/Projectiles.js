@@ -97,7 +97,6 @@ class Projectiles {
                 uDistances: { value: this._initShaderPart('zeros') },
                 uFroms: { value: this._initShaderPart('position') },
                 uTos: { value: this._initShaderPart('position') },
-                uPixelRatio: { value: pixelRatio },
                 scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
                 diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.projectileBall.texture },
             },
@@ -117,7 +116,6 @@ class Projectiles {
                 uniform float uStartTimes[${this.maxProjectiles}];
                 uniform float uSpeeds[${this.maxProjectiles}];
                 uniform float uDistances[${this.maxProjectiles}];
-                uniform float uPixelRatio;
                 uniform float scale;
                 varying float vTimePhase;
                 varying vec3 vColor;
@@ -126,7 +124,6 @@ class Projectiles {
                 varying float vDelay;
 
                 void main() {
-                    float sparkScatterDuration = 3.0;
                     int intIndex = int(projindex);
                     vColor = uColors[intIndex];
                     float speed = uSpeeds[intIndex];
@@ -147,7 +144,6 @@ class Projectiles {
                     vec4 vertexPosition = projectionMatrix * mvPosition;
                     float pSize = vIsTrail * 2.0 + notTrail * 0.58 * (1.0 - delay / 2.0);
                     gl_PointSize = pSize * (scale / length(-mvPosition.xyz));
-                    // gl_PointSize = pSize * 50.0;
                     gl_Position = vertexPosition;
                 }
             `,
@@ -162,7 +158,6 @@ class Projectiles {
                 void main() {
                     float alpha = 1.0 - (vTimePhase / clamp(vTrailTime + 0.7, 0.0, 1.0)) * vIsTrail;
                     gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(vColor + (0.5 - vDelay), alpha);
-                    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
                 }
             `,
         });
