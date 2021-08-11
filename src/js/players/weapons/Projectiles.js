@@ -193,7 +193,7 @@ class Projectiles {
             }
         } else if(part === 'position') {
             for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(new THREE.Vector3(0, 0, 0));
+                returnArray.push(new THREE.Vector3(0, 2000, 0));
             }
         }
         return returnArray;

@@ -14,54 +14,65 @@ class Physics {
     }
 
     addParticles(from, to, speed) {
-        from, to, speed;
-        const startPos = [
-            from.x + (to.x - from.x) * 0.8,
-            from.y + (to.y - from.y) * 0.8,
-            from.z + (to.z - from.z) * 0.8,
-        ];
-        for(let i=0; i<3; i++) {
-            const id = 'physParticle-'+i+'-'+performance.now();
-            const velo = [
-                (to.x - from.x) * speed * 10,
-                (to.y - from.y + 5 * Math.random()) * speed * 10,
-                (to.z - from.z) * speed * 10,
-            ];
-            this.addShape({
-                id: id,
-                type: 'box',
-                moving: true,
-                mass: 1,
-                size: [0.05, 0.05, 0.05],
-                position: startPos,
-                rotation: [0, 0, 0],
-                velocity: velo,
-                material: { friction: 0.2 },
-                particles: true,
-                sleep: {
-                    allowSleep: true,
-                    sleeSpeedLimit: 0.1,
-                    sleepTimeLimit: 1,
+        const amount = Math.random() * 10;
+        for(let i=0; i<amount; i++) {
+            const particleIndex = this.sceneState.physics.nextParticleIndex;
+            this.sceneState.additionalPhysicsData.push({
+                phase: 'moveParticle',
+                data: {
+                    bodyIndex: particleIndex,
+                    position: [
+                        from.x + (to.x - from.x) * 0.8,
+                        from.y + (to.y - from.y) * 0.8,
+                        from.z + (to.z - from.z) * 0.8,
+                    ],
+                    velocity: [
+                        (to.x - from.x +
+                            2 * Math.random() *
+                            (Math.random() < 0.5 ? -1 : 1)
+                        ) * speed * 10,
+                        (to.y - from.y +
+                            5 * Math.random() *
+                            (Math.random() < 0.37 ? -1 : 1)
+                        ) * speed * 10,
+                        (to.z - from.z +
+                            2 * Math.random() *
+                            (Math.random() < 0.5 ? -1 : 1)
+                        ) * speed * 10,
+                    ],
                 },
             });
             setTimeout(() => {
-                this.removeShape({
-                    id: id,
-                    moving: true,
+                this.sceneState.additionalPhysicsData.push({
+                    phase: 'resetPosition',
+                    data: {
+                        bodyIndex: particleIndex,
+                        position: [particleIndex, 0, 0],
+                        sleep: true,
+                    },
                 });
             }, 3000);
+            this.sceneState.physics.nextParticleIndex++;
+            if(this.sceneState.physics.nextParticleIndex > this.sceneState.physics.particlesCount-1) {
+                this.sceneState.physics.nextParticleIndex = 0;
+            }
         }
     }
 
     _initPhysicsWorker(runMainApp) {
+        const initParams = {
+            allowSleep: true,
+            gravity: [0, -9.82, 0],
+            iterations: 10,
+            solverTolerance: 0.001,
+            particlesCount: this.sceneState.physics.particlesCount,
+            particlesIdPrefix: 'physParticle_',
+            particlesIdlePosition: [0, 0, 0],
+        };
+        this._createParticles(initParams);
         this.worker.postMessage({
             init: true,
-            initParams: {
-                allowSleep: true,
-                gravity: [0, -9.82, 0],
-                iterations: 10,
-                solverTolerance: 0.001,
-            },
+            initParams,
         });
         this.worker.addEventListener('message', (e) => {
             if(e.data.loop) {
@@ -113,7 +124,7 @@ class Physics {
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
             if(s.particles) {
-
+                s.particles;
             } else {
                 s.mesh.position.set(
                     positions[i * 3],
@@ -240,6 +251,21 @@ class Physics {
                 moving: data.moving,
             });
             this.helpers.removeShape(data);
+        }
+    }
+
+    _createParticles(params) {
+        for(let i=0; i<params.particlesCount; i++) {
+            const shape = {
+                type: 'particle',
+                id: params.particlesIdPrefix + i,
+                position: [params.particlesIdlePosition[0]+i, params.particlesIdlePosition[1], params.particlesIdlePosition[2]],
+                particles: true,
+                moving: true,
+            };
+            this.sceneState.physics.movingShapes.push(shape);
+            this.sceneState.physics.movingShapesLength++;
+            this.helpers.createShape(shape);
         }
     }
 }

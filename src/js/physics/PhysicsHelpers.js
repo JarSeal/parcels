@@ -74,11 +74,19 @@ class PhysicsHelpers {
         case 'cylinder':
             mesh = this._createCylinder(data);
             break;
+        case 'particle':
+            data.size = [0.05, 0.05, 0.05];
+            mesh = this._createBox(data);
+            break;
         case 'compound':
             mesh = this._createCompound(data);
+            break;
+        default:
+            this.sceneState.logger.error('Could not recognise the physics shape type (' + data.type + ')');
+            throw new Error('**Error stack:**');
         }
         this._setMeshColor(mesh, data);
-        if(data.compoundParentId) {      
+        if(data.compoundParentId) {
             if(compound) {
                 compound.helperMesh.add(mesh);
             } else { this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.'); }
