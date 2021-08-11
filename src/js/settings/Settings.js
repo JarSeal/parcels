@@ -110,6 +110,18 @@ class Settings {
             }
         );
         this.addGuiElem(
+            'dropdown',
+            settings.physics,
+            'particleDetailLevel',
+            'Particle details',
+            'Physics',
+            (value) => {
+                sceneState.LStorage.setItem('particleDetailLevel', value);
+                window.location.reload();
+            },
+            { Low: 'low', Medium: 'medium', High: 'high' }
+        );
+        this.addGuiElem(
             'boolean',
             settings.graphics,
             'antialiasing',
@@ -159,7 +171,7 @@ class Settings {
         return stats;
     }
 
-    addGuiElem(type, setting, settingKey, name, folder, onChange) {
+    addGuiElem(type, setting, settingKey, name, folder, onChange, dropDownParams) {
         const ss = this.sceneState;
         if(!ss.settings.enableGui) return;
         let target;
@@ -170,6 +182,9 @@ class Settings {
             break;
         case 'button':
             target.add(setting, settingKey).name(name);
+            break;
+        case 'dropdown':
+            target.add(setting, settingKey, dropDownParams).name(name).onChange(onChange);
             break;
         }
     }

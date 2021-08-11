@@ -21,6 +21,7 @@ const defaultSettings = {
     // Physics
     physics: {
         showPhysicsHelpers: false,
+        particleDetailLevel: 'low',
     },
 
     // Graphics

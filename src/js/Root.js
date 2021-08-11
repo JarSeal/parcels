@@ -83,7 +83,13 @@ class Root {
         this.sceneState.physics.staticShapesLength = 0;
         this.sceneState.physics.positions = new Float32Array(1000 * 3);
         this.sceneState.physics.quaternions = new Float32Array(1000 * 4);
-        this.sceneState.physics.particlesCount = 400;
+        if(this.sceneState.settings.physics.particleDetailLevel === 'high') {
+            this.sceneState.physics.particlesCount = 400;
+        } else if(this.sceneState.settings.physics.particleDetailLevel === 'medium') {
+            this.sceneState.physics.particlesCount = 150;
+        } else {
+            this.sceneState.physics.particlesCount = 50;
+        }
         this.sceneState.physics.nextParticleIndex = 0;
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]

@@ -14,7 +14,14 @@ class Physics {
     }
 
     addParticles(from, to, speed) {
-        const amount = Math.random() * 10;
+        let maxAmount = 2;
+        const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
+        if(detailLevel === 'high') {
+            maxAmount = 15;
+        } else if(detailLevel === 'medium') {
+            maxAmount = 5;
+        }
+        const amount = Math.ceil(Math.random() * maxAmount);
         for(let i=0; i<amount; i++) {
             const particleIndex = this.sceneState.physics.nextParticleIndex;
             this.sceneState.additionalPhysicsData.push({

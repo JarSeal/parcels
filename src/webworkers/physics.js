@@ -314,7 +314,7 @@ const initPhysics = (params) => {
                 sleep: {
                     allowSleep: true,
                     sleeSpeedLimit: 0.1,
-                    sleepTimeLimit: 1,
+                    sleepTimeLimit: 0.3,
                 },
             };
             body.shapeData = shape;
