@@ -65,21 +65,21 @@ class PhysicsParticles {
                 data: {
                     bodyIndex: particleIndex,
                     position: [
-                        from.x + (to.x - from.x) + (to.x < from.x ? 0.25 : -0.25),
-                        from.y + (to.y - from.y) + (to.y < from.y ? 0.25 : -0.25),
-                        from.z + (to.z - from.z) + (to.z < from.z ? 0.25 : -0.25),
+                        from.x + (to.x - from.x) + (to.x < from.x ? 0.35 : -0.35),
+                        from.y + (to.y - from.y) + (to.y < from.y ? 0.35 : -0.35),
+                        from.z + (to.z - from.z) + (to.z < from.z ? 0.35 : -0.35),
                     ],
                     velocity: [
                         (to.x - from.x +
-                            2 * Math.random() *
+                            this.sceneState.utils.randomFloatFromInterval(1, 1.5) *
                             (Math.random() < 0.5 ? -1 : 1)
                         ) * speed * 10,
                         (to.y - from.y +
-                            8 * Math.random() *
-                            (Math.random() < 0.37 ? -1 : 1)
+                            this.sceneState.utils.randomFloatFromInterval(3, 7) //*
+                            // (Math.random() < 0.37 ? -1 : 1)
                         ) * speed * 10,
                         (to.z - from.z +
-                            2 * Math.random() *
+                            this.sceneState.utils.randomFloatFromInterval(1, 1.5) *
                             (Math.random() < 0.5 ? -1 : 1)
                         ) * speed * 10,
                     ],

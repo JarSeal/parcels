@@ -294,6 +294,8 @@ const removeShape = (data) => {
 
 const initPhysics = (params) => {
     world = new CANNON.World();
+    world.broadphase = new CANNON.NaiveBroadphase();
+    world.broadphase.useBoundingBoxes = true;
     world.allowSleep = params.allowSleep;
     world.gravity.set(params.gravity[0], params.gravity[1], params.gravity[2]);
     world.iterations = params.iterations;

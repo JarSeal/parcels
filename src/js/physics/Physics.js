@@ -16,7 +16,7 @@ class Physics {
             allowSleep: true,
             gravity: [0, -9.82, 0],
             iterations: 10,
-            solverTolerance: 0.001,
+            solverTolerance: 0.1,
             particlesCount: this.sceneState.physics.particlesCount,
             particlesIdPrefix: 'physParticle_',
             particlesIdlePosition: [0, 2000, 0],
