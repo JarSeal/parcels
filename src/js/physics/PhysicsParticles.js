@@ -4,7 +4,8 @@ class PhysicsParticles {
     constructor(sceneState) {
         this.sceneState = sceneState;
         this.maxParticles = this.sceneState.physics.particlesCount;
-        this.subParticlesPerParticle = 2;
+        const DL = this.sceneState.settings.physics.particleDetailLevel;
+        this.subParticlesPerParticle = DL === 'high' ? 5 : DL === 'medium' ? 10 : 55;
         this.nextPartIndex = 0;
         this.sceneState.levelAssets.fxTextures['sparks'] = {
             url: this.sceneState.settings.assetsUrl + '/sprites/orange_glow_256x256.png',
@@ -20,13 +21,17 @@ class PhysicsParticles {
         const partCount = this.maxParticles;
         const particlesPerParticle = this.subParticlesPerParticle;
         const positions = new Float32Array(partCount * particlesPerParticle * 3);
+        const subindexes = new Float32Array(partCount * particlesPerParticle);
         const indexes = new Float32Array(partCount * particlesPerParticle);
-        const randoms = new Float32Array(partCount * particlesPerParticle);
+        const randoms = new Float32Array(partCount * particlesPerParticle * 3);
         let i = 0;
         for(let p1=0; p1<partCount; p1++) {
             for(let p2=0; p2<particlesPerParticle; p2++) {
                 indexes[p1*particlesPerParticle+p2] = p1;
-                randoms[p1*particlesPerParticle+p2] = p1;
+                subindexes[p1*particlesPerParticle+p2] = p2;
+                randoms[i] = Math.random() * (Math.random() < 0.5 ? -1 : 1);
+                randoms[i+1] = Math.random() * (Math.random() < 0.5 ? -1 : 1);
+                randoms[i+2] = Math.random() * (Math.random() < 0.5 ? -1 : 1);
                 positions[i] = 0;
                 positions[i+1] = 0;
                 positions[i+2] = 0;
@@ -35,9 +40,10 @@ class PhysicsParticles {
             this.timeouts.push(setTimeout(() => {}), 0);
         }
         const projGeo = new THREE.BufferGeometry();
+        projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         projGeo.setAttribute('partindex', new THREE.BufferAttribute(indexes, 1));
-        projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); // This is used for the initial unused state (hidden from view)
-        projGeo.setAttribute('random', new THREE.BufferAttribute(randoms, 1));
+        projGeo.setAttribute('subpartindex', new THREE.BufferAttribute(subindexes, 1));
+        projGeo.setAttribute('random', new THREE.BufferAttribute(randoms, 3));
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
@@ -79,6 +85,7 @@ class PhysicsParticles {
                     ],
                 },
             });
+            this.material.uniforms.uStartTimes.value[particleIndex] = performance.now();
             clearTimeout(this.timeouts[particleIndex]);
             this.timeouts[particleIndex] = setTimeout(() => {
                 this.sceneState.additionalPhysicsData.push({
@@ -106,10 +113,13 @@ class PhysicsParticles {
 
     _createParticleShader() {
         let pixelRatio = window.devicePixelRatio;
+        const DL = this.sceneState.settings.physics.particleDetailLevel;
         const material = new THREE.ShaderMaterial({
             uniforms: {
-                uColors: { value: this._initShaderPart('color') },
+                //uColors: { value: this._initShaderPart('color') },
                 uTime: { value: 0 },
+                uStartTimes : { value: this._initShaderPart('zeros') },
+                uDetailLevel: { value: DL === 'high' ? 8 : DL === 'medium' ? 8 : 12 },
                 uPositions: { value: this._initShaderPart('position') },
                 scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
                 diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.sparks.texture },
@@ -120,33 +130,36 @@ class PhysicsParticles {
             blending: THREE.AdditiveBlending,
             vertexShader: `
                 attribute float partindex;
-                attribute float random;
+                attribute float subpartindex;
+                attribute vec3 random;
                 uniform float uStartTime;
                 uniform float uTime;
                 uniform vec3 uPositions[${this.maxParticles}];
-                uniform vec3 uColors[${this.maxParticles}];
+                uniform float uStartTimes[${this.maxParticles}];
                 uniform float scale;
-                varying vec3 vColor;
-                varying float vEven;
+                uniform float uDetailLevel;
+                varying float vBigGlow;
 
                 void main() {
                     int intIndex = int(partindex);
-                    vColor = uColors[intIndex];
-                    vEven = clamp(ceil(mod(partindex, 2.0)), 0.0, 1.0);
-                    vec3 pos = uPositions[intIndex];
+                    float startTime = uStartTimes[intIndex];
+                    float timeElapsed = uTime - startTime;
+                    vBigGlow = clamp(floor(1.0 - mod(subpartindex, uDetailLevel)), 0.0, 1.0);
+                    float maxMovement = clamp(timeElapsed, 0.0, 1000.0 * random.x);
+                    vec3 pos = uPositions[intIndex] + random * maxMovement * 0.001;
                     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = (0.25 + 4.0 * vEven) * (scale / length(-mvPosition.xyz));
+                    gl_PointSize = (0.25 + 4.0 * vBigGlow) * (scale / length(-mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
             `,
             fragmentShader: `
                 uniform sampler2D diffuseTexture;
-                varying vec3 vColor;
-                varying float vEven;
+                // varying vec3 vColor;
+                varying float vBigGlow;
 
                 void main() {
-                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(1.0, 1.0, 1.0, 1.0 - 0.99 * vEven);
+                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(1.0, 1.0, 1.0, 1.0 - 0.97 * vBigGlow);
                 }
             `,
         });
@@ -166,6 +179,10 @@ class PhysicsParticles {
         } else if(part === 'position') {
             for(let i=0; i<this.maxParticles; i++) {
                 returnArray.push(new THREE.Vector3(0, 2000, 0));
+            }
+        } else if(part === 'zeros') {
+            for(let i=0; i<this.maxParticles; i++) {
+                returnArray.push(0);
             }
         }
         return returnArray;
