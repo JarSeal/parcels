@@ -11,59 +11,6 @@ class Physics {
         this._initPhysicsWorker(runMainApp);
     }
 
-    addParticles(from, to, speed) {
-        let maxAmount = 2;
-        const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
-        if(detailLevel === 'high') {
-            maxAmount = 15;
-        } else if(detailLevel === 'medium') {
-            maxAmount = 5;
-        }
-        const amount = Math.ceil(Math.random() * maxAmount);
-        for(let i=0; i<amount; i++) {
-            const particleIndex = this.sceneState.physics.nextParticleIndex;
-            this.sceneState.additionalPhysicsData.push({
-                phase: 'moveParticle',
-                data: {
-                    bodyIndex: particleIndex,
-                    position: [
-                        from.x + (to.x - from.x) * 0.8,
-                        from.y + (to.y - from.y) * 0.8,
-                        from.z + (to.z - from.z) * 0.8,
-                    ],
-                    velocity: [
-                        (to.x - from.x +
-                            2 * Math.random() *
-                            (Math.random() < 0.5 ? -1 : 1)
-                        ) * speed * 10,
-                        (to.y - from.y +
-                            5 * Math.random() *
-                            (Math.random() < 0.37 ? -1 : 1)
-                        ) * speed * 10,
-                        (to.z - from.z +
-                            2 * Math.random() *
-                            (Math.random() < 0.5 ? -1 : 1)
-                        ) * speed * 10,
-                    ],
-                },
-            });
-            setTimeout(() => {
-                this.sceneState.additionalPhysicsData.push({
-                    phase: 'resetPosition',
-                    data: {
-                        bodyIndex: particleIndex,
-                        position: [particleIndex, 2000, 0],
-                        sleep: true,
-                    },
-                });
-            }, 3000);
-            this.sceneState.physics.nextParticleIndex++;
-            if(this.sceneState.physics.nextParticleIndex > this.sceneState.physics.particlesCount-1) {
-                this.sceneState.physics.nextParticleIndex = 0;
-            }
-        }
-    }
-
     _initPhysicsWorker(runMainApp) {
         const initParams = {
             allowSleep: true,

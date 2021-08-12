@@ -74,8 +74,8 @@ class Projectiles {
         if(this.nextProjIndex > this.maxProjectiles-1) this.nextProjIndex = 0;
         if(intersect && intersect.object) {
             setTimeout(() => {
-                this.sceneState.physicsClass.addParticles(from, to, weapon.speed);
-            }, weapon.speed * distance * 1000 * 0.9);
+                this.sceneState.physicsParticles.addParticles(from, to, weapon.speed);
+            }, weapon.speed * (distance - 0.25) * 1000);
         }
         setTimeout(() => {
             this.material.uniforms.uFroms.value[index] = new THREE.Vector3(0, 2000, 0);

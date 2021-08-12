@@ -16,6 +16,10 @@ class Utils {
         };
     }
 
+    randomIntFromInterval(min, max) { // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
     getScreenResolution() {
         return {
             x: Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0),
