@@ -74,7 +74,7 @@ class Projectiles {
         if(this.nextProjIndex > this.maxProjectiles-1) this.nextProjIndex = 0;
         if(intersect && intersect.object) {
             setTimeout(() => {
-                this.sceneState.physicsParticles.addParticles(from, to, weapon.speed);
+                this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
             }, weapon.speed * (distance - 0.25) * 1000);
         }
         setTimeout(() => {

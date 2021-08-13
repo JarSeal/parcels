@@ -87,7 +87,7 @@ class Root {
         } else if(this.sceneState.settings.physics.particleDetailLevel === 'medium') {
             this.sceneState.physics.particlesCount = 150;
         } else {
-            this.sceneState.physics.particlesCount = 10;
+            this.sceneState.physics.particlesCount = 18;
         }
         this.sceneState.physics.nextParticleIndex = 0;
         this.sceneState.physics.positions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 3);

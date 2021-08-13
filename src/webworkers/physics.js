@@ -306,9 +306,9 @@ const initPhysics = (params) => {
         let i;
         particlesCount = params.particlesCount;
         for(i=0; i<particlesCount; i++) {
-            let body = new CANNON.Body({ mass: 1, shape: new CANNON.Particle() });
+            let body = new CANNON.Body({ mass: 0.25, shape: new CANNON.Particle() });
             let shape = {
-                material: { friction: 0.2 },
+                material: { friction: 0.085 },
                 position: [params.particlesIdlePosition[0]+i, params.particlesIdlePosition[1], params.particlesIdlePosition[2]],
                 id: params.particlesIdPrefix + i,
                 type: 'particle',
