@@ -56,7 +56,7 @@ class PhysicsParticles {
     }
 
     addParticles(from, to, speed, intersect) {
-        console.log(intersect);
+        // console.log(intersect);
         let maxAmount = 5, minAmount = 3;
         const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
         if(detailLevel === 'high') {
@@ -100,7 +100,9 @@ class PhysicsParticles {
                     ],
                 },
             });
-            this.material.uniforms.uStartTimes.value[particleIndex] = performance.now();
+            setTimeout(() => {
+                this.material.uniforms.uStartTimes.value[particleIndex] = performance.now();
+            }, 75);
             
             const start = particleIndex * this.subParticlesPerParticle * 3;
             const end = start + this.subParticlesPerParticle * 3;
@@ -180,7 +182,7 @@ class PhysicsParticles {
                     float posZ = uPositions[intIndex].z + targetNormal.z * random.z * 0.75 * moveTime;
                     vec4 mvPosition = modelViewMatrix * vec4(posX, posY, posZ, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = (0.24 + abs(1.0 - random.y) / 12.0 * random.x + 4.0 * vBigGlow) * particleSize * (scale / length(-mvPosition.xyz));
+                    gl_PointSize = (0.26 + abs(1.0 - random.y) / 15.0 * random.x + 4.0 * vBigGlow) * particleSize * (scale / length(-mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
             `,

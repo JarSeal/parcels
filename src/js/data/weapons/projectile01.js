@@ -4,7 +4,7 @@ const projectileWeapon = {
     type: 'projectile',
     speed: 0.07,
     maxDistance: 30,
-    color: 0xff0000,
+    color: 0xfc2f00,
     damage: 1.2, // Not implemented yet
 };
 
