@@ -164,17 +164,15 @@ class PhysicsParticles {
                 uniform float uStartTimes[${this.maxParticles}];
                 uniform float scale;
                 uniform float uDetailLevel;
-                varying float vBigGlow;
                 varying float vAlpha;
 
                 void main() {
                     int intIndex = int(partindex);
                     float startTime = uStartTimes[intIndex];
                     float timeElapsed = uTime - startTime;
-                    vBigGlow = clamp(floor(1.0 - mod(subpartindex, uDetailLevel)), 0.0, 1.0);
-                    vAlpha = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - vBigGlow)) - (0.96 * vBigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
-                    // vAlpha = clamp(1.0 - (0.96 * vBigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
-                    float particleSize = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - vBigGlow)), 0.0, 1.0);
+                    float bigGlow = clamp(floor(1.0 - mod(subpartindex, uDetailLevel)), 0.0, 1.0);
+                    vAlpha = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow)) - (0.96 * bigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
+                    float particleSize = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow)), 0.0, 1.0);
                     float moveTime = clamp(timeElapsed / (800.0 + random.y * 300.0), 0.0, 1.0);
                     float moveTimeY = clamp(timeElapsed / 1200.0, 0.0, 1.0);
                     float posX = uPositions[intIndex].x + targetNormal.x * random.x * 0.75 * moveTime;
@@ -182,13 +180,12 @@ class PhysicsParticles {
                     float posZ = uPositions[intIndex].z + targetNormal.z * random.z * 0.75 * moveTime;
                     vec4 mvPosition = modelViewMatrix * vec4(posX, posY, posZ, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    gl_PointSize = (0.26 + abs(1.0 - random.y) / 15.0 * random.x + 4.0 * vBigGlow) * particleSize * (scale / length(-mvPosition.xyz));
+                    gl_PointSize = (0.26 + abs(1.0 - random.y) / 15.0 * random.x + 4.0 * bigGlow) * particleSize * (scale / length(-mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
             `,
             fragmentShader: `
                 uniform sampler2D diffuseTexture;
-                varying float vBigGlow;
                 varying float vAlpha;
 
                 void main() {
