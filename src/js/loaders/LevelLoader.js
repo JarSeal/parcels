@@ -191,9 +191,7 @@ class LevelLoader {
         case 'roofModules': t = 'roof'; break;
         case 'bottomModules': t = 'bottom'; break;
         case 'detailsModules': t = 'details'; break;
-        default:
-            t = 'unknown';
-            break;
+        default: t = 'unknown'; break;
         }
         return keyBeginning + t;
     }
@@ -490,7 +488,6 @@ class LevelLoader {
             for(let i=0; i<maxDecals; i++) {
                 returnArray.push(new THREE.Vector4(0, 0, 0, 0));
             }
-            returnArray[0] = new THREE.Vector4(0.067699735192875, 0.4533755388868426, 0, 0);
         }
         return returnArray;
     }
