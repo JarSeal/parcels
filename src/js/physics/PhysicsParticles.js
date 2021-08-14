@@ -56,7 +56,7 @@ class PhysicsParticles {
     }
 
     addParticles(from, to, speed, intersect) {
-        // console.log(intersect);
+        console.log(intersect);
         let maxAmount = 5, minAmount = 3;
         const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
         if(detailLevel === 'high') {
