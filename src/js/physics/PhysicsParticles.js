@@ -86,15 +86,15 @@ class PhysicsParticles {
                     ],
                     velocity: [
                         (to.x - from.x +
-                            this.sceneState.utils.randomFloatFromInterval(0.5, 1.25) *
+                            this.sceneState.utils.randomFloatFromInterval(0.5, 2.0) *
                             (Math.random() < 0.5 ? -1 : 1)
                         ) * speed * 10,
                         (to.y - from.y +
-                            this.sceneState.utils.randomFloatFromInterval(3, 7) *
+                            this.sceneState.utils.randomFloatFromInterval(3.0, 7.0) *
                             yRandomer
                         ) * speed * 10,
                         (to.z - from.z +
-                            this.sceneState.utils.randomFloatFromInterval(0.5, 1.25) *
+                            this.sceneState.utils.randomFloatFromInterval(0.5, 2.0) *
                             (Math.random() < 0.5 ? -1 : 1)
                         ) * speed * 10,
                     ],
