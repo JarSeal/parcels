@@ -13,14 +13,18 @@ class UserControls {
         this.twoKeyDirection = 0;
         this.rayclicker = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
-        this.clickPlane = [];
+        this.clickPlanes = [];
         this._createClickPlane();
         this._initKeyListeners();
     }
 
     _createClickPlane() {
         const clickPlaneGeo = new THREE.PlaneBufferGeometry(256, 256, 1, 1);
-        const clickPlaneMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+        const clickPlaneMat = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            depthWrite: false,
+            depthTest: false,
+        });
         const clickPlane = new THREE.Mesh(clickPlaneGeo, clickPlaneMat);
         clickPlane.position.x = 64;
         clickPlane.position.y = 0;
@@ -29,7 +33,7 @@ class UserControls {
         clickPlane.material.opacity = 0;
         clickPlane.material.transparent = true;
         this.sceneState.scenes[this.sceneState.curScene].add(clickPlane);
-        this.clickPlane.push(clickPlane);
+        this.clickPlanes.push(clickPlane);
     }
 
     _initKeyListeners() {
@@ -191,7 +195,7 @@ class UserControls {
         this.mouse.x = (parseInt(e.clientX) / document.documentElement.clientWidth) * 2 - 1;
         this.mouse.y = - (parseInt(e.clientY) / document.documentElement.clientHeight) * 2 + 1;
         this.rayclicker.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
-        const intersects = this.rayclicker.intersectObjects(this.clickPlane);
+        const intersects = this.rayclicker.intersectObjects(this.clickPlanes);
         const pos = intersects[0].point;
 
         this.player.shoot(pos);
