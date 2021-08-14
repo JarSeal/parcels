@@ -458,11 +458,12 @@ class LevelLoader {
 
     _createShaderMaterial(texture) {
         const uniforms = {
-            mapTexture: { type: 't', value: texture },
+            uMainTexture: { value: texture },
         };
 
         const vertexShader = `
         varying vec2 vUv;
+        
         void main() {
             vUv = uv;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -470,9 +471,10 @@ class LevelLoader {
 
         const fragmentShader = `
         varying vec2 vUv;
-        uniform sampler2D mapTexture;
+        uniform sampler2D uMainTexture;
+        
         void main() {
-            gl_FragColor = texture2D(mapTexture, vUv);
+            gl_FragColor = texture2D(uMainTexture, vUv);
         }`;
 
         return {
@@ -480,6 +482,17 @@ class LevelLoader {
             vertexShader: vertexShader,
             fragmentShader: fragmentShader,
         };
+    }
+
+    _initShaderPart(part, maxDecals) {
+        const returnArray = [];
+        if(part === 'position') {
+            for(let i=0; i<maxDecals; i++) {
+                returnArray.push(new THREE.Vector4(0, 0, 0, 0));
+            }
+            returnArray[0] = new THREE.Vector4(0.067699735192875, 0.4533755388868426, 0, 0);
+        }
+        return returnArray;
     }
 }
 
