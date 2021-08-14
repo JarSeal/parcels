@@ -11,7 +11,7 @@ class Projectiles {
         this.delayPerParticle = 0.02;
         this.totalDelayPerProjectile = this.particlesPerProjectile * this.delayPerParticle * 1000;
         this.nextProjIndex = 0;
-        this.sceneState.levelAssets.fxTextures['projectileBall'] = {
+        this.sceneState.levelAssets.fxTextures.projectileBall = {
             url: this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png',
             texture: null,
         };
