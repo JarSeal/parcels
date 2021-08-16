@@ -135,7 +135,7 @@ class Projectiles {
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
+                scale: { value: window.innerHeight * pixelRatio / 2 },
                 diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.projectileBall.texture },
             },
             depthTest: true,

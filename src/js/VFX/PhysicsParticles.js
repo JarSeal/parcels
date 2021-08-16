@@ -22,13 +22,12 @@ class PhysicsParticles {
         const particlesPerParticle = this.subParticlesPerParticle;
         const positions = new Float32Array(partCount * particlesPerParticle * 3);
         const subindexes = new Float32Array(partCount * particlesPerParticle);
-        const indexes = new Float32Array(partCount * particlesPerParticle);
+        const startTimes = new Float32Array(partCount * particlesPerParticle);
         const randoms = new Float32Array(partCount * particlesPerParticle * 3);
         const targetNormals = new Float32Array(partCount * particlesPerParticle * 3);
         let i = 0;
         for(let p1=0; p1<partCount; p1++) {
             for(let p2=0; p2<particlesPerParticle; p2++) {
-                indexes[p1*particlesPerParticle+p2] = p1;
                 subindexes[p1*particlesPerParticle+p2] = p2;
                 targetNormals[i] = 0;
                 targetNormals[i+1] = 0;
@@ -37,16 +36,17 @@ class PhysicsParticles {
                 randoms[i+1] = Math.random() * (Math.random() < 0.5 ? -1 : 1);
                 randoms[i+2] = Math.random() * (Math.random() < 0.5 ? -1 : 1);
                 positions[i] = 0;
-                positions[i+1] = 0;
+                positions[i+1] = 2000;
                 positions[i+2] = 0;
+                startTimes[i] = 0;
                 i += 3;
             }
             this.timeouts.push(setTimeout(() => {}), 0);
         }
         const projGeo = new THREE.BufferGeometry();
         projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        projGeo.setAttribute('partindex', new THREE.BufferAttribute(indexes, 1));
         projGeo.setAttribute('subpartindex', new THREE.BufferAttribute(subindexes, 1));
+        projGeo.setAttribute('startTime', new THREE.BufferAttribute(startTimes, 1));
         projGeo.setAttribute('random', new THREE.BufferAttribute(randoms, 3));
         projGeo.setAttribute('targetNormal', new THREE.BufferAttribute(targetNormals, 3));
         this.particles = new THREE.Points(projGeo, this.material);
@@ -100,7 +100,15 @@ class PhysicsParticles {
                 },
             });
             setTimeout(() => {
-                this.material.uniforms.uStartTimes.value[particleIndex] = performance.now();
+                const attributes = this.particles.geometry.attributes;
+                let i;
+                const start = particleIndex * this.subParticlesPerParticle;
+                const end = start + this.subParticlesPerParticle;
+                const startTime = performance.now();
+                for(i=start; i<end; i++) {
+                    attributes.startTime.array[i] = startTime;
+                }
+                attributes.startTime.needsUpdate = true;
             }, 75);
             
             const start = particleIndex * this.subParticlesPerParticle * 3;
@@ -130,10 +138,17 @@ class PhysicsParticles {
     }
 
     updatePosition(index, pos) {
-        if(!this.material) return;
-        this.material.uniforms.uPositions.value[index].x = pos[0];
-        this.material.uniforms.uPositions.value[index].y = pos[1];
-        this.material.uniforms.uPositions.value[index].z = pos[2];
+        if(!this.particles) return;
+        const attributes = this.particles.geometry.attributes;
+        let i;
+        const start = index * this.subParticlesPerParticle * 3;
+        const end = start + this.subParticlesPerParticle * 3;
+        for(i=start; i<end; i+=3) {
+            attributes.position.array[i] = pos[0];
+            attributes.position.array[i+1] = pos[1];
+            attributes.position.array[i+2] = pos[2];
+        }
+        attributes.position.needsUpdate = true;
     }
 
     _createParticleShader() {
@@ -142,10 +157,8 @@ class PhysicsParticles {
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uStartTimes : { value: this._initShaderPart('zeros') },
                 uDetailLevel: { value: DL === 'high' ? 8 : DL === 'medium' ? 8 : 12 },
-                uPositions: { value: this._initShaderPart('position') },
-                scale: { type: 'f', value: window.innerHeight * pixelRatio / 2 },
+                scale: { value: window.innerHeight * pixelRatio / 2 },
                 diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.sparks.texture },
             },
             depthTest: true,
@@ -153,30 +166,26 @@ class PhysicsParticles {
             transparent: true,
             blending: THREE.AdditiveBlending,
             vertexShader: `
-                attribute float partindex;
                 attribute float subpartindex;
                 attribute vec3 random;
                 attribute vec3 targetNormal;
+                attribute float startTime;
                 uniform float uStartTime;
                 uniform float uTime;
-                uniform vec3 uPositions[${this.maxParticles}];
-                uniform float uStartTimes[${this.maxParticles}];
                 uniform float scale;
                 uniform float uDetailLevel;
                 varying float vAlpha;
 
                 void main() {
-                    int intIndex = int(partindex);
-                    float startTime = uStartTimes[intIndex];
                     float timeElapsed = uTime - startTime;
                     float bigGlow = clamp(floor(1.0 - mod(subpartindex, uDetailLevel)), 0.0, 1.0);
                     vAlpha = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow) * random.z) - (0.96 * bigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
                     float particleSize = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow)), 0.0, 1.0);
                     float moveTime = clamp(timeElapsed / (800.0 + random.y * 300.0), 0.0, 1.0);
                     float moveTimeY = clamp(timeElapsed / 1200.0, 0.0, 1.0);
-                    float posX = uPositions[intIndex].x + targetNormal.x * random.x * 0.75 * moveTime;
-                    float posY = uPositions[intIndex].y + (random.y * 2.5 * moveTimeY * (1.0 - moveTime)) * clamp(targetNormal.y, 0.0, 1.0) + 0.1;
-                    float posZ = uPositions[intIndex].z + targetNormal.z * random.z * 0.75 * moveTime;
+                    float posX = position.x + targetNormal.x * random.x * 0.75 * moveTime;
+                    float posY = position.y + (random.y * 2.5 * moveTimeY * (1.0 - moveTime)) * clamp(targetNormal.y, 0.0, 1.0) + 0.1;
+                    float posZ = position.z + targetNormal.z * random.z * 0.75 * moveTime;
                     vec4 mvPosition = modelViewMatrix * vec4(posX, posY, posZ, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
                     gl_PointSize = (0.26 + abs(1.0 - random.y) / 15.0 * random.x + 4.0 * bigGlow) * particleSize * (scale / length(-mvPosition.xyz));
@@ -200,24 +209,6 @@ class PhysicsParticles {
         this.sceneState.shadersToUpdateLength++;
         this.sceneState.shadersToResize.push({ material: material });
         return material;
-    }
-
-    _initShaderPart(part) {
-        const returnArray = [];
-        if(part === 'color') {
-            for(let i=0; i<this.maxParticles; i++) {
-                returnArray.push(new THREE.Color(0xfc2f00));
-            }
-        } else if(part === 'position') {
-            for(let i=0; i<this.maxParticles; i++) {
-                returnArray.push(new THREE.Vector3(0, 2000, 0));
-            }
-        } else if(part === 'zeros') {
-            for(let i=0; i<this.maxParticles; i++) {
-                returnArray.push(0);
-            }
-        }
-        return returnArray;
     }
 }
 
