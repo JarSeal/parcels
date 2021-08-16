@@ -9,8 +9,8 @@ import Player from './players/Player';
 import userPlayerData from './data/userPlayerData';
 import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
-import Projectiles from './players/weapons/Projectiles';
-import PhysicsParticles from './physics/PhysicsParticles';
+import Projectiles from './VFX/ProjectileParticles';
+import PhysicsParticles from './VFX/PhysicsParticles';
 
 class Root {
     constructor() {

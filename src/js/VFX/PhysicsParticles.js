@@ -51,12 +51,11 @@ class PhysicsParticles {
         projGeo.setAttribute('targetNormal', new THREE.BufferAttribute(targetNormals, 3));
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
-        console.log(this.particles);
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
     }
 
     addParticles(from, to, speed, intersect) {
-        console.log(intersect);
+        // console.log(intersect);
         let maxAmount = 5, minAmount = 3;
         const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
         if(detailLevel === 'high') {
@@ -171,7 +170,7 @@ class PhysicsParticles {
                     float startTime = uStartTimes[intIndex];
                     float timeElapsed = uTime - startTime;
                     float bigGlow = clamp(floor(1.0 - mod(subpartindex, uDetailLevel)), 0.0, 1.0);
-                    vAlpha = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow)) - (0.96 * bigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
+                    vAlpha = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow) * random.z) - (0.96 * bigGlow + (0.04 * clamp(timeElapsed / (5000.0 * abs(random.x)), 0.0, 1.0))), 0.0, 1.0);
                     float particleSize = clamp(1.0 - (clamp(timeElapsed / (5800.0 * abs(random.x)), 0.0, 1.0) * (1.0 - bigGlow)), 0.0, 1.0);
                     float moveTime = clamp(timeElapsed / (800.0 + random.y * 300.0), 0.0, 1.0);
                     float moveTimeY = clamp(timeElapsed / 1200.0, 0.0, 1.0);
