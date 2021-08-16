@@ -8,6 +8,17 @@ class Physics {
         this.tempShapes = {};
         sceneState.additionalPhysicsData = [];
         this.helpers = new PhysicsHelpers(sceneState);
+        this.stats = this.sceneState.settingsClass.createStats(true);
+        this.zpsCounter = {
+            counter: 0,
+            highestCount: 0,
+            startTime: 0,
+            elemZPS: document.getElementById('zps-counter'),
+            elemFPS: document.getElementById('fps-counter'),
+            fpsCounter: 0,
+            fpsHighestCount: 0,
+            fpsStartTime: 0,
+        };
         this._initPhysicsWorker(runMainApp);
     }
 
@@ -40,6 +51,7 @@ class Physics {
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
             }
+            if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
         this.worker.addEventListener('error', (e) => {
             this.sceneState.logger.error('Worker event listener:', e.message);
@@ -48,7 +60,6 @@ class Physics {
     }
 
     _requestPhysicsFromWorker = () => {
-        this.workerSendTime = performance.now();
         const sendObject = {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
@@ -59,10 +70,12 @@ class Physics {
             sendObject.additionals = [ ...additionals ];
             this.sceneState.additionalPhysicsData = [];
         }
+        this.workerSendTime = performance.now();
         this.worker.postMessage(
             sendObject,
             [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
         );
+        this.workerSendTime = performance.now();
     }
 
     _updateRenderShapes(data) {
@@ -107,7 +120,26 @@ class Physics {
         }
 
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
-        setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
+        this._zpsCounter(delay);
+        if(delay < 0) {
+            this._requestPhysicsFromWorker();
+        } else {
+            setTimeout(this._requestPhysicsFromWorker, delay);
+        }
+    }
+
+    _zpsCounter(delay) {
+        if(!this.sceneState.settings.debug.showPhysicsStats) return;
+        if(performance.now() - this.zpsCounter.startTime > 1000) {
+            this.zpsCounter.elemZPS.innerText = 'ZPS: ' + this.zpsCounter.counter + ' (' + this.zpsCounter.highestCount + ')';
+            this.zpsCounter.startTime = performance.now();
+            this.zpsCounter.counter = 0;
+            this.zpsCounter.fpsCounter = 0;
+        }
+        if(delay < 0) this.zpsCounter.counter++;
+        if(this.zpsCounter.counter > this.zpsCounter.highestCount) this.zpsCounter.highestCount++;
+        this.zpsCounter.fpsCounter++;
+        if(this.zpsCounter.fpsCounter > this.zpsCounter.fpsHighestCount) this.zpsCounter.fpsHighestCount++;
     }
 
     _handleAdditionalsForMainThread(additionals) {

@@ -13,6 +13,7 @@ const defaultSettings = {
     // Debugging
     debug: {
         showStats: true,
+        showPhysicsStats: true,
         showAxesHelper: false,
         cameraFollowsPlayer: true,
         showProjectileStreaks: false,

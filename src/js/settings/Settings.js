@@ -147,24 +147,27 @@ class Settings {
         );
     }
 
-    createStats() {
+    createStats(physics) {
         const stats = new Stats();
         stats.setMode(0);
-        stats.domElement.id = 'debug-stats-wrapper';
+        const elemId = physics ? 'debug-physics-stats-wrapper' : 'debug-stats-wrapper';
+        const settingsAttribute = physics ? 'showPhysicsStats' : 'showStats';
+        stats.domElement.id = elemId;
         document.body.appendChild(stats.domElement);
         if(!this.sceneState.settings.debug.showStats) {
-            document.getElementById('debug-stats-wrapper').style.display = 'none';
+            document.getElementById(elemId).style.display = 'none';
         }
         if(this.sceneState.settings.enableGui) {
             this.addGuiElem(
                 'boolean',
                 this.sceneState.settings.debug,
-                'showStats',
-                'Show stats',
+                settingsAttribute,
+                physics ? 'Show phys stats' : 'Show stats',
                 'Debug',
                 (value) => {
-                    document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
-                    this.sceneState.LStorage.setItem('showStats', value);
+                    document.getElementById(elemId).style.display = value ? 'block' : 'none';
+                    document.getElementById('phys-zero-delays').style.display = value ? 'block' : 'none';
+                    this.sceneState.LStorage.setItem(settingsAttribute, value);
                 }
             );
         }
