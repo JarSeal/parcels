@@ -200,32 +200,6 @@ class Projectiles {
         this.sceneState.shadersToResize.push({ material: material });
         return material;
     }
-
-    _initShaderPart(part) {
-        const returnArray = [];
-        if(part === 'color') {
-            for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(new THREE.Color(0xff0000));
-            }
-        } else if(part === 'startTime') {
-            for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(performance.now());
-            }
-        } else if(part === 'speed') {
-            for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(0.15);
-            }
-        } else if(part === 'zeros') {
-            for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(0);
-            }
-        } else if(part === 'position') {
-            for(let i=0; i<this.maxProjectiles; i++) {
-                returnArray.push(new THREE.Vector3(0, 2000, 0));
-            }
-        }
-        return returnArray;
-    }
 }
 
 export default Projectiles;
