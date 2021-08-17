@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-class Projectiles {
+class ProjectileParticles {
     constructor(sceneState) {
         this.sceneState = sceneState;
         this.particles;
@@ -106,6 +106,7 @@ class Projectiles {
         if(intersect && intersect.object) {
             setTimeout(() => {
                 this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
+                this.sceneState.hitZonePlates.addHitZone(intersect);
             }, weapon.speed * (distance - 0.25) * 1000);
         }
         setTimeout(() => {
@@ -202,4 +203,4 @@ class Projectiles {
     }
 }
 
-export default Projectiles;
+export default ProjectileParticles;

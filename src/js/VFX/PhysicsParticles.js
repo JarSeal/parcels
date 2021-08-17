@@ -7,7 +7,7 @@ class PhysicsParticles {
         const DL = this.sceneState.settings.physics.particleDetailLevel;
         this.subParticlesPerParticle = DL === 'high' ? 5 : DL === 'medium' ? 20 : 25;
         this.nextPartIndex = 0;
-        this.sceneState.levelAssets.fxTextures['sparks'] = {
+        this.sceneState.levelAssets.fxTextures.sparks = {
             url: this.sceneState.settings.assetsUrl + '/sprites/orange_glow_256x256.png',
             texture: null,
         };
@@ -55,7 +55,6 @@ class PhysicsParticles {
     }
 
     addParticles(from, to, speed, intersect) {
-        // console.log(intersect);
         let maxAmount = 5, minAmount = 3;
         const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
         if(detailLevel === 'high') {
