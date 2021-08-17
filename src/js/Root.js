@@ -9,8 +9,9 @@ import Player from './players/Player';
 import userPlayerData from './data/userPlayerData';
 import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
-import Projectiles from './VFX/ProjectileParticles';
+import ProjectileParticles from './VFX/ProjectileParticles';
 import PhysicsParticles from './VFX/PhysicsParticles';
+import HitZonePlates from './VFX/HitZonePlates';
 
 class Root {
     constructor() {
@@ -122,13 +123,15 @@ class Root {
 
     _runApp = (camera) => {
         
-        this.sceneState.projectiles = new Projectiles(this.sceneState);
+        this.sceneState.projectiles = new ProjectileParticles(this.sceneState);
         this.sceneState.physicsParticles = new PhysicsParticles(this.sceneState);
+        this.sceneState.hitZonePlates = new HitZonePlates(this.sceneState);
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
             this.sceneState.projectiles.initProjectiles();
             this.sceneState.physicsParticles.initParticles();
+            this.sceneState.hitZonePlates.initPlates();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);
