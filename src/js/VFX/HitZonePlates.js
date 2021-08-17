@@ -68,7 +68,7 @@ class HitZonePlates {
         geo.setAttribute('times', new THREE.InstancedBufferAttribute(times, 3, false, 1));
         const mat = this._createShaderMaterial();
         const mesh = new THREE.InstancedMesh(geo, mat, amount);
-        // mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         for(let i=0; i<amount; i++) {
             dummy.position.set(i, 0, 0);
             dummy.updateMatrix();
@@ -78,7 +78,6 @@ class HitZonePlates {
         mesh.instanceMatrix.needsUpdate = true;
         this.plates = mesh;
         this.sceneState.scenes[this.sceneState.curScene].add(this.plates);
-        console.log('PLATES', this.plates);
     }
 
     _createShaderMaterial() {
@@ -123,7 +122,6 @@ class HitZonePlates {
                 varying vec2 vUv;
 
                 void main() {
-                    // gl_FragColor = texture2D(lavaGlow, vUv);
                     float overHalf = 1.0 - ceil(vGlowPhase - vTimePhase);
                     gl_FragColor = texture2D(lavaGlow, vUv)
                         + vec4(0.5, 0.5, 0.5, 0.0)
