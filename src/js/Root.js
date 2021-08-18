@@ -12,6 +12,7 @@ import Physics from './physics/Physics';
 import ProjectileParticles from './VFX/ProjectileParticles';
 import PhysicsParticles from './VFX/PhysicsParticles';
 import HitZonePlates from './VFX/HitZonePlates';
+import SmokeParticles from './VFX/SmokeParticles';
 
 class Root {
     constructor() {
@@ -126,12 +127,14 @@ class Root {
         this.sceneState.projectiles = new ProjectileParticles(this.sceneState);
         this.sceneState.physicsParticles = new PhysicsParticles(this.sceneState);
         this.sceneState.hitZonePlates = new HitZonePlates(this.sceneState);
+        this.sceneState.smokeParticles = new SmokeParticles(this.sceneState);
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
             this.sceneState.projectiles.initProjectiles();
             this.sceneState.physicsParticles.initParticles();
             this.sceneState.hitZonePlates.initPlates();
+            this.sceneState.smokeParticles.initSmoke();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);
