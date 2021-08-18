@@ -16,6 +16,7 @@ self.addEventListener('message', (e) => {
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
+                if(!a[i]) continue;
                 const phase = a[i].phase;
                 if(phase === 'moveChar') {
                     moveChar(a[i].data);
@@ -24,7 +25,7 @@ self.addEventListener('message', (e) => {
                 } else if(phase === 'moveParticle') {
                     moveParticle(a[i].data);
                 } else if(phase === 'resetPosition') {
-                    _resetBody(movingShapes[a[i].data.bodyIndex], a[i].data.position, a[i].data.sleep);
+                    resetBody(movingShapes[a[i].data.bodyIndex], a[i].data.position, a[i].data.sleep);
                 } else if(phase === 'addShape') {
                     const newShape = a[i].shape.compoundParentId
                         ? addShapeToCompound(a[i].shape)
@@ -45,6 +46,7 @@ self.addEventListener('message', (e) => {
                 }
             }
         }
+        checkParams(e.data.params);
         stepTheWorld(e.data, returnAdditionals);
     } else {
         if(e.data && e.data.initParams && CANNON) {
@@ -59,10 +61,64 @@ self.addEventListener('message', (e) => {
     }
 });
 
+const checkParams = (params) => {
+    let i, curIndex = 3;
+    const l = params[2];
+    for(i=0; i<l; i++) {
+        console.log('ARA');
+        switch(params[curIndex]) {
+        case 1: // moveChar
+            moveChar({
+                bodyIndex: params[curIndex+1],
+                speed: params[curIndex+2],
+                xPosMulti: params[curIndex+3],
+                zPosMulti: params[curIndex+4],
+            });
+            curIndex += 5;
+            break;
+        case 2: // jumpChar
+            jumpChar({
+                bodyIndex: params[curIndex+1],
+                jump: params[curIndex+2],
+            });
+            curIndex += 3;
+            break;
+        case 3: // moveParticle
+            moveParticle({
+                bodyIndex: params[curIndex+1],
+                position: [
+                    params[curIndex+2],
+                    params[curIndex+3],
+                    params[curIndex+4],
+                ],
+                velocity: [
+                    params[curIndex+5],
+                    params[curIndex+6],
+                    params[curIndex+7],
+                ],
+            });
+            curIndex += 8;
+            break;
+        case 4: // resetPosition
+            resetBody(
+                movingShapes[params[curIndex+1]],
+                [
+                    params[curIndex+2],
+                    params[curIndex+3],
+                    params[curIndex+4],
+                ],
+                params[curIndex+5] === 1 ? true : false
+            );
+            curIndex += 6;
+            break;
+        }
+    }
+};
+
 const stepTheWorld = (data, returnAdditionals) => {
     const time = performance.now() / 1000;
     const dt = time - lastCallTime;
-    const { positions, quaternions, timeStep } = data;
+    const { positions, quaternions, params, timeStep } = data;
     let i;
     world.step(timeStep, dt);
     for(i=0; i<movingShapesCount; i++) {
@@ -81,13 +137,14 @@ const stepTheWorld = (data, returnAdditionals) => {
     let returnMessage = {
         positions,
         quaternions,
+        params,
         loop: true,
     };
     if(returnAdditionals.length) {
         returnMessage.additionals = returnAdditionals;
         returnMessage.loop = false; // Because we want the additionals to be handled in the main thread (returns to normal loop after that)
     }
-    self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
+    self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer, data.params.buffer]);
     lastCallTime = time;
 };
 
@@ -451,7 +508,7 @@ const _setUpCollisionDetector = (body) => {
     });
 };
 
-const _resetBody = (body, newPosition, sleep) => {
+const resetBody = (body, newPosition, sleep) => {
     body.position.setZero();
     body.previousPosition.setZero();
     body.interpolatedPosition.setZero();
@@ -467,11 +524,9 @@ const _resetBody = (body, newPosition, sleep) => {
     body.force.setZero();
     body.torque.setZero();
 
-    if(newPosition) {
-        body.position.x = newPosition[0];
-        body.position.y = newPosition[1];
-        body.position.z = newPosition[2];
-    }
+    body.position.x = newPosition[0];
+    body.position.y = newPosition[1];
+    body.position.z = newPosition[2];
 
     if(sleep) body.sleep();
 };

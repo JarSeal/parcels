@@ -64,25 +64,94 @@ class Physics {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
             quaternions: this.sceneState.physics.quaternions,
+            params: this.sceneState.physics.params,
         };
-        const additionals = this.sceneState.additionalPhysicsData;
+        let additionals = this.sceneState.additionalPhysicsData;
         if(additionals.length) {
+            additionals = this._createAdditionalParams(additionals, sendObject.params);
             sendObject.additionals = [ ...additionals ];
             this.sceneState.additionalPhysicsData = [];
+        } else {
+            sendObject.params[0] = 1;
+            sendObject.params[1] = this.sceneState.physics.timeStep;
+            sendObject.params[2] = 0;
         }
         this.mainWorkerSendTime = performance.now();
         this.mainWorker.postMessage(
             sendObject,
-            [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
+            [
+                this.sceneState.physics.positions.buffer,
+                this.sceneState.physics.quaternions.buffer,
+                this.sceneState.physics.params.buffer,
+            ]
         );
         this.mainWorkerSendTime = performance.now();
+    }
+
+    _createAdditionalParams(additionals, target) {
+        let i, wipeAdditionals = true;
+        const l = additionals.length;
+        // Fixed positions:
+        target[0] = 1; // loop (0 or 1)
+        target[1] = this.sceneState.physics.timeStep; // timeStep (usually 1/60)
+        let index = 3;
+        for(i=0; i<l; i++) {
+            switch(additionals[i].phase) {
+            case 'moveChar':
+                target[index] = 1; // phase
+                target[index+1] = additionals[i].data.bodyIndex;
+                target[index+2] = additionals[i].data.speed;
+                target[index+3] = additionals[i].data.xPosMulti;
+                target[index+4] = additionals[i].data.zPosMulti;
+                index += 5;
+                break;
+            case 'jumpChar':
+                target[index] = 2; // phase
+                target[index+1] = additionals[i].data.bodyIndex;
+                target[index+2] = additionals[i].data.jump;
+                index += 3;
+                break;
+            case 'moveParticle':
+                target[index] = 3; // phase
+                target[index+1] = additionals[i].data.bodyIndex;
+                target[index+2] = additionals[i].data.position[0];
+                target[index+3] = additionals[i].data.position[1];
+                target[index+4] = additionals[i].data.position[2];
+                target[index+5] = additionals[i].data.velocity[0];
+                target[index+6] = additionals[i].data.velocity[1];
+                target[index+7] = additionals[i].data.velocity[2];
+                index += 8;
+                break;
+            case 'resetPosition':
+                target[index] = 4; // phase
+                target[index+1] = additionals[i].data.bodyIndex;
+                target[index+2] = additionals[i].data.position[0];
+                target[index+3] = additionals[i].data.position[1];
+                target[index+4] = additionals[i].data.position[2];
+                target[index+5] = additionals[i].data.sleep === true ? 1 : 0;
+                index += 6;
+                break;
+            default:
+                wipeAdditionals = false;
+                break;
+            }
+        }
+        if(index > 3) {
+            target[2] = index; // Total length
+        } else {
+            target[2] = 0;
+        }
+        if(wipeAdditionals) return [];
+        return additionals;
     }
 
     _updateRenderShapes(data) {
         const positions = data.positions;
         const quaternions = data.quaternions;
+        const params = data.params;
         this.sceneState.physics.positions = positions;
         this.sceneState.physics.quaternions = quaternions;
+        this.sceneState.physics.params = params;
         const shapes = this.sceneState.physics.movingShapes;
         const shapesL = this.sceneState.physics.movingShapesLength;
         let i;
