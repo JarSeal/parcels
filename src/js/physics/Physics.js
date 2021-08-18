@@ -3,8 +3,8 @@ import PhysicsHelpers from './PhysicsHelpers';
 class Physics {
     constructor(sceneState, runMainApp) {
         this.sceneState = sceneState;
-        this.workerSendTime = 0;
-        this.worker = new Worker('./webworkers/physics.js');
+        this.mainWorkerSendTime = 0;
+        this.mainWorker = new Worker('./webworkers/physics.js');
         this.tempShapes = {};
         sceneState.additionalPhysicsData = [];
         this.helpers = new PhysicsHelpers(sceneState);
@@ -33,11 +33,11 @@ class Physics {
             particlesIdlePosition: [0, 2000, 0],
         };
         this._createParticles(initParams);
-        this.worker.postMessage({
+        this.mainWorker.postMessage({
             init: true,
             initParams,
         });
-        this.worker.addEventListener('message', (e) => {
+        this.mainWorker.addEventListener('message', (e) => {
             if(e.data.loop) {
                 this._updateRenderShapes(e.data);
             } else if(e.data.additionals && e.data.additionals.length) {
@@ -53,7 +53,7 @@ class Physics {
             }
             if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
-        this.worker.addEventListener('error', (e) => {
+        this.mainWorker.addEventListener('error', (e) => {
             this.sceneState.logger.error('Worker event listener:', e.message);
             throw new Error('**Error stack:**');
         });
@@ -70,12 +70,12 @@ class Physics {
             sendObject.additionals = [ ...additionals ];
             this.sceneState.additionalPhysicsData = [];
         }
-        this.workerSendTime = performance.now();
-        this.worker.postMessage(
+        this.mainWorkerSendTime = performance.now();
+        this.mainWorker.postMessage(
             sendObject,
             [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
         );
-        this.workerSendTime = performance.now();
+        this.mainWorkerSendTime = performance.now();
     }
 
     _updateRenderShapes(data) {
@@ -119,7 +119,7 @@ class Physics {
             this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
         }
 
-        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
             this._requestPhysicsFromWorker();
