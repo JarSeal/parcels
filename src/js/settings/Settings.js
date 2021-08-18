@@ -138,7 +138,8 @@ class Settings {
                 alert(
                     JSON.stringify(this.sceneState.renderer.capabilities) +
                     ' devicePixelRatio: ' + window.devicePixelRatio +
-                    ' rendererPixelRatio: ' + this.sceneState.renderer.getPixelRatio()
+                    ' rendererPixelRatio: ' + this.sceneState.renderer.getPixelRatio() +
+                    ' logicalProcessors: ' + window.navigator.hardwareConcurrency
                 );
             }},
             'show',
