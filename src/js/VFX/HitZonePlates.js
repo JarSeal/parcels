@@ -70,7 +70,7 @@ class HitZonePlates {
         const mesh = new THREE.InstancedMesh(geo, mat, amount);
         mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         for(let i=0; i<amount; i++) {
-            dummy.position.set(i, 0, 0);
+            dummy.position.set(0, 2000, 0);
             dummy.updateMatrix();
             mesh.setMatrixAt(i, dummy.matrix);
             this.timeouts.push(setTimeout(() => {}, 0));
@@ -87,10 +87,8 @@ class HitZonePlates {
                 lavaGlow: { value: this.sceneState.levelAssets.fxTextures.sparks.texture },
             },
             depthTest: true,
-            depthWrite: true,
+            depthWrite: false,
             transparent: true,
-            // alphaTest: true,
-            // blending: THREE.AdditiveBlending,
             blending: THREE.CustomBlending,
             blendEquation: THREE.AddEquation,
             blendSrc: THREE.OneFactor,
@@ -122,7 +120,6 @@ class HitZonePlates {
                 varying vec2 vUv;
 
                 void main() {
-                    float overHalf = 1.0 - ceil(vGlowPhase - vTimePhase);
                     gl_FragColor = texture2D(lavaGlow, vUv)
                         + vec4(0.5, 0.5, 0.5, 0.0)
                         - vec4(vGlowPhase * 2.0, vGlowPhase * 1.8, vGlowPhase * 1.8, 0.0);

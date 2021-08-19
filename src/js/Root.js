@@ -131,10 +131,11 @@ class Root {
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
-            this.sceneState.projectiles.initProjectiles();
-            this.sceneState.physicsParticles.initParticles();
             this.sceneState.hitZonePlates.initPlates();
+            this.sceneState.physicsParticles.initParticles();
             this.sceneState.smokeParticles.initSmoke();
+            
+            this.sceneState.projectiles.initProjectiles();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);

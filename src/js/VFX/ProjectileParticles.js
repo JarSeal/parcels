@@ -107,6 +107,25 @@ class ProjectileParticles {
             setTimeout(() => {
                 this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
                 this.sceneState.hitZonePlates.addHitZone(intersect);
+                const smokeDir = {
+                    x: to.x + intersect.face.normal.x * 0.3,
+                    y: to.y + intersect.face.normal.y * 0.3 + 1.5,
+                    z: to.z + intersect.face.normal.z * 0.3,
+                };
+                this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
+                    lightness: this.sceneState.utils.randomFloatFromInterval(0.25, 0.45),
+                    size: 3,
+                    life: this.sceneState.utils.randomIntFromInterval(1700, 2000),
+                    length: 2,
+                    startDelay: -300,
+                });
+                this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
+                    lightness: this.sceneState.utils.randomFloatFromInterval(0.15, 0.25),
+                    size: 2.4,
+                    life: this.sceneState.utils.randomIntFromInterval(1200, 1800),
+                    length: this.sceneState.utils.randomIntFromInterval(1, 2),
+                    startDelay: -100,
+                });
             }, weapon.speed * (distance - 0.25) * 1000);
         }
         setTimeout(() => {

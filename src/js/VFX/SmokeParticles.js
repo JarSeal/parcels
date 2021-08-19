@@ -5,11 +5,11 @@ class SmokeParticles {
         this.sceneState = sceneState;
         this.particles;
         this.maxParticles = 50;
-        this.particlesPerSmoke = 30;
-        this.delayPerParticle = 0.02;
-        this.nextProjIndex = 0;
-        this.sceneState.levelAssets.fxTextures.projectileBall = {
-            url: this.sceneState.settings.assetsUrl + '/sprites/white_glow_256x256.png',
+        this.particlesPerSmoke = 15;
+        this.delayPerParticle = 200;
+        this.nextSmokeIndex = 0;
+        this.sceneState.levelAssets.fxTextures.smoke = {
+            url: this.sceneState.settings.assetsUrl + '/sprites/smoke02_512x512.png',
             texture: null,
         };
         this.material;
@@ -20,103 +20,100 @@ class SmokeParticles {
         const projCount = this.maxParticles;
         const particlesPerProjectile = this.particlesPerSmoke;
         const positions = new Float32Array(projCount * particlesPerProjectile * 3);
-        // const targets = new Float32Array(projCount * particlesPerProjectile * 3);
-        // const timeSpeedDelays = new Float32Array(projCount * particlesPerProjectile * 3);
-        // const colors = new Float32Array(projCount * particlesPerProjectile * 3);
-        // const distanceTrails = new Float32Array(projCount * particlesPerProjectile * 3);
+        const targets = new Float32Array(projCount * particlesPerProjectile * 3);
+        const timeLengthLife = new Float32Array(projCount * particlesPerProjectile * 3);
+        const sizeLightnessIndex = new Float32Array(projCount * particlesPerProjectile * 3);
+        const randoms = new Float32Array(projCount * particlesPerProjectile * 3);
+        const colors = new Float32Array(projCount * particlesPerProjectile * 3);
         let i = 0;
         for(let p1=0; p1<projCount; p1++) {
             for(let p2=0; p2<particlesPerProjectile; p2++) {
-                positions[i] = i;
-                positions[i+1] = 0;
-                positions[i+2] = 0;
-                // targets[i] = 0;
-                // targets[i+1] = 2000;
-                // targets[i+2] = 0;
-                // timeSpeedDelays[i] = 0;
-                // timeSpeedDelays[i+1] = 0;
-                // timeSpeedDelays[i+2] = p2 * this.delayPerParticle;
-                // const color = new THREE.Color(0xff0000);
-                // colors[i] = color.r;
-                // colors[i+1] = color.g;
-                // colors[i+2] = color.b;
-                // distanceTrails[i] = 0;
-                // if(p2 >= trailParticlesStart-1 && p2 <= trailParticlesStop-1) {
-                //     distanceTrails[i+1] = Math.random();
-                // } else {
-                //     distanceTrails[i+1] = 1.1;
-                // }
-                // distanceTrails[i+2] = 0;
+                positions[i] = 0;
+                positions[i+1] = 2000;
+                positions[i+2] = 6;
+                targets[i] = 0;
+                targets[i+1] = 2000;
+                targets[i+2] = 0;
+                timeLengthLife[i] = 0;
+                timeLengthLife[i+1] = 0;
+                timeLengthLife[i+2] = 0;
+                sizeLightnessIndex[i] = 1.0;
+                sizeLightnessIndex[i+1] = 0.5 * Math.random() + 0.1;
+                sizeLightnessIndex[i+2] = p2;
+                randoms[i] = Math.random() * Math.random() < 0.5 ? -1 : 1;
+                randoms[i+1] = Math.random() * Math.random() < 0.5 ? -1 : 1;
+                randoms[i+2] = Math.random() * Math.random() < 0.5 ? -1 : 1;
+                colors[i] = 1; // R
+                colors[i+1] = 0; // G
+                colors[i+2] = 0; // B
                 i += 3;
             }
         }
         const projGeo = new THREE.BufferGeometry();
         projGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        // projGeo.setAttribute('target', new THREE.BufferAttribute(targets, 3));
-        // projGeo.setAttribute('timeSpeedDelay', new THREE.BufferAttribute(timeSpeedDelays, 3));
-        // projGeo.setAttribute('distanceTrail', new THREE.BufferAttribute(distanceTrails, 3));
-        // projGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        projGeo.setAttribute('target', new THREE.BufferAttribute(targets, 3));
+        projGeo.setAttribute('timeLengthLife', new THREE.BufferAttribute(timeLengthLife, 3));
+        projGeo.setAttribute('sizeLightnessIndex', new THREE.BufferAttribute(sizeLightnessIndex, 3));
+        projGeo.setAttribute('random', new THREE.BufferAttribute(randoms, 3));
+        projGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
     }
 
-    // newProjectile(from, to, distance, weapon, intersect) {
-    //     const index = this.nextProjIndex;
-    //     const attributes = this.particles.geometry.attributes;
-    //     let i;
-    //     const start = index * this.particlesPerSmoke * 3;
-    //     const end = start + this.particlesPerSmoke * 3;
-    //     const startTime = performance.now();
-    //     const color = new THREE.Color(weapon.color);
-    //     for(i=start; i<end; i+=3) {
-    //         attributes.position.array[i] = from.x;
-    //         attributes.position.array[i+1] = from.y;
-    //         attributes.position.array[i+2] = from.z;
-    //         attributes.target.array[i] = to.x;
-    //         attributes.target.array[i+1] = to.y;
-    //         attributes.target.array[i+2] = to.z;
-    //         attributes.timeSpeedDelay.array[i] = startTime;
-    //         attributes.timeSpeedDelay.array[i+1] = weapon.speed;
-    //         attributes.distanceTrail.array[i] = distance;
-    //         attributes.color.array[i] = color.r;
-    //         attributes.color.array[i+1] = color.g;
-    //         attributes.color.array[i+2] = color.b;
-    //     }
-    //     attributes.position.needsUpdate = true;
-    //     attributes.target.needsUpdate = true;
-    //     attributes.timeSpeedDelay.needsUpdate = true;
-    //     attributes.distanceTrail.needsUpdate = true;
-    //     attributes.color.needsUpdate = true;
-    //     this.nextProjIndex++;
-    //     if(this.nextProjIndex > this.maxParticles-1) this.nextProjIndex = 0;
-    //     if(intersect && intersect.object) {
-    //         setTimeout(() => {
-    //             this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
-    //             this.sceneState.hitZonePlates.addHitZone(intersect);
-    //         }, weapon.speed * (distance - 0.25) * 1000);
-    //     }
-    //     setTimeout(() => {
-    //         const start = index * this.particlesPerSmoke * 3;
-    //         const end = start + this.particlesPerSmoke * 3;
-    //         const startTime = performance.now();
-    //         for(i=start; i<end; i+=3) {
-    //             attributes.position.array[i] = 0;
-    //             attributes.position.array[i+1] = 2000;
-    //             attributes.position.array[i+2] = 0;
-    //             attributes.target.array[i] = 0;
-    //             attributes.target.array[i+1] = 2000;
-    //             attributes.target.array[i+2] = 0;
-    //             attributes.timeSpeedDelay.array[i] = startTime;
-    //             attributes.timeSpeedDelay.array[i+1] = 0;
-    //             attributes.distanceTrail.array[i] = 0;
-    //         }
-    //         attributes.position.needsUpdate = true;
-    //         attributes.target.needsUpdate = true;
-    //         attributes.timeSpeedDelay.needsUpdate = true;
-    //         attributes.distanceTrail.needsUpdate = true;
-    //     }, weapon.speed * distance * 1000);
-    // }
+    addSmoke(from, to, params) {
+        let { size, life, startDelay, delayPerParticle, lightness, length } = params;
+        if(!size) size = 3.0;
+        if(!life) life = 1200;
+        if(!startDelay) startDelay = 0;
+        if(!delayPerParticle) delayPerParticle = 200;
+        if(!lightness) lightness = 0;
+        if(!length || length > this.particlesPerSmoke) length = this.particlesPerSmoke;
+        const index = this.nextSmokeIndex;
+        const attributes = this.particles.geometry.attributes;
+        let i;
+        const start = index * this.particlesPerSmoke * 3;
+        const end = start + length * 3;
+        const startTime = performance.now() + startDelay;
+        const color = new THREE.Color(0x000000);
+        for(i=start; i<end; i+=3) {
+            attributes.position.array[i] = from.x;
+            attributes.position.array[i+1] = from.y;
+            attributes.position.array[i+2] = from.z;
+            attributes.target.array[i] = to.x;
+            attributes.target.array[i+1] = to.y;
+            attributes.target.array[i+2] = to.z;
+            attributes.timeLengthLife.array[i] = startTime;
+            attributes.timeLengthLife.array[i+1] = length; // Grow to max size speed
+            attributes.timeLengthLife.array[i+2] = life; // One particle life span
+            attributes.sizeLightnessIndex.array[i] = size;
+            attributes.sizeLightnessIndex.array[i+1] = lightness;
+            attributes.color.array[i] = color.r;
+            attributes.color.array[i+1] = color.g;
+            attributes.color.array[i+2] = color.b;
+        }
+        attributes.position.needsUpdate = true;
+        attributes.target.needsUpdate = true;
+        attributes.timeLengthLife.needsUpdate = true;
+        attributes.sizeLightnessIndex.needsUpdate = true;
+        attributes.color.needsUpdate = true;
+        this.nextSmokeIndex++;
+        if(this.nextSmokeIndex > this.maxParticles-1) this.nextSmokeIndex = 0;
+        setTimeout(() => {
+            const start = index * this.particlesPerSmoke * 3;
+            const end = start + length * 3;
+            for(i=start; i<end; i+=3) {
+                attributes.position.array[i] = 0;
+                attributes.position.array[i+1] = 2000;
+                attributes.position.array[i+2] = 0;
+                attributes.target.array[i] = 0;
+                attributes.target.array[i+1] = 2000;
+                attributes.target.array[i+2] = 0;
+            }
+            attributes.position.needsUpdate = true;
+            attributes.target.needsUpdate = true;
+        }, life + startDelay + delayPerParticle * length);
+    }
 
     _createParticleShader() {
         let pixelRatio = window.devicePixelRatio;
@@ -124,31 +121,59 @@ class SmokeParticles {
             uniforms: {
                 uTime: { value: 0 },
                 scale: { value: window.innerHeight * pixelRatio / 2 },
-                diffuseTexture: { value: this.sceneState.levelAssets.fxTextures.projectileBall.texture },
+                smokeTexture: { value: this.sceneState.levelAssets.fxTextures.smoke.texture },
             },
             depthTest: true,
             depthWrite: false,
             transparent: true,
             blending: THREE.NormalBlending,
             vertexShader: `
+                attribute vec3 target;
+                attribute vec3 timeLengthLife;
+                attribute vec3 sizeLightnessIndex;
+                attribute vec3 random;
+                attribute vec3 color;
                 uniform float uTime;
                 uniform float scale;
+                varying float vTimePhase;
+                varying float vLightness;
+                varying float vHasStarted;
+                varying float vHasEnded;
+                varying vec2 vAngle;
 
                 void main() {
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    vLightness = sizeLightnessIndex[1];
+                    float index = sizeLightnessIndex[2];
+                    float isParticleShown = ceil(clamp(timeLengthLife[1] - index, 0.0, 1.0));
+                    float startTime = timeLengthLife[0] + index * ${this.delayPerParticle}.0;
+                    float lifeTime = timeLengthLife[2];
+                    float timeElapsed = uTime - startTime;
+                    vHasStarted = ceil(clamp(uTime - startTime, 0.0, 1.0)) * isParticleShown;
+                    vHasEnded = ceil(clamp(lifeTime - timeElapsed, 0.0, 1.0));
+                    vTimePhase = clamp(mod(timeElapsed, lifeTime) / lifeTime, 0.0, 1.0) * vHasStarted;
+                    vAngle = vec2(cos(random.x * ${Math.PI} * vTimePhase), sin(random.z * ${Math.PI} * vTimePhase));
+                    vec3 newPos = position + (target - position) * vTimePhase;
+                    vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
-                    float pSize = 0.58;
+                    float pSize = sizeLightnessIndex[0] * vTimePhase;
                     gl_PointSize = pSize * (scale / length(-mvPosition.xyz));
                     gl_Position = vertexPosition;
                 }
             `,
             fragmentShader: `
-                uniform sampler2D diffuseTexture;
+                uniform sampler2D smokeTexture;
+                varying float vTimePhase;
+                varying float vLightness;
+                varying float vHasStarted;
+                varying float vHasEnded;
+                varying vec2 vAngle;
 
                 void main() {
-                    // float alpha = 1.0 - (vTimePhase / clamp(vTrailTime + 0.7, 0.0, 1.0)) * vIsTrail;
-                    // gl_FragColor = texture2D(diffuseTexture, gl_PointCoord) * vec4(vColor + (0.5 - vDelay), alpha);
-                    gl_FragColor = texture2D(diffuseTexture, gl_PointCoord);
+                    vec2 coords = (gl_PointCoord - 0.5) * mat2(vAngle.x, vAngle.y, -vAngle.y, vAngle.x) + 0.5;
+                    vec4 curPixel = texture2D(smokeTexture, coords)
+                        + vec4(vLightness, vLightness, vLightness, 0.0);
+                    curPixel.a *= vHasStarted * vHasEnded * (1.0 - vTimePhase);
+                    gl_FragColor = curPixel;
                 }
             `,
         });
