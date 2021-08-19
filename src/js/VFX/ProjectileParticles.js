@@ -114,14 +114,14 @@ class ProjectileParticles {
                 };
                 this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
                     lightness: this.sceneState.utils.randomFloatFromInterval(0.25, 0.45),
-                    size: 3,
+                    size: this.sceneState.utils.randomFloatFromInterval(0.2, 3.4),
                     life: this.sceneState.utils.randomIntFromInterval(1700, 2000),
                     length: 2,
                     startDelay: -300,
                 });
                 this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
                     lightness: this.sceneState.utils.randomFloatFromInterval(0.15, 0.25),
-                    size: 2.4,
+                    size: this.sceneState.utils.randomFloatFromInterval(0.5, 2.4),
                     life: this.sceneState.utils.randomIntFromInterval(1200, 1800),
                     length: this.sceneState.utils.randomIntFromInterval(1, 2),
                     startDelay: -100,
