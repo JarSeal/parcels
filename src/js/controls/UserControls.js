@@ -117,6 +117,7 @@ class UserControls {
         });
         this.listeners.mouseup = document.getElementById('main-stage')
             .addEventListener('mouseup', (e) => { this._mouseClickOnStage(e); });
+        document.addEventListener('contextmenu', e => e.preventDefault()); // Disable right click context menu
     }
 
     _moveKeysPressedCount() {
