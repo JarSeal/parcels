@@ -46,7 +46,6 @@ class Physics {
             } else if(e.data.initPhysicsDone) {
                 this.sceneState.physics.initiated = true;
                 runMainApp();
-                this._requestPhysicsFromWorker();
             } else if(e.data.error) {
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
@@ -59,7 +58,7 @@ class Physics {
         });
     }
 
-    _requestPhysicsFromWorker = () => {
+    requestPhysicsFromWorker = () => {
         const sendObject = {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
@@ -122,9 +121,9 @@ class Physics {
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
-            this._requestPhysicsFromWorker();
+            this.requestPhysicsFromWorker();
         } else {
-            setTimeout(this._requestPhysicsFromWorker, delay);
+            setTimeout(this.requestPhysicsFromWorker, delay);
         }
     }
 

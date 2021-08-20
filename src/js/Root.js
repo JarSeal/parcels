@@ -13,6 +13,7 @@ import ProjectileParticles from './VFX/ProjectileParticles';
 import PhysicsParticles from './VFX/PhysicsParticles';
 import HitZonePlates from './VFX/HitZonePlates';
 import SmokeParticles from './VFX/SmokeParticles';
+import Consequences from './players/Consequences';
 
 class Root {
     constructor() {
@@ -118,7 +119,9 @@ class Root {
         // Other setup [/END]
 
         this.sceneState.physicsClass = new Physics(this.sceneState, () => {
-            this._runApp(camera);
+            this.sceneState.consClass = new Consequences(this.sceneState, () => {
+                this._runApp(camera);
+            });
         });
     }
 
@@ -152,6 +155,8 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
             this.sceneState.settingsClass.createSettingsUI();
+            this.sceneState.physicsClass.requestPhysicsFromWorker();
+            this.sceneState.consClass.requestConsequences();
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
