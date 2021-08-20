@@ -9,7 +9,7 @@ class SmokeParticles {
         this.delayPerParticle = 200;
         this.nextSmokeIndex = 0;
         this.sceneState.levelAssets.fxTextures.smoke = {
-            url: this.sceneState.settings.assetsUrl + '/sprites/smoke02_512x512.png',
+            url: this.sceneState.settings.assetsUrl + '/sprites/smoke01_512x512.png',
             texture: null,
         };
         this.material;
@@ -140,8 +140,10 @@ class SmokeParticles {
                 varying float vHasStarted;
                 varying float vHasEnded;
                 varying vec2 vAngle;
+                varying vec3 vColor;
 
                 void main() {
+                    vColor = color;
                     vLightness = sizeLightnessIndex[1];
                     float index = sizeLightnessIndex[2];
                     float isParticleShown = ceil(clamp(timeLengthLife[1] - index, 0.0, 1.0));
@@ -167,11 +169,13 @@ class SmokeParticles {
                 varying float vHasStarted;
                 varying float vHasEnded;
                 varying vec2 vAngle;
+                varying vec3 vColor;
 
                 void main() {
                     vec2 coords = (gl_PointCoord - 0.5) * mat2(vAngle.x, vAngle.y, -vAngle.y, vAngle.x) + 0.5;
                     vec4 curPixel = texture2D(smokeTexture, coords)
-                        + vec4(vLightness, vLightness, vLightness, 0.0);
+                        + vec4(vLightness, vLightness, vLightness, 0.0)
+                        + vec4(vColor, 0.0);
                     curPixel.a *= vHasStarted * vHasEnded * (1.0 - vTimePhase);
                     gl_FragColor = curPixel;
                 }

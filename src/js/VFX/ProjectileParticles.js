@@ -114,17 +114,17 @@ class ProjectileParticles {
                 };
                 this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
                     lightness: this.sceneState.utils.randomFloatFromInterval(0.25, 0.45),
-                    size: this.sceneState.utils.randomFloatFromInterval(0.2, 3.4),
-                    life: this.sceneState.utils.randomIntFromInterval(1700, 2000),
+                    size: this.sceneState.utils.randomFloatFromInterval(0.0001, 2.0),
+                    life: this.sceneState.utils.randomIntFromInterval(2500, 3000),
                     length: 2,
                     startDelay: -300,
                 });
                 this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
                     lightness: this.sceneState.utils.randomFloatFromInterval(0.15, 0.25),
-                    size: this.sceneState.utils.randomFloatFromInterval(0.5, 2.4),
-                    life: this.sceneState.utils.randomIntFromInterval(1200, 1800),
-                    length: this.sceneState.utils.randomIntFromInterval(1, 2),
-                    startDelay: -100,
+                    size: this.sceneState.utils.randomFloatFromInterval(0.0002, 1.4),
+                    life: this.sceneState.utils.randomIntFromInterval(2000, 2800),
+                    length: this.sceneState.utils.randomIntFromInterval(2, 3),
+                    startDelay: -500,
                 });
             }, weapon.speed * (distance - 0.25) * 1000);
         }
