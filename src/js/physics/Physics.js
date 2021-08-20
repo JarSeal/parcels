@@ -3,25 +3,41 @@ import PhysicsHelpers from './PhysicsHelpers';
 class Physics {
     constructor(sceneState, runMainApp) {
         this.sceneState = sceneState;
-        this.workerSendTime = 0;
-        this.worker = new Worker('./webworkers/physics.js');
+        this.mainWorkerSendTime = 0;
+        this.mainWorker = new Worker('./webworkers/physics.js');
         this.tempShapes = {};
         sceneState.additionalPhysicsData = [];
         this.helpers = new PhysicsHelpers(sceneState);
+        this.stats = this.sceneState.settingsClass.createStats(true);
+        this.zpsCounter = {
+            counter: 0,
+            highestCount: 0,
+            startTime: 0,
+            elemZPS: document.getElementById('zps-counter'),
+            elemFPS: document.getElementById('fps-counter'),
+            fpsCounter: 0,
+            fpsHighestCount: 0,
+            fpsStartTime: 0,
+        };
         this._initPhysicsWorker(runMainApp);
     }
 
     _initPhysicsWorker(runMainApp) {
-        this.worker.postMessage({
+        const initParams = {
+            allowSleep: true,
+            gravity: [0, -9.82, 0],
+            iterations: 10,
+            solverTolerance: 0.1,
+            particlesCount: this.sceneState.physics.particlesCount,
+            particlesIdPrefix: 'physParticle_',
+            particlesIdlePosition: [0, 2000, 0],
+        };
+        this._createParticles(initParams);
+        this.mainWorker.postMessage({
             init: true,
-            initParams: {
-                allowSleep: true,
-                gravity: [0, -9.82, 0],
-                iterations: 10,
-                solverTolerance: 0.001,
-            },
+            initParams,
         });
-        this.worker.addEventListener('message', (e) => {
+        this.mainWorker.addEventListener('message', (e) => {
             if(e.data.loop) {
                 this._updateRenderShapes(e.data);
             } else if(e.data.additionals && e.data.additionals.length) {
@@ -32,16 +48,18 @@ class Physics {
                 runMainApp();
                 this._requestPhysicsFromWorker();
             } else if(e.data.error) {
-                this.sceneState.logger.error(e.data.error);
+                this.sceneState.logger.error('From physics worker:', e.data.error);
+                throw new Error('**Error stack:**');
             }
+            if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
-        this.worker.addEventListener('error', (e) => {
-            this.sceneState.logger.error(e.message);
+        this.mainWorker.addEventListener('error', (e) => {
+            this.sceneState.logger.error('Worker event listener:', e.message);
+            throw new Error('**Error stack:**');
         });
     }
 
     _requestPhysicsFromWorker = () => {
-        this.workerSendTime = performance.now();
         const sendObject = {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
@@ -52,10 +70,12 @@ class Physics {
             sendObject.additionals = [ ...additionals ];
             this.sceneState.additionalPhysicsData = [];
         }
-        this.worker.postMessage(
+        this.mainWorkerSendTime = performance.now();
+        this.mainWorker.postMessage(
             sendObject,
             [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
         );
+        this.mainWorkerSendTime = performance.now();
     }
 
     _updateRenderShapes(data) {
@@ -68,18 +88,26 @@ class Physics {
         let i;
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
-            s.mesh.position.set(
-                positions[i * 3],
-                positions[i * 3 + 1],
-                positions[i * 3 + 2]
-            );
-            if(!s.fixedRotation) {
-                s.mesh.quaternion.set(
-                    quaternions[i * 4],
-                    quaternions[i * 4 + 1],
-                    quaternions[i * 4 + 2],
-                    quaternions[i * 4 + 3]
+            if(s.particles) {
+                this.sceneState.physicsParticles.updatePosition(i, [
+                    positions[i * 3],
+                    positions[i * 3 + 1],
+                    positions[i * 3 + 2],
+                ]);
+            } else {
+                s.mesh.position.set(
+                    positions[i * 3],
+                    positions[i * 3 + 1],
+                    positions[i * 3 + 2]
                 );
+                if(!s.fixedRotation) {
+                    s.mesh.quaternion.set(
+                        quaternions[i * 4],
+                        quaternions[i * 4 + 1],
+                        quaternions[i * 4 + 2],
+                        quaternions[i * 4 + 3]
+                    );
+                }
             }
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
@@ -91,8 +119,27 @@ class Physics {
             this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
         }
 
-        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.workerSendTime);
-        setTimeout(this._requestPhysicsFromWorker, Math.max(delay, 0));
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
+        this._zpsCounter(delay);
+        if(delay < 0) {
+            this._requestPhysicsFromWorker();
+        } else {
+            setTimeout(this._requestPhysicsFromWorker, delay);
+        }
+    }
+
+    _zpsCounter(delay) {
+        if(!this.sceneState.settings.debug.showPhysicsStats) return;
+        if(performance.now() - this.zpsCounter.startTime > 1000) {
+            this.zpsCounter.elemZPS.innerText = 'ZPS: ' + this.zpsCounter.counter + ' (' + this.zpsCounter.highestCount + ')';
+            this.zpsCounter.startTime = performance.now();
+            this.zpsCounter.counter = 0;
+            this.zpsCounter.fpsCounter = 0;
+        }
+        if(delay < 0) this.zpsCounter.counter++;
+        if(this.zpsCounter.counter > this.zpsCounter.highestCount) this.zpsCounter.highestCount++;
+        this.zpsCounter.fpsCounter++;
+        if(this.zpsCounter.fpsCounter > this.zpsCounter.fpsHighestCount) this.zpsCounter.fpsHighestCount++;
     }
 
     _handleAdditionalsForMainThread(additionals) {
@@ -133,10 +180,13 @@ class Physics {
     }
 
     addShape = (shapeData) => {
-        if(!shapeData) this.sceneState.logger.error('Trying to add new shape, but shapeData is missing (Root.js).');
+        if(!shapeData) {
+            this.sceneState.logger.error('Trying to add new shape, but shapeData is missing.');
+            throw new Error('**Error stack:**');
+        }
         let id = shapeData.id;
         if(!id) {
-            id = 'phyShape_' + Math.random().toString().replace('.', '');
+            id = 'phyShape_' + performance.now().toString().replace('.', '_');
             shapeData.id = id;
         }
         this.tempShapes[id] = shapeData;
@@ -158,8 +208,10 @@ class Physics {
                 position: shapeData.position,
                 quaternion: shapeData.quaternion,
                 rotation: shapeData.rotation,
+                velocity: shapeData.velocity,
                 fixedRotation: shapeData.fixedRotation,
                 material: shapeData.material,
+                particles: shapeData.particles,
                 sleep: shapeData.sleep,
                 roof: shapeData.roof,
                 characterData: shapeData.characterData
@@ -187,6 +239,21 @@ class Physics {
                 moving: data.moving,
             });
             this.helpers.removeShape(data);
+        }
+    }
+
+    _createParticles(params) {
+        for(let i=0; i<params.particlesCount; i++) {
+            const shape = {
+                type: 'particle',
+                id: params.particlesIdPrefix + i,
+                position: [params.particlesIdlePosition[0]+i, params.particlesIdlePosition[1], params.particlesIdlePosition[2]],
+                particles: true,
+                moving: true,
+            };
+            this.sceneState.physics.movingShapes.push(shape);
+            this.sceneState.physics.movingShapesLength++;
+            this.helpers.createShape(shape);
         }
     }
 }

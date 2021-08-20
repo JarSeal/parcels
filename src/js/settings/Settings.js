@@ -9,7 +9,6 @@ class Settings {
         sceneState.LStorage = new LStorage();
         this.userSettings = {};
         this._initSettings(sceneState);
-        this._debugSettings(sceneState);
     }
 
     _initSettings(sceneState) {
@@ -24,6 +23,10 @@ class Settings {
             sceneState.gui = gui;
         }
         // GUI setup [/END]
+    }
+
+    createSettingsUI() {
+        this._debugSettings(this.sceneState);
     }
 
     _checkLocalStorage(sceneState) {
@@ -87,6 +90,16 @@ class Settings {
         );
         this.addGuiElem(
             'boolean',
+            settings.debug,
+            'showProjectileStreaks',
+            'projectile streaks',
+            'Debug',
+            (value) => {
+                sceneState.LStorage.setItem('showProjectileStreaks', value);
+            }
+        );
+        this.addGuiElem(
+            'boolean',
             settings.physics,
             'showPhysicsHelpers',
             'Show helpers',
@@ -96,33 +109,73 @@ class Settings {
                 window.location.reload();
             }
         );
+        this.addGuiElem(
+            'dropdown',
+            settings.physics,
+            'particleDetailLevel',
+            'Particle details',
+            'Physics',
+            (value) => {
+                sceneState.LStorage.setItem('particleDetailLevel', value);
+                window.location.reload();
+            },
+            { Low: 'low', Medium: 'medium', High: 'high' }
+        );
+        this.addGuiElem(
+            'boolean',
+            settings.graphics,
+            'antialiasing',
+            'Antialiasing',
+            'Graphics',
+            (value) => {
+                sceneState.LStorage.setItem('antialiasing', value);
+                window.location.reload();
+            }
+        );
+        this.addGuiElem(
+            'button',
+            { show: () => {
+                alert(
+                    JSON.stringify(this.sceneState.renderer.capabilities) +
+                    ' devicePixelRatio: ' + window.devicePixelRatio +
+                    ' rendererPixelRatio: ' + this.sceneState.renderer.getPixelRatio() +
+                    ' logicalProcessors: ' + window.navigator.hardwareConcurrency
+                );
+            }},
+            'show',
+            'Capabilities',
+            'Renderer'
+        );
     }
 
-    createStats() {
+    createStats(physics) {
         const stats = new Stats();
         stats.setMode(0);
-        stats.domElement.id = 'debug-stats-wrapper';
+        const elemId = physics ? 'debug-physics-stats-wrapper' : 'debug-stats-wrapper';
+        const settingsAttribute = physics ? 'showPhysicsStats' : 'showStats';
+        stats.domElement.id = elemId;
         document.body.appendChild(stats.domElement);
         if(!this.sceneState.settings.debug.showStats) {
-            document.getElementById('debug-stats-wrapper').style.display = 'none';
+            document.getElementById(elemId).style.display = 'none';
         }
         if(this.sceneState.settings.enableGui) {
             this.addGuiElem(
                 'boolean',
                 this.sceneState.settings.debug,
-                'showStats',
-                'Show stats',
+                settingsAttribute,
+                physics ? 'Show phys stats' : 'Show stats',
                 'Debug',
                 (value) => {
-                    document.getElementById('debug-stats-wrapper').style.display = value ? 'block' : 'none';
-                    this.sceneState.LStorage.setItem('showStats', value);
+                    document.getElementById(elemId).style.display = value ? 'block' : 'none';
+                    document.getElementById('phys-zero-delays').style.display = value ? 'block' : 'none';
+                    this.sceneState.LStorage.setItem(settingsAttribute, value);
                 }
             );
         }
         return stats;
     }
 
-    addGuiElem(type, setting, settingKey, name, folder, onChange) {
+    addGuiElem(type, setting, settingKey, name, folder, onChange, dropDownParams) {
         const ss = this.sceneState;
         if(!ss.settings.enableGui) return;
         let target;
@@ -133,6 +186,9 @@ class Settings {
             break;
         case 'button':
             target.add(setting, settingKey).name(name);
+            break;
+        case 'dropdown':
+            target.add(setting, settingKey, dropDownParams).name(name).onChange(onChange);
             break;
         }
     }

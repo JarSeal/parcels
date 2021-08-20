@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TimelineMax, Sine } from 'gsap-ssr';
+import projectileWeapon from '../data/weapons/projectile01';
 
 class Player {
     constructor(sceneState, data) {
@@ -8,6 +9,8 @@ class Player {
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
         this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
+        this.curWeapon = projectileWeapon;
+        this.rayshooter = new THREE.Raycaster();
         data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
@@ -21,7 +24,9 @@ class Player {
             this.sceneState.playerKeys = [];
             this.sceneState.playerKeysCount = 0;
         }
-        this.line;
+        this.shooting = {
+            maxDistance: 10, // Temp for now, this needs to be determined by the gun used.
+        };
     }
 
     create() {
@@ -60,11 +65,15 @@ class Player {
         });
     }
 
+    getPlayerData() {
+        return this.data;
+    }
+
     getDirection() {
         return this.data.direction;
     }
 
-    _rotatePlayer(toDir) {
+    rotatePlayer(toDir) {
         this.data.rotatingY = true;
         if(this.rotationTL) {
             this.rotationTL.kill();
@@ -115,7 +124,7 @@ class Player {
     }
 
     movePlayer(xPosMulti, zPosMulti, dir, startTimes) {
-        this._rotatePlayer(dir);
+        this.rotatePlayer(dir);
         xPosMulti /= 4;
         zPosMulti /= 4;
         this.data.xPosMulti = xPosMulti;
@@ -146,6 +155,84 @@ class Player {
                 jump: power * this.data.jump,
             },
         });
+    }
+
+    shoot(pos) {
+        const data = this.data;
+        const shotHeight = data.mesh.children[0].position.y;
+        const maxDistance = this.curWeapon.maxDistance;
+
+        const curPosX = data.mesh.children[0].position.x;
+        const curPosZ = data.mesh.children[0].position.z;
+        const distX = pos.x - curPosX;
+        const distZ = pos.z - curPosZ;
+        let a = Math.atan2(distX, distZ);
+        if(a - this.halfPI < Math.PI) {
+            a += Math.PI * 2 - this.halfPI;
+        } else {
+            a -= this.halfPI;
+        }
+        if(Math.abs(a - data.mesh.children[0].rotation.y) > Math.PI) {
+            data.mesh.children[0].rotation.y > a
+                ? data.mesh.children[0].rotation.y -= this.twoPI
+                : a -= this.twoPI;
+        }
+        this.rotatePlayer(a);
+
+        const startPoint = data.mesh.children[0].position;
+        startPoint.y = shotHeight;
+        const direction = new THREE.Vector3();
+        direction.subVectors(new THREE.Vector3(pos.x, shotHeight, pos.z), startPoint).normalize();
+        this.rayshooter.set(startPoint, direction);
+        let intersectsLevel = this.rayshooter.intersectObjects(
+            this.sceneState.levelAssets.lvlMeshes,
+            true
+        );
+
+        if(intersectsLevel.length && intersectsLevel[0].distance > maxDistance) intersectsLevel = [];
+        if(!intersectsLevel.length) {
+            // shot into space or the distance to a wall is longer than the max distance
+            const targetPos = [0,0];
+            let dir;
+            if(startPoint.z > pos.z && startPoint.x > pos.x) { dir = 1; } else
+            if(startPoint.z < pos.z && startPoint.x > pos.x) { dir = 3; } else
+            if(startPoint.z < pos.z && startPoint.x < pos.x) { dir = 5; } else
+            if(startPoint.z > pos.z && startPoint.x < pos.x) { dir = 7; }
+            const xLength = Math.abs(Math.cos(a) * maxDistance);
+            const zLength = Math.abs(Math.sin(a) * maxDistance);
+            dir > 4 ? targetPos[0] = startPoint.x + xLength : targetPos[0] = startPoint.x - xLength;
+            dir > 2 && dir < 6 ? targetPos[1] = startPoint.z + zLength : targetPos[1] = startPoint.z - zLength;
+            intersectsLevel.push({
+                point: new THREE.Vector3(targetPos[0], shotHeight, targetPos[1]),
+                distance: maxDistance,
+            });
+        }
+
+        const point = intersectsLevel[0].point;
+        const distance = intersectsLevel[0].distance;
+
+        if(this.sceneState.settings.debug.showProjectileStreaks) {
+            const material = new THREE.LineBasicMaterial({ color: 0xff2ccc });
+            const points = [];
+            points.push(startPoint);
+            points.push(new THREE.Vector3(point.x, shotHeight, point.z));
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            this.sceneState.scenes[this.sceneState.curScene].add(line);
+            setTimeout(() => {
+                line.material.dispose();
+                geometry.dispose();
+                this.sceneState.scenes[this.sceneState.curScene].remove(line);
+            }, 2000);
+        }
+
+        this.sceneState.projectiles.newProjectile(
+            new THREE.Vector3(curPosX, shotHeight, curPosZ),
+            point,
+            distance,
+            this.curWeapon,
+            intersectsLevel[0]
+        );
     }
 }
 

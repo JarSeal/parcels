@@ -3,16 +3,19 @@
     -webkit-user-select: none;
     box-sizing: border-box;
 }
-body {
+html, body {
+    width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
-    height: 100vh;
     background: #000;
     overflow: hidden;
     font-family: sans-serif;
 }
-canvas {
+canvas#main-stage {
     display: block;
+    width: 100%;
+    height: 100%;
 }
 $loadingInputColor: rgba(#555, 0.8);
 @keyframes rotate {
@@ -53,4 +56,16 @@ $loadingInputColor: rgba(#555, 0.8);
             text-align: left;
         }
     }
+}
+#debug-physics-stats-wrapper {
+    top: 48px !important;
+}
+#phys-zero-delays {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 96px;
+    color: #fff;
+    text-shadow: 1px 1px #000;
+    font-size: 10px;
 }

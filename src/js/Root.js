@@ -9,6 +9,10 @@ import Player from './players/Player';
 import userPlayerData from './data/userPlayerData';
 import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
+import ProjectileParticles from './VFX/ProjectileParticles';
+import PhysicsParticles from './VFX/PhysicsParticles';
+import HitZonePlates from './VFX/HitZonePlates';
+import SmokeParticles from './VFX/SmokeParticles';
 
 class Root {
     constructor() {
@@ -24,11 +28,18 @@ class Root {
         this.sceneState.utils = this.utils;
         this.sceneState.logger = new Logger(this.sceneState);
 
+        // Settings [START]
+        const settings = new Settings(this.sceneState);
+        this.stats = settings.createStats();
+        this.sceneState.settingsClass = settings;
+        // Settings [/END]
+
         // Setup renderer [START]
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({
+            antialias: this.sceneState.settings.graphics.antialiasing
+        });
         renderer.setClearColor('#000000');
-        const screenSize = this.utils.getScreenResolution();
-        renderer.setSize(screenSize.x, screenSize.y);
+        renderer.debug.checkShaderErrors = true; // Disable this for production (performance gain)
         renderer.domElement.id = 'main-stage';
         document.body.appendChild(renderer.domElement);
         this.renderer = renderer;
@@ -50,11 +61,12 @@ class Root {
         // Setup scene and basic lights [/END]
 
         // Setup camera and aspect ratio [START]
+        const screenSize = this.utils.getScreenResolution();
         this.aspectRatio = screenSize.x / screenSize.y;
-        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.5, 128);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.update();
-        this.controls = controls;
+        const camera = new THREE.PerspectiveCamera(45, this.aspectRatio, 0.1, 256);
+        const controls = new OrbitControls(camera, renderer.domElement); // Disable this for production (performance gain)
+        controls.update(); // Disable this for production (performance gain)
+        this.controls = controls; // Disable this for production (performance gain)
         this.camera = camera;
         camera.userData.followXOffset = 6;
         camera.userData.followYOffset = 10;
@@ -62,7 +74,7 @@ class Root {
         this.sceneState.cameras = {
             level: camera,
         };
-        this.sceneState.orbitControls = controls;
+        this.sceneState.orbitControls = controls; // Disable this for production (performance gain)
         // Setup camera and aspect ratio [/END]
 
         // Setup physics (cannon.js) [START]
@@ -72,21 +84,35 @@ class Root {
         this.sceneState.physics.movingShapesLength = 0;
         this.sceneState.physics.staticShapes = [];
         this.sceneState.physics.staticShapesLength = 0;
-        this.sceneState.physics.positions = new Float32Array(100 * 3);
-        this.sceneState.physics.quaternions = new Float32Array(100 * 4);
+        if(this.sceneState.settings.physics.particleDetailLevel === 'high') {
+            this.sceneState.physics.particlesCount = 400;
+        } else if(this.sceneState.settings.physics.particleDetailLevel === 'medium') {
+            this.sceneState.physics.particlesCount = 150;
+        } else {
+            this.sceneState.physics.particlesCount = 18;
+        }
+        this.sceneState.physics.nextParticleIndex = 0;
+        this.sceneState.physics.positions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 3);
+        this.sceneState.physics.quaternions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 4);
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
-        // Settings [START]
-        const settings = new Settings(this.sceneState);
-        this.stats = settings.createStats();
-        this.sceneState.settingsClass = settings;
-        // Settings [/END]
-
         // Other setup [START]
         this.sceneState.clock = new THREE.Clock();
+        this.sceneState.atomClock = { // TODO: get synchronised server time
+            time: 0,
+            lastCheck: performance.now(),
+            getTime: () => {
+                return this.sceneState.atomClock.time +
+                    performance.now() -
+                    this.sceneState.atomClock.lastCheck;
+            },
+        };
         this.sceneState.pp = new PostProcessing(this.sceneState);
         this.sceneState.resizeFns = [this._resize];
+        this.sceneState.shadersToUpdate = [];
+        this.sceneState.shadersToUpdateLength = 0;
+        this.sceneState.shadersToResize = [];
         this.levelLoader = new LevelLoader(this.sceneState);
         this._initResizer();
         // Other setup [/END]
@@ -97,9 +123,19 @@ class Root {
     }
 
     _runApp = (camera) => {
+        
+        this.sceneState.projectiles = new ProjectileParticles(this.sceneState);
+        this.sceneState.physicsParticles = new PhysicsParticles(this.sceneState);
+        this.sceneState.hitZonePlates = new HitZonePlates(this.sceneState);
+        this.sceneState.smokeParticles = new SmokeParticles(this.sceneState);
 
         this.levelLoader.load(this.sceneState.curLevelId, () => {           
 
+            this.sceneState.hitZonePlates.initPlates();
+            this.sceneState.physicsParticles.initParticles();
+            this.sceneState.smokeParticles.initSmoke();
+            
+            this.sceneState.projectiles.initProjectiles();
             const userPlayer = new Player(this.sceneState, userPlayerData);
             userPlayer.create();
             new UserControls(this.sceneState, userPlayer);
@@ -115,31 +151,48 @@ class Root {
             this._resize(this.sceneState);
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
+            this.sceneState.settingsClass.createSettingsUI();
             this.renderLoop();
+            this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
     }
 
     renderLoop = () => {
         const ss = this.sceneState;
+        // const delta = ss.clock.getDelta();
         requestAnimationFrame(() => {
             this.renderLoop();
         });
+        this._updateShaders(ss);
         ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
         // ss.pp.getComposer().render();
         if(ss.settings.debug.showStats) this.stats.update(); // Debug statistics
     }
 
+    _updateShaders = (ss) => {
+        let i = 0;
+        const shadersLength = ss.shadersToUpdateLength,
+            now = performance.now();
+        for(i=0; i<shadersLength; i++) {
+            ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
+        }
+    };
+
     _resize(sceneState) {
         const reso = new Utils().getScreenResolution();
         const width = reso.x;
         const height = reso.y;
-        const pixelRatio = window.devicePixelRatio || 1;
-        sceneState.renderer.setPixelRatio(pixelRatio);
-        document.getElementsByTagName('body')[0].style.width = width + 'px';
-        document.getElementsByTagName('body')[0].style.height = height + 'px';
+        const pixelRatio = window.devicePixelRatio;
+        sceneState.renderer.setSize(
+            width * pixelRatio | 0,
+            height * pixelRatio | 0,
+            false
+        );
         sceneState.cameras.level.aspect = width / height;
         sceneState.cameras.level.updateProjectionMatrix();
-        sceneState.renderer.setSize(width, height);
+        for(let i=0; i<sceneState.shadersToResize.length; i++) {
+            sceneState.shadersToResize[i].material.uniforms.scale.value = height * pixelRatio / 2;
+        }
         // sceneState.pp.getComposer().setSize(width, height);
     }
 

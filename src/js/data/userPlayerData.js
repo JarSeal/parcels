@@ -9,6 +9,9 @@ const userPlayerData = {
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
+    shotHeights: {
+        handgun: [0.2], // index 0 = standing normally, 1 = kneeled, 2 = crouching / crawling
+    },
     createPlayerFn: (data, sceneState, THREE) => {
         const id = data.id;
         sceneState.players[id] = data;
@@ -39,6 +42,7 @@ const userPlayerData = {
             moving: true,
             mass: 70,
             position: [pos[0], pos[1], pos[2]],
+            startPosition: [pos[0], pos[1], pos[2]],
             rotation: [0, 0, 0],
             material: { friction: 0.2 },
             movingShape: true,
@@ -57,26 +61,16 @@ const userPlayerData = {
                     ));
                 }
                 // Temp death...
-                if(shape.mesh.position.y < -50) {
-                    // alert('WASTED!');
-                    location.reload();
-
-                    // // position
-                    // data.body.position.y = 2;
-                    // data.body.position.x = 2;
-                    // data.body.position.z = 2;
-
-                    // // orientation
-                    // data.body.quaternion.set(0,0,0,1);
-                    // data.body.initQuaternion.set(0,0,0,1);
-                    // data.body.previousQuaternion.set(0,0,0,1);
-                    // data.body.interpolatedQuaternion.set(0,0,0,1);
-
-                    // // Velocity
-                    // data.body.velocity.setZero();
-                    // data.body.initVelocity.setZero();
-                    // data.body.angularVelocity.setZero();
-                    // data.body.initAngularVelocity.setZero();
+                if(shape.mesh.position.y < -50 && !shape.mesh.userData.reload) {
+                    console.log('WASTED!');
+                    sceneState.additionalPhysicsData.push({
+                        phase: 'resetPosition',
+                        data: {
+                            bodyIndex: shape.characterData.bodyIndex,
+                            position: shape.startPosition,
+                            sleep: false,
+                        },
+                    });
                 }
             },
             mesh: pMesh,

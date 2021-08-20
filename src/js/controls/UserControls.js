@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 class UserControls {
     constructor(sceneState, player) {
         this.sceneState = sceneState;
@@ -9,7 +11,29 @@ class UserControls {
         this.direction = player.getDirection();
         this.stopTwoKeyPressTime = 0;
         this.twoKeyDirection = 0;
+        this.rayclicker = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.clickPlanes = [];
+        this._createClickPlane();
         this._initKeyListeners();
+    }
+
+    _createClickPlane() {
+        const clickPlaneGeo = new THREE.PlaneBufferGeometry(256, 256, 1, 1);
+        const clickPlaneMat = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            depthWrite: false,
+            depthTest: false,
+        });
+        const clickPlane = new THREE.Mesh(clickPlaneGeo, clickPlaneMat);
+        clickPlane.position.x = 64;
+        clickPlane.position.y = 0;
+        clickPlane.position.z = 64;
+        clickPlane.rotation.x = -Math.PI / 2;
+        clickPlane.material.opacity = 0;
+        clickPlane.material.transparent = true;
+        this.sceneState.scenes[this.sceneState.curScene].add(clickPlane);
+        this.clickPlanes.push(clickPlane);
     }
 
     _initKeyListeners() {
@@ -21,7 +45,6 @@ class UserControls {
             case 'KeyA':
                 if(this.keydownTimes.a === 0) {
                     this.keydownTimes.a = performance.now();
-                    // this._keyboardMove();
                     this._keyboardMove();
                 }
                 break;
@@ -92,6 +115,8 @@ class UserControls {
                 break;
             }
         });
+        this.listeners.mouseup = document.getElementById('main-stage')
+            .addEventListener('mouseup', (e) => { this._mouseClickOnStage(e); });
     }
 
     _moveKeysPressedCount() {
@@ -162,6 +187,30 @@ class UserControls {
         const timePressed = performance.now() - this.keydownTimes.jump;
         this.keydownTimes.jump = 0;
         this.player.jump(timePressed);
+    }
+
+    _mouseClickOnStage(e) {
+        e.preventDefault();
+
+        this.mouse.x = (parseInt(e.clientX) / document.documentElement.clientWidth) * 2 - 1;
+        this.mouse.y = - (parseInt(e.clientY) / document.documentElement.clientHeight) * 2 + 1;
+        this.rayclicker.setFromCamera(this.mouse, this.sceneState.cameras[this.sceneState.curScene]);
+        const intersects = this.rayclicker.intersectObjects(this.clickPlanes);
+        const pos = intersects[0].point;
+
+        this.player.shoot(pos);
+
+        // NOTE:::::: THIS IS FOR CLICKING ON A TILE WITH AUTO MOVE ENABLED (TODO)!!!! THIS WILL HIGHLIGHT THE TILE!
+        // const tileX = Math.floor(pos.x);
+        // const tileZ = Math.floor(pos.z);
+        // const geo = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
+        // const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        // const mesh = new THREE.Mesh(geo, mat);
+        // mesh.rotation.x = -Math.PI / 2;
+        // mesh.position.x = tileX + 0.5;
+        // mesh.position.y = 0.1;
+        // mesh.position.z = tileZ + 0.5;
+        // this.sceneState.scenes[this.sceneState.curScene].add(mesh);
     }
 }
 

@@ -3,7 +3,8 @@ let world,
     lastCallTime = performance.now() / 1000,
     staticShapes = [],
     movingShapes = [],
-    movingShapesCount = 0;
+    movingShapesCount = 0,
+    particlesCount = 0;
 self.importScripts('/webworkers/cannon-es.js');
 
 self.addEventListener('message', (e) => {
@@ -15,11 +16,16 @@ self.addEventListener('message', (e) => {
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
-                if(a[i].phase === 'moveChar') {
+                const phase = a[i].phase;
+                if(phase === 'moveChar') {
                     moveChar(a[i].data);
-                } else if(a[i].phase === 'jumpChar') {
+                } else if(phase === 'jumpChar') {
                     jumpChar(a[i].data);
-                } else if(a[i].phase === 'addShape') {
+                } else if(phase === 'moveParticle') {
+                    moveParticle(a[i].data);
+                } else if(phase === 'resetPosition') {
+                    _resetBody(movingShapes[a[i].data.bodyIndex], a[i].data.position, a[i].data.sleep);
+                } else if(phase === 'addShape') {
                     const newShape = a[i].shape.compoundParentId
                         ? addShapeToCompound(a[i].shape)
                         : addShape(a[i].shape);
@@ -29,7 +35,7 @@ self.addEventListener('message', (e) => {
                     } else {
                         self.postMessage({ error: newShape.error });
                     }
-                } else if(a[i].phase === 'removeShape') {
+                } else if(phase === 'removeShape') {
                     const removedShape = removeShape(a[i]);
                     if(removedShape.removed) {
                         returnAdditionals.push(removedShape);
@@ -103,6 +109,17 @@ const jumpChar = (data) => {
     movingShapes[data.bodyIndex].moveValues.onTheMove = true;
 };
 
+const moveParticle = (data) => {
+    const body = movingShapes[data.bodyIndex];
+    body.wakeUp();
+    body.position.x = data.position[0];
+    body.position.y = data.position[1];
+    body.position.z = data.position[2];
+    body.velocity.x = data.velocity[0];
+    body.velocity.y = data.velocity[1];
+    body.velocity.z = data.velocity[2];
+};
+
 const addShape = (shape) => {
     let body;
     if(shape.type === 'box') {
@@ -125,6 +142,8 @@ const addShape = (shape) => {
                 shape.numSegments
             ),
         });
+    } else if(shape.type === 'particle') {
+        body = new CANNON.Body({ mass: shape.mass, shape: new CANNON.Particle() });
     } else if(shape.type === 'compound') {
         body = new CANNON.Body({ mass: shape.mass });
     } else {
@@ -154,6 +173,9 @@ const addShape = (shape) => {
     if(shape.fixedRotation) {
         body.fixedRotation = true;
         body.updateMassProperties();
+    }
+    if(shape.velocity) {
+        body.velocity = new CANNON.Vec3(shape.velocity[0], shape.velocity[1], shape.velocity[2]);
     }
     world.addBody(body);
     if(shape.moving) {
@@ -272,11 +294,54 @@ const removeShape = (data) => {
 
 const initPhysics = (params) => {
     world = new CANNON.World();
+    world.broadphase = new CANNON.NaiveBroadphase();
+    world.broadphase.useBoundingBoxes = true;
     world.allowSleep = params.allowSleep;
     world.gravity.set(params.gravity[0], params.gravity[1], params.gravity[2]);
     world.iterations = params.iterations;
     world.solver.iterations = params.iterations;
     world.solver.tolerance = params.solverTolerance;
+
+    if(params.particlesCount) {
+        let i;
+        particlesCount = params.particlesCount;
+        for(i=0; i<particlesCount; i++) {
+            let body = new CANNON.Body({ mass: 0.25, shape: new CANNON.Particle() });
+            let shape = {
+                material: { friction: 0.1 },
+                position: [params.particlesIdlePosition[0]+i, params.particlesIdlePosition[1], params.particlesIdlePosition[2]],
+                id: params.particlesIdPrefix + i,
+                type: 'particle',
+                moving: true,
+                sleep: {
+                    allowSleep: true,
+                    sleeSpeedLimit: 0.1,
+                    sleepTimeLimit: 0.3,
+                },
+            };
+            body.shapeData = shape;
+            body.material = new CANNON.Material(shape.material);
+            body.position = new CANNON.Vec3(shape.position[0], shape.position[1], shape.position[2]);
+            body.allowSleep = shape.sleep.allowSleep;
+            body.sleepSpeedLimit = shape.sleep.sleepSpeedLimit;
+            body.sleepTimeLimit = shape.sleep.sleepTimeLimit;
+            body.bodyId = shape.id;
+            body.movingShape = true;
+            body.moving = true;
+            body.moveValues = {
+                speed: 0,
+                veloX: 0,
+                veloY: 0,
+                veloZ: 0,
+                onTheMove: false,
+            };
+            body.sleep();
+            world.addBody(body);
+            movingShapes.push(body);
+            movingShapesCount++;
+        }
+    }
+
     self.postMessage({ initPhysicsDone: true });
 };
 
@@ -384,4 +449,29 @@ const _setUpCollisionDetector = (body) => {
             // console.log('HARD contact', contact);
         }
     });
+};
+
+const _resetBody = (body, newPosition, sleep) => {
+    body.position.setZero();
+    body.previousPosition.setZero();
+    body.interpolatedPosition.setZero();
+    body.initPosition.setZero();
+    body.quaternion.set(0,0,0,1);
+    body.initQuaternion.set(0,0,0,1);
+    body.previousQuaternion.set(0,0,0,1);
+    body.interpolatedQuaternion.set(0,0,0,1);
+    body.velocity.setZero();
+    body.initVelocity.setZero();
+    body.angularVelocity.setZero();
+    body.initAngularVelocity.setZero();
+    body.force.setZero();
+    body.torque.setZero();
+
+    if(newPosition) {
+        body.position.x = newPosition[0];
+        body.position.y = newPosition[1];
+        body.position.z = newPosition[2];
+    }
+
+    if(sleep) body.sleep();
 };

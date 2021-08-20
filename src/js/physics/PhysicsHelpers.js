@@ -10,8 +10,8 @@ class PhysicsHelpers {
     }
 
     updatePhysicsHelpers(positions, quaternions, i) {
-        if(!this.enabled) return;
         const s = this.movingShapes[i];
+        if(!s || (!this.enabled && !s.showHelper)) return;
         s.helperMesh.position.set(
             positions[i * 3],
             positions[i * 3 + 1],
@@ -28,7 +28,7 @@ class PhysicsHelpers {
     }
 
     removeShape(data) {
-        if(!this.enabled) return;
+        if(!this.enabled && !data.showHelper) return;
         let index, s;
         for(let i=0; i<this.movingShapes.length; i++) {
             s = this.movingShapes[i];
@@ -43,7 +43,7 @@ class PhysicsHelpers {
             this.movingShapes.splice(index, 1);
         } else {
             for(let i=0; i<this.staticShapes.length; i++) {
-                s = this.movingShapes[i];
+                s = this.staticShapes[i];
                 if(s.id === data.id) {
                     s.helperMesh.geometry.dispose();
                     s.helperMesh.material.dispose();
@@ -58,7 +58,7 @@ class PhysicsHelpers {
     }
 
     createShape(data) {
-        if(!this.enabled) return;
+        if(!this.enabled && !data.showHelper) return;
         let mesh, compound;
         if(data.compoundParentId) {
             compound = this._getCompoundParentById(data.compoundParentId);
@@ -74,11 +74,19 @@ class PhysicsHelpers {
         case 'cylinder':
             mesh = this._createCylinder(data);
             break;
+        case 'particle':
+            data.size = [0.05, 0.05, 0.05];
+            mesh = this._createBox(data);
+            break;
         case 'compound':
             mesh = this._createCompound(data);
+            break;
+        default:
+            this.sceneState.logger.error('Could not recognise the physics shape type (' + data.type + ')');
+            throw new Error('**Error stack:**');
         }
         this._setMeshColor(mesh, data);
-        if(data.compoundParentId) {      
+        if(data.compoundParentId) {
             if(compound) {
                 compound.helperMesh.add(mesh);
             } else { this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.'); }
