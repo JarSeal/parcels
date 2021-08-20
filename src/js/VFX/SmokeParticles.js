@@ -42,7 +42,7 @@ class SmokeParticles {
                 sizeLightnessIndex[i+2] = p2;
                 randoms[i] = Math.random() * Math.random() < 0.5 ? -1 : 1;
                 randoms[i+1] = Math.random() * Math.random() < 0.5 ? -1 : 1;
-                randoms[i+2] = Math.random() * Math.random() < 0.5 ? -1 : 1;
+                randoms[i+2] = 200; // Delay per particle
                 colors[i] = 1; // R
                 colors[i+1] = 0; // G
                 colors[i+2] = 0; // B
@@ -88,6 +88,7 @@ class SmokeParticles {
             attributes.timeLengthLife.array[i+2] = life; // One particle life span
             attributes.sizeLightnessIndex.array[i] = size;
             attributes.sizeLightnessIndex.array[i+1] = lightness;
+            attributes.random.array[i+2] = delayPerParticle;
             attributes.color.array[i] = color.r;
             attributes.color.array[i+1] = color.g;
             attributes.color.array[i+2] = color.b;
@@ -96,6 +97,7 @@ class SmokeParticles {
         attributes.target.needsUpdate = true;
         attributes.timeLengthLife.needsUpdate = true;
         attributes.sizeLightnessIndex.needsUpdate = true;
+        attributes.random.needsUpdate = true;
         attributes.color.needsUpdate = true;
         this.nextSmokeIndex++;
         if(this.nextSmokeIndex > this.maxParticles-1) this.nextSmokeIndex = 0;
@@ -145,15 +147,16 @@ class SmokeParticles {
                 void main() {
                     vColor = color;
                     vLightness = sizeLightnessIndex[1];
+                    float delay = random.z;
                     float index = sizeLightnessIndex[2];
                     float isParticleShown = ceil(clamp(timeLengthLife[1] - index, 0.0, 1.0));
-                    float startTime = timeLengthLife[0] + index * ${this.delayPerParticle}.0;
+                    float startTime = timeLengthLife[0] + index * delay;
                     float lifeTime = timeLengthLife[2];
                     float timeElapsed = uTime - startTime;
                     vHasStarted = ceil(clamp(uTime - startTime, 0.0, 1.0)) * isParticleShown;
                     vHasEnded = ceil(clamp(lifeTime - timeElapsed, 0.0, 1.0));
                     vTimePhase = clamp(mod(timeElapsed, lifeTime) / lifeTime, 0.0, 1.0) * vHasStarted;
-                    vAngle = vec2(cos(random.x * ${Math.PI} * vTimePhase), sin(random.z * ${Math.PI} * vTimePhase));
+                    vAngle = vec2(cos(random.x * ${Math.PI} * vTimePhase), sin(random.y * ${Math.PI} * vTimePhase));
                     vec3 newPos = position + (target - position) * vTimePhase;
                     vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
                     vec4 vertexPosition = projectionMatrix * mvPosition;
