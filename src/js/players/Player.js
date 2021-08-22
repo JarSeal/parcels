@@ -39,7 +39,7 @@ class Player {
     }
 
     _addPushableBox() { // TEMPORARY
-        const position = [21, 2, 8];
+        const position = [21, 2, 9];
 
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
@@ -47,8 +47,10 @@ class Player {
         mesh.position.set(position[0], position[1], position[2]);
         this.sceneState.scenes[this.sceneState.curScene].add(mesh);
 
+        const id = 'dummy-box-01';
+        mesh.name = id;
         this.sceneState.physicsClass.addShape({
-            id: 'dummy-box-01',
+            id: id,
             type: 'box',
             moving: true,
             mass: 50,
@@ -57,11 +59,18 @@ class Player {
             rotation: [0, 0, 0],
             material: { friction: 0.2 },
             mesh,
+
             sleep: {
                 allowSleep: true,
                 sleeSpeedLimit: 0.1,
                 sleepTimeLimit: 1,
             },
+        });
+        this.sceneState.consClass.addEntity({
+            id: id,
+            type: 'box',
+            size: [1, 1, 1],
+            position: position,
         });
     }
 
@@ -211,6 +220,7 @@ class Player {
         const point = intersectsLevel[0].point;
         const distance = intersectsLevel[0].distance;
 
+        // Debugging projectiles with lines/streaks:
         if(this.sceneState.settings.debug.showProjectileStreaks) {
             const material = new THREE.LineBasicMaterial({ color: 0xff2ccc });
             const points = [];

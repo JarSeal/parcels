@@ -38,7 +38,7 @@ class HitZonePlates {
 
         const attributes = this.plates.geometry.attributes;
         const vec4Index = index * 3;
-        attributes.times.array[vec4Index] = performance.now(); // Start time
+        attributes.times.array[vec4Index] = this.sceneState.atomClock.getTime(); // Start time
         attributes.times.array[vec4Index+1] = this.sceneState.utils.randomIntFromInterval(6000, 7200); // Dark smudge length (in ms)
         attributes.times.array[vec4Index+2] = this.sceneState.utils.randomIntFromInterval(1200, 4000); // Lava glow length (in ms
         attributes.times.needsUpdate = true;

@@ -32,6 +32,7 @@ class UserControls {
         clickPlane.rotation.x = -Math.PI / 2;
         clickPlane.material.opacity = 0;
         clickPlane.material.transparent = true;
+        clickPlane.name = 'level-clickPlane';
         this.sceneState.scenes[this.sceneState.curScene].add(clickPlane);
         this.clickPlanes.push(clickPlane);
     }

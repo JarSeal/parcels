@@ -67,10 +67,10 @@ const stepTheWorld = (data, returnAdditionals) => {
     world.step(timeStep, dt);
     for(i=0; i<movingShapesCount; i++) {
         const body = movingShapes[i];
-        positions[i * 3 + 0] = body.position.x;
+        positions[i * 3] = body.position.x;
         positions[i * 3 + 1] = body.position.y;
         positions[i * 3 + 2] = body.position.z;
-        quaternions[i * 4 + 0] = body.quaternion.x;
+        quaternions[i * 4] = body.quaternion.x;
         quaternions[i * 4 + 1] = body.quaternion.y;
         quaternions[i * 4 + 2] = body.quaternion.z;
         quaternions[i * 4 + 3] = body.quaternion.w;

@@ -74,7 +74,7 @@ class SmokeParticles {
         let i;
         const start = index * this.particlesPerSmoke * 3;
         const end = start + length * 3;
-        const startTime = performance.now() + startDelay;
+        const startTime = this.sceneState.atomClock.getTime() + startDelay;
         const color = new THREE.Color(0x000000);
         for(i=start; i<end; i+=3) {
             attributes.position.array[i] = from.x;

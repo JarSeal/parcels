@@ -177,7 +177,7 @@ class Root {
     _updateShaders = (ss) => {
         let i = 0;
         const shadersLength = ss.shadersToUpdateLength,
-            now = performance.now();
+            now = ss.atomClock.getTime();
         for(i=0; i<shadersLength; i++) {
             ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
         }

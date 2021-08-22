@@ -87,26 +87,27 @@ class Physics {
         let i;
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
+            const pos = [
+                positions[i * 3],
+                positions[i * 3 + 1],
+                positions[i * 3 + 2],
+            ];
             if(s.particles) {
-                this.sceneState.physicsParticles.updatePosition(i, [
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2],
-                ]);
+                this.sceneState.physicsParticles.updatePosition(i, pos);
             } else {
-                s.mesh.position.set(
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2]
-                );
+                s.mesh.position.set(pos[0], pos[1], pos[2]);
+                let qua;
                 if(!s.fixedRotation) {
-                    s.mesh.quaternion.set(
+                    qua = [
                         quaternions[i * 4],
                         quaternions[i * 4 + 1],
                         quaternions[i * 4 + 2],
-                        quaternions[i * 4 + 3]
-                    );
+                        quaternions[i * 4 + 3],
+                    ];
+                    s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
                 }
+                // console.log('from phys', pos[0], pos[1], pos[2]);
+                this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             }
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
