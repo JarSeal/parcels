@@ -38,6 +38,7 @@ class Consequences {
     }
 
     requestConsequences() {
+        if(this.requesting || !this.projectilesCount) return;
         this.requesting = true;
         this.consWorker.postMessage({
             phase: 'getHits',
@@ -49,7 +50,7 @@ class Consequences {
 
     updateEntityData(position, quaternion, id) {
         const index = this.entityIndexes[id];
-        if(index === undefined || this.requesting || !this.projectilesCount) return;
+        if(index === undefined) return;
         this.positions[index * 3] = position[0];
         this.positions[index * 3 + 1] = position[1];
         this.positions[index * 3 + 2] = position[2];
@@ -77,9 +78,9 @@ class Consequences {
             time = this.sceneState.atomClock.getTime();
         for(i=0; i<keysLength; i++) {
             const hit = hitList[keys[i]];
-            // console.log(hit);
             if(hit.hitTime > time - 75 && hit.hitTime < time + 75) {
-                console.log('HIT NOW!!!', hit);
+                // this.removeProjectile(hit.id);
+                this.sceneState.projectiles.setNewProjectileHit(hit.point, hit.normal, hit.index);
                 this.sceneState.additionalPhysicsData.push({
                     phase: 'applyForce',
                     data: {
@@ -120,7 +121,7 @@ class Consequences {
             this.projectiles.splice(removeIndex, 1);
             this.projectilesCount--;
         } else {
-            this.sceneState.logger.error('Could not find projectile to remove (id: ' + id + ')');
+            this.sceneState.logger.error('Could not find projectile to remove (id: ' + id + ')', this.projectiles);
             throw new Error('**Error stack:**');
         }
     }

@@ -47,12 +47,14 @@ class Physics {
                 this.sceneState.physics.initiated = true;
                 runMainApp();
             } else if(e.data.error) {
+                alert('from worker:' + e.data.error);
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
             }
             if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
         this.mainWorker.addEventListener('error', (e) => {
+            alert('worker event listener:' + e.message);
             this.sceneState.logger.error('Worker event listener:', e.message);
             throw new Error('**Error stack:**');
         });
@@ -124,11 +126,9 @@ class Physics {
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
-            this.sceneState.consClass.requestConsequences();
             this.requestPhysicsFromWorker();
         } else {
             setTimeout(() => {
-                this.sceneState.consClass.requestConsequences();
                 this.requestPhysicsFromWorker();
             }, delay);
         }

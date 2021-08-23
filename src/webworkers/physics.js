@@ -116,7 +116,7 @@ const applyForce = (data) => {
     const id = data.id;
     const index = movingShapesIndexes[id];
     const shape = movingShapes[index];
-    const force = 2000;
+    const force = 1000;
     shape.applyForce(
         new CANNON.Vec3(
             data.direction[0] * force,
@@ -129,7 +129,6 @@ const applyForce = (data) => {
             data.point[2] - shape.position.z
         )
     );
-    console.log(shape, data.direction);
 };
 
 const moveParticle = (data) => {

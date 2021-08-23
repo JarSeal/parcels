@@ -8,7 +8,6 @@ self.importScripts('/webworkers/three.min.js');
 if(THREE) var THREE; // For eslint (I know, hackish..)
 
 self.addEventListener('message', (e) => {
-    // console.log('consequences.js', e.data);
     const init = e.data.init;
     const data = e.data;
 
@@ -77,7 +76,6 @@ const checkProjectileHit = (projectile, time, list) => {
         const timeToHit = projectile.weapon.speed * intersects[0].distance * 1000;
         if(timeElapsed + timeToHit < travelTime) {
             if(checkIfNewHit(projectile, intersects)) {
-                // console.log('HIT', projectile, intersects, timePhase, timeElapsed, travelTime, startPoint);
                 projectile.hitEntity = intersects[0].object.name;
                 projectile.hitTime = projectile.startTime + timeElapsed + timeToHit;
                 projectile.normal = [ intersects[0].face.normal.x, intersects[0].face.normal.y, intersects[0].face.normal.z ];
@@ -111,11 +109,10 @@ const resetHit = (projectile, list) => {
 };
 
 const addProjectile = (params) => {
-    const projectile = Object.assign({
+    const projectile = Object.assign({}, {
         hitEntity: null,
         hitTime: null,
         normal: null,
-        
         point: null,
     }, params);
     projectiles.push(projectile);

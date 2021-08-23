@@ -155,8 +155,8 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
             this.sceneState.settingsClass.createSettingsUI();
-            this.sceneState.physicsClass.requestPhysicsFromWorker();
             this.sceneState.consClass.requestConsequences();
+            this.sceneState.physicsClass.requestPhysicsFromWorker();
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
@@ -168,6 +168,7 @@ class Root {
         requestAnimationFrame(() => {
             this.renderLoop();
         });
+        ss.consClass.requestConsequences();
         this._updateShaders(ss);
         ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
         // ss.pp.getComposer().render();

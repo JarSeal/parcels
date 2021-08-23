@@ -148,6 +148,10 @@ class ProjectileParticles {
         }
     }
 
+    setNewProjectileHit(point, normal, index) {
+        console.log('Kill projectile graphics and create sparks', point, normal, index);
+    }
+
     _resetProjectile(index, id) {
         let i;
         const attributes = this.particles.geometry.attributes;
