@@ -37,7 +37,7 @@ const userPlayerData = {
         sceneState.scenes[sceneState.curScene].add(playerGroup);
 
         sceneState.physicsClass.addShape({
-            id,
+            id: pMesh.name,
             type: 'compound',
             moving: true,
             mass: 70,
@@ -83,10 +83,17 @@ const userPlayerData = {
             characterData: data,
         });
 
+        sceneState.consClass.addEntity({
+            id: pMesh.name,
+            type: 'box',
+            size: [data.charHeight / 2, data.charHeight, data.charHeight / 2],
+            position: pos,
+        });
+
         // Make the actual capsule shape
         sceneState.physicsClass.addShape({
             id: id + '_comp_cylinder',
-            compoundParentId: id,
+            compoundParentId: pMesh.name,
             type: 'cylinder',
             radiusTop: data.charHeight / 4,
             radiusBottom: data.charHeight / 4,
@@ -97,7 +104,7 @@ const userPlayerData = {
         });
         sceneState.physicsClass.addShape({
             id: id + '_comp_sphereLower',
-            compoundParentId: id,
+            compoundParentId: pMesh.name,
             type: 'sphere',
             radius: data.charHeight / 4,
             position: [0, -data.charHeight / 4, 0],
@@ -105,7 +112,7 @@ const userPlayerData = {
         });
         sceneState.physicsClass.addShape({
             id: id + '_comp_sphereUpper',
-            compoundParentId: id,
+            compoundParentId: pMesh.name,
             type: 'sphere',
             radius: data.charHeight / 4,
             position: [0, data.charHeight / 4, 0],

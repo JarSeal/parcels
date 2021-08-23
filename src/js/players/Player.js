@@ -39,7 +39,7 @@ class Player {
     }
 
     _addPushableBox() { // TEMPORARY
-        const position = [21, 2, 9];
+        let position = [21, 2, 9];
 
         const geo = new THREE.BoxBufferGeometry(1, 1, 1);
         const mat = new THREE.MeshLambertMaterial({ color: 0xcc5522 });
@@ -59,7 +59,6 @@ class Player {
             rotation: [0, 0, 0],
             material: { friction: 0.2 },
             mesh,
-
             sleep: {
                 allowSleep: true,
                 sleeSpeedLimit: 0.1,
@@ -68,6 +67,37 @@ class Player {
         });
         this.sceneState.consClass.addEntity({
             id: id,
+            type: 'box',
+            size: [1, 1, 1],
+            position: position,
+        });
+
+        position = [14, 2, 6];
+        const id2 = 'dummy-box-02';
+        const geo2 = new THREE.BoxBufferGeometry(1, 1, 1);
+        const mat2 = new THREE.MeshLambertMaterial({ color: 0xe27412 });
+        const mesh2 = new THREE.Mesh(geo2, mat2);
+        mesh2.name = id2;
+        mesh2.position.set(position[0], position[1], position[2]);
+        this.sceneState.scenes[this.sceneState.curScene].add(mesh2);
+        this.sceneState.physicsClass.addShape({
+            id: id2,
+            type: 'box',
+            moving: true,
+            mass: 50,
+            size: [0.5, 0.5, 0.5],
+            position,
+            rotation: [0, 0, 0],
+            material: { friction: 0.2 },
+            mesh: mesh2,
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+        });
+        this.sceneState.consClass.addEntity({
+            id: id2,
             type: 'box',
             size: [1, 1, 1],
             position: position,

@@ -2,7 +2,8 @@ let raycast,
     meshes = [],
     meshesCount = 0,
     projectiles = [],
-    projectilesCount = 0;
+    projectilesCount = 0,
+    hitList = {};
 self.importScripts('/webworkers/three.min.js');
 if(THREE) var THREE; // For eslint (I know, hackish..)
 
@@ -25,36 +26,13 @@ self.addEventListener('message', (e) => {
         }
     } else {
         raycast = new THREE.Raycaster();
-        tempAdditions();
         self.postMessage({ initDone: true });
     }
 });
 
-const tempAdditions = () => {
-    const geo = new THREE.BoxBufferGeometry(1, 2, 10);
-    const mesh = new THREE.Mesh(geo);
-    mesh.position.set(14, 2, 10);
-    mesh.name = 'TADAA';
-    mesh.updateMatrixWorld();
-
-    const startPoint = new THREE.Vector3(mesh.position.x - 20, 1, mesh.position.z);
-    const endPoint = new THREE.Vector3(mesh.position.x + 20, 1, mesh.position.z);
-    const direction = new THREE.Vector3();
-    direction.subVectors(endPoint, startPoint).normalize();
-    raycast.set(startPoint, direction);
-    let intersects = raycast.intersectObject(
-        mesh
-    );
-    mesh.geometry.dispose();
-    mesh.remove();
-    console.log('SHOT', intersects);
-};
-
 const checkConsequences = (data) => {
     const { positions, quaternions, time } = data;
-    const newHitList = [];
     let i;
-    // console.log(positions[0], positions[1], positions[2]);
     for(i=0; i<meshesCount; i++) {
         meshes[i].position.set(
             positions[i * 3],
@@ -70,34 +48,66 @@ const checkConsequences = (data) => {
         meshes[i].updateMatrixWorld();
     }
     for(i=0; i<projectilesCount; i++) {
-        checkProjectileHit(projectiles[i], time, newHitList);
+        checkProjectileHit(projectiles[i], time, hitList);
     }
     self.postMessage({
         loop: true,
         positions,
         quaternions,
-        hitList: newHitList,
+        hitList: hitList,
     }, [data.positions.buffer, data.quaternions.buffer]);
 };
 
 const checkProjectileHit = (projectile, time, list) => {
-    // { from, to, startTime, distance, weapon, id, index } (to - from) * vTimePhase
-    const travelTime = projectile.weapon.speed * projectile.distance;
+    const travelTime = projectile.weapon.speed * projectile.distance * 1000;
     const timeElapsed = time - projectile.startTime;
     const timePhase = timeElapsed / travelTime;
     const startPoint = new THREE.Vector3(
-        (projectile.to.x - projectile.from.x) * timePhase,
-        (projectile.to.y - projectile.from.y) * timePhase,
-        (projectile.to.z - projectile.from.z) * timePhase,
+        projectile.from.x + (projectile.to.x - projectile.from.x) * timePhase,
+        projectile.from.y + (projectile.to.y - projectile.from.y) * timePhase,
+        projectile.from.z + (projectile.to.z - projectile.from.z) * timePhase,
     );
     const endPoint = projectile.to;
     const direction = new THREE.Vector3();
     direction.subVectors(endPoint, startPoint).normalize();
     raycast.set(startPoint, direction);
-    const intersects = raycast.intersectObjects(meshes);
+    const intersects = raycast.intersectObjects(meshes, true);
+    
     if(intersects.length) {
-        console.log('HIT', projectile, intersects, timePhase, timeElapsed);
+        const timeToHit = projectile.weapon.speed * intersects[0].distance * 1000;
+        if(timeElapsed + timeToHit < travelTime) {
+            if(checkIfNewHit(projectile, intersects)) {
+                // console.log('HIT', projectile, intersects, timePhase, timeElapsed, travelTime, startPoint);
+                projectile.hitEntity = intersects[0].object.name;
+                projectile.hitTime = projectile.startTime + timeElapsed + timeToHit;
+                projectile.normal = [ intersects[0].face.normal.x, intersects[0].face.normal.y, intersects[0].face.normal.z ];
+                projectile.direction = [ direction.x, direction.y, direction.z ];
+                projectile.point = [ intersects[0].point.x, intersects[0].point.y, intersects[0].point.z ];
+                list[projectile.id] = Object.assign({}, projectile);
+            }
+        } else {
+            resetHit(projectile, list);
+        }
+    } else {
+        resetHit(projectile, list);
     }
+};
+
+const checkIfNewHit = (projectile, intersects) => {
+    if(projectile.hitEntity !== intersects[0].object.name) return true;
+    if(Math.round(projectile.point[0] * 1000) !== Math.round(intersects[0].point.x * 1000)) return true;
+    if(Math.round(projectile.point[1] * 1000) !== Math.round(intersects[0].point.y * 1000)) return true;
+    if(Math.round(projectile.point[2] * 1000) !== Math.round(intersects[0].point.z * 1000)) return true;
+    return false;
+};
+
+const resetHit = (projectile, list) => {
+    projectile.hitEntity = null;
+    projectile.hitTime = null;
+    projectile.normal = null;
+    projectile.direction = null;
+    projectile.point = null;
+    delete list[projectile.id];
 };
 
 const addProjectile = (params) => {
@@ -105,6 +115,7 @@ const addProjectile = (params) => {
         hitEntity: null,
         hitTime: null,
         normal: null,
+        
         point: null,
     }, params);
     projectiles.push(projectile);

@@ -105,13 +105,15 @@ class Physics {
                         quaternions[i * 4 + 3],
                     ];
                     s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
+                } else {
+                    qua = [0, 0, 0, 1];
                 }
-                // console.log('from phys', pos[0], pos[1], pos[2]);
                 this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             }
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
         }
+
 
         // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
         if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
@@ -122,9 +124,13 @@ class Physics {
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
+            this.sceneState.consClass.requestConsequences();
             this.requestPhysicsFromWorker();
         } else {
-            setTimeout(this.requestPhysicsFromWorker, delay);
+            setTimeout(() => {
+                this.sceneState.consClass.requestConsequences();
+                this.requestPhysicsFromWorker();
+            }, delay);
         }
     }
 

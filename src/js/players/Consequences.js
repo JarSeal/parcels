@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 class Consequences {
     constructor(sceneState, runMainApp) {
         this.sceneState = sceneState;
@@ -8,6 +10,7 @@ class Consequences {
         this.positions = new Float32Array(this.maxEntities * 3);
         this.quaternions = new Float32Array(this.maxEntities * 4);
         this.entityIds = [];
+        this.testMesh = {};
         this.entityIndexes = {};
         this.consWorker = new Worker('./webworkers/consequences.js');
         this._initConsequencesWorker(runMainApp);
@@ -20,6 +23,7 @@ class Consequences {
                 this.requesting = false;
                 this.positions = e.data.positions;
                 this.quaternions = e.data.quaternions;
+                this._checkHits(e.data.hitList);
             } else if(e.data.initDone) {
                 runMainApp();
             } else if(e.data.error) {
@@ -46,14 +50,47 @@ class Consequences {
     updateEntityData(position, quaternion, id) {
         const index = this.entityIndexes[id];
         if(index === undefined || this.requesting || !this.projectilesCount) return;
-        this.positions[index] = position[0];
-        this.positions[index+1] = position[1];
-        this.positions[index+2] = position[2];
-        this.quaternions[index] = quaternion[0];
-        this.quaternions[index+1] = quaternion[1];
-        this.quaternions[index+2] = quaternion[2];
-        this.quaternions[index+3] = quaternion[3];
-        this.requestConsequences();
+        this.positions[index * 3] = position[0];
+        this.positions[index * 3 + 1] = position[1];
+        this.positions[index * 3 + 2] = position[2];
+        this.quaternions[index * 4] = quaternion[0];
+        this.quaternions[index * 4 + 1] = quaternion[1];
+        this.quaternions[index * 4 + 2] = quaternion[2];
+        this.quaternions[index * 4 + 3] = quaternion[3];
+        this.testMesh[id].position.set(
+            position[0],
+            position[1],
+            position[2]
+        );
+        this.testMesh[id].quaternion.set(
+            quaternion[0],
+            quaternion[1],
+            quaternion[2],
+            quaternion[3]
+        );
+    }
+
+    _checkHits(hitList) {
+        let i;
+        const keys = Object.keys(hitList),
+            keysLength = keys.length,
+            time = this.sceneState.atomClock.getTime();
+        for(i=0; i<keysLength; i++) {
+            const hit = hitList[keys[i]];
+            // console.log(hit);
+            if(hit.hitTime > time - 75 && hit.hitTime < time + 75) {
+                console.log('HIT NOW!!!', hit);
+                this.sceneState.additionalPhysicsData.push({
+                    phase: 'applyForce',
+                    data: {
+                        id: hit.hitEntity,
+                        point: hit.point,
+                        normal: hit.normal,
+                        direction: hit.direction,
+                    },
+                });
+            }
+        }
     }
 
     addProjectile(data) {
@@ -96,7 +133,15 @@ class Consequences {
         });
         this.entityIds.push(data.id);
         this.entityIndexes[data.id] = this.entityIds.length - 1;
-        console.log();
+        console.log(data);
+
+        const geo = new THREE.BoxBufferGeometry(data.size[0], data.size[1], data.size[2]);
+        const mat = new THREE.MeshBasicMaterial({ wireframe: true });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        mesh.name = 'test-box' + data.id;
+        this.testMesh[data.id] = mesh;
+        this.sceneState.scenes[this.sceneState.curScene].add(mesh);
     }
 
     removeEntity(id) {
