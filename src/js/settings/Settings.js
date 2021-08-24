@@ -143,6 +143,37 @@ class Settings {
                 window.location.reload();
             }
         );
+        this.isFullScreen = false;
+        this.addGuiElem(
+            'button',
+            { fullscreen: () => {
+                if(!this.isFullScreen) {
+                    const elem = document.documentElement;
+                    if(elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                        this.isFullScreen = true;
+                    } else if(elem.webkitRequestFullscreen) { /* Safari */
+                        elem.webkitRequestFullscreen();
+                        this.isFullScreen = true;
+                    } else {
+                        alert('Fullscreen not supported.');
+                    }
+                } else {
+                    if(document.exitFullscreen) {
+                        document.exitFullscreen();
+                        this.isFullScreen = false;
+                    } else if(document.webkitExitFullscreen) { /* Safari */
+                        document.webkitExitFullscreen();
+                        this.isFullScreen = false;
+                    } else {
+                        alert('Exit from fullscreen not supported.');
+                    }
+                }
+            }},
+            'fullscreen',
+            'Fullscreen',
+            'Graphics'
+        );
         this.addGuiElem(
             'button',
             { show: () => {
