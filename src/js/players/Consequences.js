@@ -5,6 +5,7 @@ class Consequences {
         this.sceneState = sceneState;
         this.projectiles = [];
         this.projectilesCount = 0;
+        this.projectileIds = [];
         this.requesting = false;
         this.maxEntities = 300;
         this.positions = new Float32Array(this.maxEntities * 3);
@@ -78,9 +79,9 @@ class Consequences {
             time = this.sceneState.atomClock.getTime();
         for(i=0; i<keysLength; i++) {
             const hit = hitList[keys[i]];
-            if(hit.hitTime > time - 75 && hit.hitTime < time + 75) {
-                // this.removeProjectile(hit.id);
-                this.sceneState.projectiles.setNewProjectileHit(hit.point, hit.normal, hit.index);
+            if(this.projectileIds.includes(hit.id) && hit.hitTime > time - 75 && hit.hitTime < time + 75) {
+                this.removeProjectile(hit.id);
+                this.sceneState.projectiles.setNewProjectileHit(hit);
                 this.sceneState.additionalPhysicsData.push({
                     phase: 'applyForce',
                     data: {
@@ -90,6 +91,7 @@ class Consequences {
                         direction: hit.direction,
                     },
                 });
+                // Create here the damage for the object/player/box etc.
             }
         }
     }
@@ -101,15 +103,11 @@ class Consequences {
             params: data,
         });
         this.projectiles.push(data);
+        this.projectileIds.push(data.id);
         this.projectilesCount++;
     }
 
     removeProjectile(id) {
-        this.consWorker.postMessage({
-            phase: 'removeProjectile',
-            time: this.sceneState.atomClock.getTime(),
-            id: id,
-        });
         let i, removeIndex = -1;
         for(i=0; i<this.projectilesCount; i++) {
             if(this.projectiles[i].id === id) {
@@ -120,9 +118,12 @@ class Consequences {
         if(removeIndex !== -1) {
             this.projectiles.splice(removeIndex, 1);
             this.projectilesCount--;
-        } else {
-            this.sceneState.logger.error('Could not find projectile to remove (id: ' + id + ')', this.projectiles);
-            throw new Error('**Error stack:**');
+            this.projectileIds.splice(removeIndex, 1);
+            this.consWorker.postMessage({
+                phase: 'removeProjectile',
+                time: this.sceneState.atomClock.getTime(),
+                id: id,
+            });
         }
     }
 
@@ -134,7 +135,6 @@ class Consequences {
         });
         this.entityIds.push(data.id);
         this.entityIndexes[data.id] = this.entityIds.length - 1;
-        console.log(data);
 
         const geo = new THREE.BoxBufferGeometry(data.size[0], data.size[1], data.size[2]);
         const mat = new THREE.MeshBasicMaterial({ wireframe: true });

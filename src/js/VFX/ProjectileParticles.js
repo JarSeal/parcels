@@ -66,14 +66,14 @@ class ProjectileParticles {
         this.particles = new THREE.Points(projGeo, this.material);
         this.particles.frustumCulled = false;
         this.sceneState.scenes[this.sceneState.curScene].add(this.particles);
-        setInterval(() => {
-            this.newProjectile(
-                new THREE.Vector3(12, 1, 4),
-                new THREE.Vector3(17, 1, 4),
-                5,
-                { color: 0xfc2f00, speed: 0.8 }
-            );
-        }, 1500);
+        // setInterval(() => {
+        //     this.newProjectile(
+        //         new THREE.Vector3(12, 1, 4),
+        //         new THREE.Vector3(17, 1, 4),
+        //         5,
+        //         { color: 0xfc2f00, speed: 0.8 }
+        //     );
+        // }, 1500);
     }
 
     newProjectile(from, to, distance, weapon, intersect) {
@@ -110,36 +110,7 @@ class ProjectileParticles {
         clearTimeout(this.timeouts[index]);
         if(intersect && intersect.object) {
             this.timeouts[index] = setTimeout(() => {
-                this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
-                this.sceneState.hitZonePlates.addHitZone(intersect);
-                const smokeDir = {
-                    x: to.x + intersect.face.normal.x * 0.3,
-                    y: to.y + intersect.face.normal.y * 0.3 + 1.5,
-                    z: to.z + intersect.face.normal.z * 0.3,
-                };
-                let size = this.sceneState.utils.randomFloatFromInterval(0.0001, 2.0);
-                this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
-                    lightness: this.sceneState.utils.randomFloatFromInterval(0.25, 0.45),
-                    size: size,
-                    life: this.sceneState.utils.randomIntFromInterval(2000, 2700),
-                    length: this.sceneState.utils.randomIntFromInterval(2, 4),
-                    delayPerParticle: 150 * size,
-                    startDelay: -300 * Math.random(),
-                });
-                if(Math.random() > 0.5) {
-                    size = this.sceneState.utils.randomFloatFromInterval(0.0002, 1.4);
-                    this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
-                        lightness: this.sceneState.utils.randomFloatFromInterval(0.15, 0.25),
-                        size: size,
-                        life: this.sceneState.utils.randomIntFromInterval(1700, 2500),
-                        length: this.sceneState.utils.randomIntFromInterval(2, 4),
-                        delayPerParticle: 150 * size,
-                        startDelay: -500 * Math.random(),
-                    });
-                }
-                setTimeout(() => {
-                    this._resetProjectile(index, id);
-                }, this.totalDelayPerProjectile);
+                this._createAHitAnimation(from, to, weapon, intersect, index, id);
             }, weapon.speed * (distance - 0.25) * 1000);
         } else {
             this.timeouts[index] = setTimeout(() => {
@@ -148,8 +119,59 @@ class ProjectileParticles {
         }
     }
 
-    setNewProjectileHit(point, normal, index) {
-        console.log('Kill projectile graphics and create sparks', point, normal, index);
+    setNewProjectileHit(proje) {
+        clearTimeout(this.timeouts[proje.index]);
+        const intersect = {
+            face: {
+                normal: {
+                    x: proje.normal[0],
+                    y: proje.normal[1],
+                    z: proje.normal[2],
+                }
+            },
+            point: {
+                x: proje.point[0],
+                y: proje.point[1],
+                z: proje.point[2],
+            },
+        };
+        this._createAHitAnimation(proje.from, intersect.point, proje.weapon, intersect, proje.index, false, false);
+        setTimeout(() => {
+            this._resetProjectile(proje.index);
+        }, this.totalDelayPerProjectile * proje.weapon.speed + 70);
+    }
+
+    _createAHitAnimation(from, to, weapon, intersect, index, id, showHitPlate) {
+        this.sceneState.physicsParticles.addParticles(from, to, weapon.speed, intersect);
+        if(showHitPlate !== false) this.sceneState.hitZonePlates.addHitZone(intersect);
+        const smokeDir = {
+            x: to.x + intersect.face.normal.x * 0.3,
+            y: to.y + intersect.face.normal.y * 0.3 + 1.5,
+            z: to.z + intersect.face.normal.z * 0.3,
+        };
+        let size = this.sceneState.utils.randomFloatFromInterval(0.0001, 2.0);
+        this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
+            lightness: this.sceneState.utils.randomFloatFromInterval(0.25, 0.45),
+            size: size,
+            life: this.sceneState.utils.randomIntFromInterval(2000, 2700),
+            length: this.sceneState.utils.randomIntFromInterval(2, 4),
+            delayPerParticle: 150 * size,
+            startDelay: -300 * Math.random(),
+        });
+        if(Math.random() > 0.5) {
+            size = this.sceneState.utils.randomFloatFromInterval(0.0002, 1.4);
+            this.sceneState.smokeParticles.addSmoke(to, smokeDir, {
+                lightness: this.sceneState.utils.randomFloatFromInterval(0.15, 0.25),
+                size: size,
+                life: this.sceneState.utils.randomIntFromInterval(1700, 2500),
+                length: this.sceneState.utils.randomIntFromInterval(2, 4),
+                delayPerParticle: 150 * size,
+                startDelay: -500 * Math.random(),
+            });
+        }
+        setTimeout(() => {
+            this._resetProjectile(index, id);
+        }, this.totalDelayPerProjectile);
     }
 
     _resetProjectile(index, id) {
@@ -157,7 +179,7 @@ class ProjectileParticles {
         const attributes = this.particles.geometry.attributes;
         const start = index * this.particlesPerProjectile * 3;
         const end = start + this.particlesPerProjectile * 3;
-        const startTime = performance.now();
+        const startTime = this.sceneState.atomClock.getTime();
         for(i=start; i<end; i+=3) {
             attributes.position.array[i] = 0;
             attributes.position.array[i+1] = 2000;
@@ -173,7 +195,7 @@ class ProjectileParticles {
         attributes.target.needsUpdate = true;
         attributes.timeSpeedDelay.needsUpdate = true;
         attributes.distanceTrail.needsUpdate = true;
-        this.sceneState.consClass.removeProjectile(id);
+        if(id) this.sceneState.consClass.removeProjectile(id);
     }
 
     _createParticleShader() {
