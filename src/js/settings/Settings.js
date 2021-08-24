@@ -100,6 +100,17 @@ class Settings {
         );
         this.addGuiElem(
             'boolean',
+            settings.debug,
+            'showHitAreas',
+            'Hit areas',
+            'Debug',
+            (value) => {
+                sceneState.LStorage.setItem('showHitAreas', value);
+                window.location.reload();
+            }
+        );
+        this.addGuiElem(
+            'boolean',
             settings.physics,
             'showPhysicsHelpers',
             'Show helpers',

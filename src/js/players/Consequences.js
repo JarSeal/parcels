@@ -59,17 +59,19 @@ class Consequences {
         this.quaternions[index * 4 + 1] = quaternion[1];
         this.quaternions[index * 4 + 2] = quaternion[2];
         this.quaternions[index * 4 + 3] = quaternion[3];
-        this.testMesh[id].position.set(
-            position[0],
-            position[1],
-            position[2]
-        );
-        this.testMesh[id].quaternion.set(
-            quaternion[0],
-            quaternion[1],
-            quaternion[2],
-            quaternion[3]
-        );
+        if(this.sceneState.settings.debug.showHitAreas) {
+            this.testMesh[id].position.set(
+                position[0],
+                position[1],
+                position[2]
+            );
+            this.testMesh[id].quaternion.set(
+                quaternion[0],
+                quaternion[1],
+                quaternion[2],
+                quaternion[3]
+            );
+        }
     }
 
     _checkHits(hitList) {
@@ -136,13 +138,15 @@ class Consequences {
         this.entityIds.push(data.id);
         this.entityIndexes[data.id] = this.entityIds.length - 1;
 
-        const geo = new THREE.BoxBufferGeometry(data.size[0], data.size[1], data.size[2]);
-        const mat = new THREE.MeshBasicMaterial({ wireframe: true });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(data.position[0], data.position[1], data.position[2]);
-        mesh.name = 'test-box' + data.id;
-        this.testMesh[data.id] = mesh;
-        this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+        if(this.sceneState.settings.debug.showHitAreas) {
+            const geo = new THREE.BoxBufferGeometry(data.size[0], data.size[1], data.size[2]);
+            const mat = new THREE.MeshBasicMaterial({ wireframe: true });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(data.position[0], data.position[1], data.position[2]);
+            mesh.name = 'hit-area-box-' + data.id;
+            this.testMesh[data.id] = mesh;
+            this.sceneState.scenes[this.sceneState.curScene].add(mesh);
+        }
     }
 
     removeEntity(id) {
@@ -166,6 +170,12 @@ class Consequences {
                 keysLength = keys.length;
             for(i=0; i<keysLength; i++) {
                 if(this.entityIndexes[keys[i]] > removeIndex) this.entityIndexes[keys[i]]--;
+            }
+            if(this.sceneState.settings.debug.showHitAreas) {
+                const mesh = this.testMesh[id];
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+                this.sceneState.scenes[this.sceneState.curScene].remove(mesh);
             }
         } else {
             this.sceneState.logger.error('Could not find entity to remove (id: ' + id + ')');
