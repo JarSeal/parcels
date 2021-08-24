@@ -46,20 +46,21 @@ class Physics {
             } else if(e.data.initPhysicsDone) {
                 this.sceneState.physics.initiated = true;
                 runMainApp();
-                this._requestPhysicsFromWorker();
             } else if(e.data.error) {
+                alert('from worker:' + e.data.error);
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
             }
             if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
         this.mainWorker.addEventListener('error', (e) => {
+            alert('worker event listener:' + e.message);
             this.sceneState.logger.error('Worker event listener:', e.message);
             throw new Error('**Error stack:**');
         });
     }
 
-    _requestPhysicsFromWorker = () => {
+    requestPhysicsFromWorker = () => {
         const sendObject = {
             timeStep: this.sceneState.physics.timeStep,
             positions: this.sceneState.physics.positions,
@@ -88,30 +89,33 @@ class Physics {
         let i;
         for(i=0; i<shapesL; i++) {
             const s = shapes[i];
+            const pos = [
+                positions[i * 3],
+                positions[i * 3 + 1],
+                positions[i * 3 + 2],
+            ];
             if(s.particles) {
-                this.sceneState.physicsParticles.updatePosition(i, [
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2],
-                ]);
+                this.sceneState.physicsParticles.updatePosition(i, pos);
             } else {
-                s.mesh.position.set(
-                    positions[i * 3],
-                    positions[i * 3 + 1],
-                    positions[i * 3 + 2]
-                );
+                s.mesh.position.set(pos[0], pos[1], pos[2]);
+                let qua;
                 if(!s.fixedRotation) {
-                    s.mesh.quaternion.set(
+                    qua = [
                         quaternions[i * 4],
                         quaternions[i * 4 + 1],
                         quaternions[i * 4 + 2],
-                        quaternions[i * 4 + 3]
-                    );
+                        quaternions[i * 4 + 3],
+                    ];
+                    s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
+                } else {
+                    qua = [0, 0, 0, 1];
                 }
+                this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             }
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
         }
+
 
         // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
         if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
@@ -122,9 +126,11 @@ class Physics {
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
-            this._requestPhysicsFromWorker();
+            this.requestPhysicsFromWorker();
         } else {
-            setTimeout(this._requestPhysicsFromWorker, delay);
+            setTimeout(() => {
+                this.requestPhysicsFromWorker();
+            }, delay);
         }
     }
 

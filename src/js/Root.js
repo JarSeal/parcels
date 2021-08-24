@@ -13,6 +13,7 @@ import ProjectileParticles from './VFX/ProjectileParticles';
 import PhysicsParticles from './VFX/PhysicsParticles';
 import HitZonePlates from './VFX/HitZonePlates';
 import SmokeParticles from './VFX/SmokeParticles';
+import Consequences from './players/Consequences';
 
 class Root {
     constructor() {
@@ -118,7 +119,9 @@ class Root {
         // Other setup [/END]
 
         this.sceneState.physicsClass = new Physics(this.sceneState, () => {
-            this._runApp(camera);
+            this.sceneState.consClass = new Consequences(this.sceneState, () => {
+                this._runApp(camera);
+            });
         });
     }
 
@@ -152,6 +155,8 @@ class Root {
             this.sceneState.settingsClass.endInit();
             this.sceneState.loadingLevel = false;
             this.sceneState.settingsClass.createSettingsUI();
+            this.sceneState.consClass.requestConsequences();
+            this.sceneState.physicsClass.requestPhysicsFromWorker();
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
@@ -163,6 +168,7 @@ class Root {
         requestAnimationFrame(() => {
             this.renderLoop();
         });
+        ss.consClass.requestConsequences();
         this._updateShaders(ss);
         ss.renderer.render(ss.scenes[ss.curScene], ss.cameras.level);
         // ss.pp.getComposer().render();
@@ -172,7 +178,7 @@ class Root {
     _updateShaders = (ss) => {
         let i = 0;
         const shadersLength = ss.shadersToUpdateLength,
-            now = performance.now();
+            now = ss.atomClock.getTime();
         for(i=0; i<shadersLength; i++) {
             ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
         }

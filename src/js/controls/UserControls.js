@@ -32,6 +32,7 @@ class UserControls {
         clickPlane.rotation.x = -Math.PI / 2;
         clickPlane.material.opacity = 0;
         clickPlane.material.transparent = true;
+        clickPlane.name = 'level-clickPlane';
         this.sceneState.scenes[this.sceneState.curScene].add(clickPlane);
         this.clickPlanes.push(clickPlane);
     }
@@ -117,6 +118,7 @@ class UserControls {
         });
         this.listeners.mouseup = document.getElementById('main-stage')
             .addEventListener('mouseup', (e) => { this._mouseClickOnStage(e); });
+        document.addEventListener('contextmenu', e => e.preventDefault()); // Disable right click context menu
     }
 
     _moveKeysPressedCount() {

@@ -103,7 +103,7 @@ class PhysicsParticles {
                 let i;
                 const start = particleIndex * this.subParticlesPerParticle;
                 const end = start + this.subParticlesPerParticle;
-                const startTime = performance.now();
+                const startTime = this.sceneState.atomClock.getTime();
                 for(i=start; i<end; i++) {
                     attributes.startTime.array[i] = startTime;
                 }

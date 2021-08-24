@@ -4,6 +4,7 @@ let world,
     staticShapes = [],
     movingShapes = [],
     movingShapesCount = 0,
+    movingShapesIndexes = {},
     particlesCount = 0;
 self.importScripts('/webworkers/cannon-es.js');
 
@@ -23,6 +24,8 @@ self.addEventListener('message', (e) => {
                     jumpChar(a[i].data);
                 } else if(phase === 'moveParticle') {
                     moveParticle(a[i].data);
+                } else if(phase === 'applyForce') {
+                    applyForce(a[i].data);
                 } else if(phase === 'resetPosition') {
                     _resetBody(movingShapes[a[i].data.bodyIndex], a[i].data.position, a[i].data.sleep);
                 } else if(phase === 'addShape') {
@@ -67,10 +70,10 @@ const stepTheWorld = (data, returnAdditionals) => {
     world.step(timeStep, dt);
     for(i=0; i<movingShapesCount; i++) {
         const body = movingShapes[i];
-        positions[i * 3 + 0] = body.position.x;
+        positions[i * 3] = body.position.x;
         positions[i * 3 + 1] = body.position.y;
         positions[i * 3 + 2] = body.position.z;
-        quaternions[i * 4 + 0] = body.quaternion.x;
+        quaternions[i * 4] = body.quaternion.x;
         quaternions[i * 4 + 1] = body.quaternion.y;
         quaternions[i * 4 + 2] = body.quaternion.z;
         quaternions[i * 4 + 3] = body.quaternion.w;
@@ -107,6 +110,25 @@ const moveChar = (data) => {
 const jumpChar = (data) => {
     movingShapes[data.bodyIndex].moveValues.veloY = data.jump;
     movingShapes[data.bodyIndex].moveValues.onTheMove = true;
+};
+
+const applyForce = (data) => {
+    const id = data.id;
+    const index = movingShapesIndexes[id];
+    const shape = movingShapes[index];
+    const force = 4000;
+    shape.applyForce(
+        new CANNON.Vec3(
+            data.direction[0] * force,
+            data.direction[1] * force,
+            data.direction[2] * force
+        ),
+        new CANNON.Vec3(
+            data.point[0] - shape.position.x,
+            data.point[1] - shape.position.y,
+            data.point[2] - shape.position.z
+        )
+    );
 };
 
 const moveParticle = (data) => {
@@ -186,6 +208,7 @@ const addShape = (shape) => {
             veloZ: 0,
             onTheMove: false,
         };
+        movingShapesIndexes[shape.id] = movingShapesCount;
         movingShapes.push(body);
         movingShapesCount++;
     } else {
