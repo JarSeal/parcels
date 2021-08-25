@@ -119,6 +119,19 @@ class UserControls {
         this.listeners.mouseup = document.getElementById('main-stage')
             .addEventListener('mouseup', (e) => { this._mouseClickOnStage(e); });
         document.addEventListener('contextmenu', e => e.preventDefault()); // Disable right click context menu
+        window.addEventListener('blur', () => { // Stop all user player movement after the window/tab goes out of focus (blur)
+            this.keydownTimes.a = this.keydownTimes.w = this.keydownTimes.s = this.keydownTimes.d = 0;
+            if(this._moveKeysPressedCount() === 2) this.stopTwoKeyPressTime = performance.now();
+            this.player.movePlayer(
+                0,
+                0,
+                this.direction,
+                {
+                    startX: 0,
+                    startZ: 0,
+                }
+            );
+        });
     }
 
     _moveKeysPressedCount() {
