@@ -31,11 +31,14 @@ class Physics {
             particlesCount: this.sceneState.physics.particlesCount,
             particlesIdPrefix: 'physParticle_',
             particlesIdlePosition: [0, 2000, 0],
+            positionsLength: this.sceneState.physics.positions.length,
+            quaternionsLength: this.sceneState.physics.quaternions.length,
         };
         this._createParticles(initParams);
         this.mainWorker.postMessage({
             init: true,
             initParams,
+            mainWorker: true,
         });
         this.mainWorker.addEventListener('message', (e) => {
             if(e.data.loop) {
@@ -47,14 +50,12 @@ class Physics {
                 this.sceneState.physics.initiated = true;
                 runMainApp();
             } else if(e.data.error) {
-                alert('from worker:' + e.data.error);
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
             }
             if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
         this.mainWorker.addEventListener('error', (e) => {
-            alert('worker event listener:' + e.message);
             this.sceneState.logger.error('Worker event listener:', e.message);
             throw new Error('**Error stack:**');
         });
