@@ -65,33 +65,36 @@ class Physics {
             throw new Error('**Error stack:**');
         });
 
-        this.secondaryWorker.postMessage({
-            init: true,
-            initParams,
-            mainWorker: false,
-        });
-        this.secondaryWorker.addEventListener('message', (e) => {
-            if(e.data.loop) {
-                this._updateRenderShapes(e.data);
-            } else if(e.data.additionals && e.data.additionals.length) {
-                // this._handleAdditionalsForMainThread(e.data.additionals);
-                this._updateRenderShapes(e.data);
-            } else if(e.data.initPhysicsDone) {
-                // this._updateRenderShapes(e.data);
-            } else if(e.data.error) {
-                this.sceneState.logger.error('From secondary physics worker:', e.data.error);
+        if(this.sceneState.physics.particlesCount) {
+            this.secondaryWorker.postMessage({
+                init: true,
+                initParams,
+                mainWorker: false,
+            });
+            this.secondaryWorker.addEventListener('message', (e) => {
+                if(e.data.loop) {
+                    this._updateRenderShapes(e.data);
+                } else if(e.data.additionals && e.data.additionals.length) {
+                    this._updateRenderShapes(e.data);
+                } else if(e.data.error) {
+                    this.sceneState.logger.error('From secondary physics worker:', e.data.error);
+                    throw new Error('**Error stack:**');
+                }
+            });
+            this.secondaryWorker.addEventListener('error', (e) => {
+                this.sceneState.logger.error('Worker event listener (secondary physics):', e.message);
                 throw new Error('**Error stack:**');
-            }
-        });
-        this.secondaryWorker.addEventListener('error', (e) => {
-            this.sceneState.logger.error('Worker event listener (secondary physics):', e.message);
-            throw new Error('**Error stack:**');
-        });
+            });
+        }
     }
 
     requestPhysicsFromWorker = (isThisMainWorker) => {
         let sendObject;
-        this.sceneState.additionalPhysicsData2.push(...this.sceneState.additionalPhysicsData);
+        if(this.sceneState.physics.particlesCount) {
+            this.sceneState.additionalPhysicsData2.push(...this.sceneState.additionalPhysicsData);
+        } else {
+            if(!isThisMainWorker) return;
+        }
         if(isThisMainWorker) {
             sendObject = {
                 timeStep: this.sceneState.physics.timeStep,
