@@ -73,7 +73,7 @@ class PhysicsParticles {
             clearTimeout(this.timeouts[particleIndex]);
 
             const yRandomer = Math.random() < 0.37 ? -0.5 : 1;
-            this.sceneState.additionalPhysicsData.push({
+            this.sceneState.additionalPhysicsData2.push({
                 phase: 'moveParticle',
                 data: {
                     bodyIndex: particleIndex,
