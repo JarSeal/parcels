@@ -21,16 +21,16 @@ self.addEventListener('message', (e) => {
     let returnAdditionals = [];
 
     if(!init) {
-        if(isThisMainWorker) {
-            secPositions = new Float32Array(e.data.positions.length);
-            secPositions.set(e.data.positions.slice(0));
-            secQuaternions = new Float32Array(e.data.quaternions.length);
-            secQuaternions.set(e.data.quaternions.slice(0));
-            const sendObject = e.data;
-            sendObject.positions = secPositions;
-            sendObject.quaternions = secQuaternions;
-            secondaryWorker.postMessage(sendObject);
-        }
+        // if(isThisMainWorker) {
+        //     secPositions = new Float32Array(e.data.positions.length);
+        //     secPositions.set(e.data.positions.slice(0));
+        //     secQuaternions = new Float32Array(e.data.quaternions.length);
+        //     secQuaternions.set(e.data.quaternions.slice(0));
+        //     const sendObject = e.data;
+        //     sendObject.positions = secPositions;
+        //     sendObject.quaternions = secQuaternions;
+        //     secondaryWorker.postMessage(sendObject);
+        // }
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
@@ -71,26 +71,29 @@ self.addEventListener('message', (e) => {
             const params = e.data.initParams;
             if(e.data.mainWorker) {
                 isThisMainWorker = true;
-                secPositions = new Float32Array(params.positionsLength);
-                secQuaternions = new Float32Array(params.quaternionsLength);
-                particlePos = new Float32Array(params.particlesCount * 3);
-                particleQua = new Float32Array(params.particlesCount * 4);
-                secondaryWorker = new Worker('/webworkers/physics.js');
-                secondaryWorker.addEventListener('message', (event) => {
-                    if(event.data.loop) {
-                        particlePos = event.data.positions;
-                        particleQua = event.data.quaternions;
-                    } else if(event.data.error) {
-                        self.postMessage({ error: 'From secondary physics worker: ' + event.data.error });
-                        throw new Error('**Error stack:**');
-                    }
-                });
-                secondaryWorker.postMessage({
-                    init: true,
-                    initParams: params,
-                    mainWorker: false,
-                });
             }
+            // if(e.data.mainWorker) {
+            //     isThisMainWorker = true;
+            //     secPositions = new Float32Array(params.positionsLength);
+            //     secQuaternions = new Float32Array(params.quaternionsLength);
+            //     particlePos = new Float32Array(params.particlesCount * 3);
+            //     particleQua = new Float32Array(params.particlesCount * 4);
+            //     secondaryWorker = new Worker('/webworkers/physics.js');
+            //     secondaryWorker.addEventListener('message', (event) => {
+            //         if(event.data.loop) {
+            //             particlePos = event.data.positions;
+            //             particleQua = event.data.quaternions;
+            //         } else if(event.data.error) {
+            //             self.postMessage({ error: 'From secondary physics worker: ' + event.data.error });
+            //             throw new Error('**Error stack:**');
+            //         }
+            //     });
+            //     secondaryWorker.postMessage({
+            //         init: true,
+            //         initParams: params,
+            //         mainWorker: false,
+            //     });
+            // }
             initPhysics(params);
         } else {
             self.postMessage({
@@ -105,19 +108,24 @@ const stepTheWorld = (data, returnAdditionals) => {
     const time = performance.now() / 1000;
     const dt = time - lastCallTime;
     const { positions, quaternions, timeStep } = data;
-    let i;
+    let i, start = 0, count = movingShapesCount;
+    if(!isThisMainWorker) {
+        start = particleIndexes.start;
+        count = particleIndexes.start + particlesCount - 1;
+    }
     world.step(timeStep, dt);
-    for(i=0; i<movingShapesCount; i++) {
-        if(isThisMainWorker && i >= particleIndexes.start && i <= particleIndexes.end) {
-            positions[i * 3] = particlePos[i * 3];
-            positions[i * 3 + 1] = particlePos[i * 3 + 1];
-            positions[i * 3 + 2] = particlePos[i * 3 + 2];
-            quaternions[i * 4] = particleQua[i * 4];
-            quaternions[i * 4 + 1] = particleQua[i * 4 + 1];
-            quaternions[i * 4 + 2] = particleQua[i * 4 + 2];
-            quaternions[i * 4 + 3] = particleQua[i * 4 + 3];
-        } else {
-            const body = movingShapes[i];
+    for(i=start; i<count; i++) {
+        // if(isThisMainWorker && i >= particleIndexes.start && i <= particleIndexes.end) {
+        //     positions[i * 3] = particlePos[i * 3];
+        //     positions[i * 3 + 1] = particlePos[i * 3 + 1];
+        //     positions[i * 3 + 2] = particlePos[i * 3 + 2];
+        //     quaternions[i * 4] = particleQua[i * 4];
+        //     quaternions[i * 4 + 1] = particleQua[i * 4 + 1];
+        //     quaternions[i * 4 + 2] = particleQua[i * 4 + 2];
+        //     quaternions[i * 4 + 3] = particleQua[i * 4 + 3];
+        // } else {
+        const body = movingShapes[i];
+        if(body.position) {
             positions[i * 3] = body.position.x;
             positions[i * 3 + 1] = body.position.y;
             positions[i * 3 + 2] = body.position.z;
@@ -126,7 +134,7 @@ const stepTheWorld = (data, returnAdditionals) => {
             quaternions[i * 4 + 2] = body.quaternion.z;
             quaternions[i * 4 + 3] = body.quaternion.w;
             if(body.movingShape) {
-                _addMovementToShape(body);
+                addMovementToShape(body);
             }
         }
     }
@@ -134,16 +142,13 @@ const stepTheWorld = (data, returnAdditionals) => {
         positions,
         quaternions,
         loop: true,
+        isThisMainWorker,
     };
     if(returnAdditionals.length) {
         returnMessage.additionals = returnAdditionals;
         returnMessage.loop = false; // Because we want the additionals to be handled in the main thread (returns to normal loop after that)
     }
-    if(isThisMainWorker) {
-        self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
-    } else {
-        self.postMessage(returnMessage);
-    }
+    self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
     lastCallTime = time;
 };
 
@@ -460,7 +465,7 @@ const getShapeById = (id, moving) => {
     return null;
 };
 
-const _addMovementToShape = (body) => {
+const addMovementToShape = (body) => {
     if(body.moveValues.onTheMove) {
         const belowContact = _findBelowContactBody(body.bodyId);
         let airDivision = 1;

@@ -156,7 +156,8 @@ class Root {
             this.sceneState.loadingLevel = false;
             this.sceneState.settingsClass.createSettingsUI();
             this.sceneState.consClass.requestConsequences();
-            this.sceneState.physicsClass.requestPhysicsFromWorker();
+            this.sceneState.physicsClass.requestPhysicsFromWorker(true);
+            this.sceneState.physicsClass.requestPhysicsFromWorker(false);
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });

@@ -4,9 +4,14 @@ class Physics {
     constructor(sceneState, runMainApp) {
         this.sceneState = sceneState;
         this.mainWorkerSendTime = 0;
+        this.secondaryWorkerSendTime = 0;
         this.mainWorker = new Worker('./webworkers/physics.js');
+        this.secondaryWorker = new Worker('./webworkers/physics.js');
+        this.secPositions = new Float32Array(this.sceneState.physics.positions.length);
+        this.secQuaternions = new Float32Array(this.sceneState.physics.quaternions.length);
         this.tempShapes = {};
         sceneState.additionalPhysicsData = [];
+        sceneState.additionalPhysicsData2 = [];
         this.helpers = new PhysicsHelpers(sceneState);
         this.stats = this.sceneState.settingsClass.createStats(true);
         this.zpsCounter = {
@@ -59,32 +64,82 @@ class Physics {
             this.sceneState.logger.error('Worker event listener:', e.message);
             throw new Error('**Error stack:**');
         });
+
+        this.secondaryWorker.postMessage({
+            init: true,
+            initParams,
+            mainWorker: false,
+        });
+        this.secondaryWorker.addEventListener('message', (e) => {
+            if(e.data.loop) {
+                this._updateRenderShapes(e.data);
+            } else if(e.data.additionals && e.data.additionals.length) {
+                // this._handleAdditionalsForMainThread(e.data.additionals);
+                this._updateRenderShapes(e.data);
+            } else if(e.data.initPhysicsDone) {
+                // this._updateRenderShapes(e.data);
+            } else if(e.data.error) {
+                this.sceneState.logger.error('From secondary physics worker:', e.data.error);
+                throw new Error('**Error stack:**');
+            }
+        });
+        this.secondaryWorker.addEventListener('error', (e) => {
+            this.sceneState.logger.error('Worker event listener (secondary physics):', e.message);
+            throw new Error('**Error stack:**');
+        });
     }
 
-    requestPhysicsFromWorker = () => {
-        const sendObject = {
-            timeStep: this.sceneState.physics.timeStep,
-            positions: this.sceneState.physics.positions,
-            quaternions: this.sceneState.physics.quaternions,
-        };
-        const additionals = this.sceneState.additionalPhysicsData;
-        if(additionals.length) {
-            sendObject.additionals = [ ...additionals ];
-            this.sceneState.additionalPhysicsData = [];
+    requestPhysicsFromWorker = (isThisMainWorker) => {
+        let sendObject;
+        this.sceneState.additionalPhysicsData2.push(...this.sceneState.additionalPhysicsData);
+        if(isThisMainWorker) {
+            sendObject = {
+                timeStep: this.sceneState.physics.timeStep,
+                positions: this.sceneState.physics.positions,
+                quaternions: this.sceneState.physics.quaternions,
+            };
+            const additionals = this.sceneState.additionalPhysicsData;
+            if(additionals.length) {
+                sendObject.additionals = [ ...additionals ];
+                this.sceneState.additionalPhysicsData = [];
+            }
+            this.mainWorker.postMessage(
+                sendObject,
+                [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
+            );
+            this.mainWorkerSendTime = performance.now();
+        } else {
+            sendObject = {
+                timeStep: this.sceneState.physics.timeStep,
+                positions: this.secPositions,
+                quaternions: this.secQuaternions,
+            };
+            const additionals = this.sceneState.additionalPhysicsData2;
+            if(additionals.length) {
+                sendObject.additionals = [ ...additionals ];
+                this.sceneState.additionalPhysicsData2 = [];
+            }
+            this.secondaryWorker.postMessage(
+                sendObject,
+                [this.secPositions.buffer, this.secQuaternions.buffer]
+            );
+            this.secondaryWorkerSendTime = performance.now();
         }
-        this.mainWorkerSendTime = performance.now();
-        this.mainWorker.postMessage(
-            sendObject,
-            [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
-        );
-        this.mainWorkerSendTime = performance.now();
     }
 
     _updateRenderShapes(data) {
         const positions = data.positions;
         const quaternions = data.quaternions;
-        this.sceneState.physics.positions = positions;
-        this.sceneState.physics.quaternions = quaternions;
+        let sendTime;
+        if(data.isThisMainWorker) {
+            this.sceneState.physics.positions = positions;
+            this.sceneState.physics.quaternions = quaternions;
+            sendTime = this.mainWorkerSendTime;
+        } else {
+            this.secPositions = positions;
+            this.secQuaternions = quaternions;
+            sendTime = this.secondaryWorkerSendTime;
+        }
         const shapes = this.sceneState.physics.movingShapes;
         const shapesL = this.sceneState.physics.movingShapesLength;
         let i;
@@ -95,9 +150,9 @@ class Physics {
                 positions[i * 3 + 1],
                 positions[i * 3 + 2],
             ];
-            if(s.particles) {
+            if(!data.isThisMainWorker) {
                 this.sceneState.physicsParticles.updatePosition(i, pos);
-            } else {
+            } else if(s.mesh) {
                 s.mesh.position.set(pos[0], pos[1], pos[2]);
                 let qua;
                 if(!s.fixedRotation) {
@@ -117,20 +172,21 @@ class Physics {
             if(s.updateFn) s.updateFn(s);
         }
 
-
         // Rescale the Float32Arrays (double their sizes), if shapes' count is half of positions and quaternions counts
         if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
             this.sceneState.physics.positions = new Float32Array(positions.length * 2);
             this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
+            this.secPositions = new Float32Array(positions.length * 2);
+            this.secQuaternions = new Float32Array(quaternions.length * 2);
         }
 
-        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - this.mainWorkerSendTime);
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - sendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
-            this.requestPhysicsFromWorker();
+            this.requestPhysicsFromWorker(data.isThisMainWorker);
         } else {
             setTimeout(() => {
-                this.requestPhysicsFromWorker();
+                this.requestPhysicsFromWorker(data.isThisMainWorker);
             }, delay);
         }
     }
