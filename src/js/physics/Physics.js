@@ -92,8 +92,6 @@ class Physics {
         let sendObject;
         if(this.sceneState.physics.particlesCount) {
             this.sceneState.additionalPhysicsData2.push(...this.sceneState.additionalPhysicsData);
-        } else {
-            if(!isThisMainWorker) return;
         }
         if(isThisMainWorker) {
             sendObject = {

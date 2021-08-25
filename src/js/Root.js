@@ -159,7 +159,7 @@ class Root {
             this.sceneState.settingsClass.createSettingsUI();
             this.sceneState.consClass.requestConsequences();
             this.sceneState.physicsClass.requestPhysicsFromWorker(true);
-            this.sceneState.physicsClass.requestPhysicsFromWorker(false);
+            if(this.sceneState.physics.particlesCount) this.sceneState.physicsClass.requestPhysicsFromWorker(false);
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });
