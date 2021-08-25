@@ -7,11 +7,6 @@ let world,
     movingShapesIndexes = {},
     particlesCount = 0,
     isThisMainWorker = false,
-    secondaryWorker,
-    secPositions, // used for the secondary worker
-    secQuaternions,  // used for the secondary worker
-    particlePos,
-    particleQua,
     particleIndexes = { start: 0, end: 0 };
 self.importScripts('/webworkers/cannon-es.js');
 
@@ -21,16 +16,6 @@ self.addEventListener('message', (e) => {
     let returnAdditionals = [];
 
     if(!init) {
-        // if(isThisMainWorker) {
-        //     secPositions = new Float32Array(e.data.positions.length);
-        //     secPositions.set(e.data.positions.slice(0));
-        //     secQuaternions = new Float32Array(e.data.quaternions.length);
-        //     secQuaternions.set(e.data.quaternions.slice(0));
-        //     const sendObject = e.data;
-        //     sendObject.positions = secPositions;
-        //     sendObject.quaternions = secQuaternions;
-        //     secondaryWorker.postMessage(sendObject);
-        // }
         if(e.data.additionals) {
             const a = e.data.additionals;
             for(let i=0; i<a.length; i++) {
@@ -72,28 +57,6 @@ self.addEventListener('message', (e) => {
             if(e.data.mainWorker) {
                 isThisMainWorker = true;
             }
-            // if(e.data.mainWorker) {
-            //     isThisMainWorker = true;
-            //     secPositions = new Float32Array(params.positionsLength);
-            //     secQuaternions = new Float32Array(params.quaternionsLength);
-            //     particlePos = new Float32Array(params.particlesCount * 3);
-            //     particleQua = new Float32Array(params.particlesCount * 4);
-            //     secondaryWorker = new Worker('/webworkers/physics.js');
-            //     secondaryWorker.addEventListener('message', (event) => {
-            //         if(event.data.loop) {
-            //             particlePos = event.data.positions;
-            //             particleQua = event.data.quaternions;
-            //         } else if(event.data.error) {
-            //             self.postMessage({ error: 'From secondary physics worker: ' + event.data.error });
-            //             throw new Error('**Error stack:**');
-            //         }
-            //     });
-            //     secondaryWorker.postMessage({
-            //         init: true,
-            //         initParams: params,
-            //         mainWorker: false,
-            //     });
-            // }
             initPhysics(params);
         } else {
             self.postMessage({
@@ -115,15 +78,6 @@ const stepTheWorld = (data, returnAdditionals) => {
     }
     world.step(timeStep, dt);
     for(i=start; i<count; i++) {
-        // if(isThisMainWorker && i >= particleIndexes.start && i <= particleIndexes.end) {
-        //     positions[i * 3] = particlePos[i * 3];
-        //     positions[i * 3 + 1] = particlePos[i * 3 + 1];
-        //     positions[i * 3 + 2] = particlePos[i * 3 + 2];
-        //     quaternions[i * 4] = particleQua[i * 4];
-        //     quaternions[i * 4 + 1] = particleQua[i * 4 + 1];
-        //     quaternions[i * 4 + 2] = particleQua[i * 4 + 2];
-        //     quaternions[i * 4 + 3] = particleQua[i * 4 + 3];
-        // } else {
         const body = movingShapes[i];
         if(body.position) {
             positions[i * 3] = body.position.x;
