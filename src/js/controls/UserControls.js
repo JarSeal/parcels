@@ -125,7 +125,7 @@ class UserControls {
             this.player.movePlayer(
                 0,
                 0,
-                this.direction,
+                this.player.getDirection(),
                 {
                     startX: 0,
                     startZ: 0,
