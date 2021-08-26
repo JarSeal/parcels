@@ -58,7 +58,6 @@ class Physics {
                 this.sceneState.logger.error('From physics worker:', e.data.error);
                 throw new Error('**Error stack:**');
             }
-            if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         });
         this.mainWorker.addEventListener('error', (e) => {
             this.sceneState.logger.error('Worker event listener:', e.message);
@@ -109,6 +108,7 @@ class Physics {
                 [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
             );
             this.mainWorkerSendTime = performance.now();
+            if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
         } else {
             sendObject = {
                 timeStep: this.sceneState.physics.timeStep,
