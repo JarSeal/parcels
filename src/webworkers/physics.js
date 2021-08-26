@@ -425,7 +425,6 @@ const addMovementToShape = (body) => {
         let airDivision = 1;
         if(belowContact.inTheAir) airDivision = 2;
         if(belowContact.cannotJump) body.moveValues.veloY = 0;
-        // body.velocity.y += body.moveValues.veloY;
         body.applyForce(
             new CANNON.Vec3(
                 body.moveValues.veloX * 3000 / airDivision,
