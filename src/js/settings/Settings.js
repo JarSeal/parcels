@@ -130,7 +130,7 @@ class Settings {
                 sceneState.LStorage.setItem('particleDetailLevel', value);
                 window.location.reload();
             },
-            { Low: 'low', Medium: 'medium', High: 'high' }
+            { None: 'none', Low: 'low', Medium: 'medium', High: 'high' }
         );
         this.addGuiElem(
             'boolean',

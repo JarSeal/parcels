@@ -89,12 +89,14 @@ class Root {
             this.sceneState.physics.particlesCount = 400;
         } else if(this.sceneState.settings.physics.particleDetailLevel === 'medium') {
             this.sceneState.physics.particlesCount = 150;
-        } else {
+        } else if(this.sceneState.settings.physics.particleDetailLevel === 'low') {
             this.sceneState.physics.particlesCount = 18;
+        } else {
+            this.sceneState.physics.particlesCount = 0;
         }
         this.sceneState.physics.nextParticleIndex = 0;
-        this.sceneState.physics.positions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 3);
-        this.sceneState.physics.quaternions = new Float32Array(this.sceneState.physics.particlesCount * 2 * 4);
+        this.sceneState.physics.positions = new Float32Array(500 * 3);
+        this.sceneState.physics.quaternions = new Float32Array(500 * 4);
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
@@ -156,7 +158,8 @@ class Root {
             this.sceneState.loadingLevel = false;
             this.sceneState.settingsClass.createSettingsUI();
             this.sceneState.consClass.requestConsequences();
-            this.sceneState.physicsClass.requestPhysicsFromWorker();
+            this.sceneState.physicsClass.requestPhysicsFromWorker(true);
+            if(this.sceneState.physics.particlesCount) this.sceneState.physicsClass.requestPhysicsFromWorker(false);
             this.renderLoop();
             this.sceneState.logger.log('sceneState', this.sceneState, this.renderer);
         });

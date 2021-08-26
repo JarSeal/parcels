@@ -55,12 +55,14 @@ class PhysicsParticles {
     }
 
     addParticles(from, to, speed, intersect) {
-        let maxAmount = 5, minAmount = 3;
+        let maxAmount = 0, minAmount = 0;
         const detailLevel = this.sceneState.settings.physics.particleDetailLevel;
         if(detailLevel === 'high') {
             maxAmount = 22; minAmount = 14;
         } else if(detailLevel === 'medium') {
             maxAmount = 6; minAmount = 3;
+        } else if(detailLevel === 'low') {
+            maxAmount = 5; minAmount = 3;
         }
         const amount = this.sceneState.utils.randomIntFromInterval(minAmount, maxAmount);
         const normals = this.particles.geometry.attributes.targetNormal.array;
@@ -73,7 +75,7 @@ class PhysicsParticles {
             clearTimeout(this.timeouts[particleIndex]);
 
             const yRandomer = Math.random() < 0.37 ? -0.5 : 1;
-            this.sceneState.additionalPhysicsData.push({
+            this.sceneState.additionalPhysicsData2.push({
                 phase: 'moveParticle',
                 data: {
                     bodyIndex: particleIndex,
@@ -122,7 +124,7 @@ class PhysicsParticles {
             }
 
             this.timeouts[particleIndex] = setTimeout(() => {
-                this.sceneState.additionalPhysicsData.push({
+                this.sceneState.additionalPhysicsData2.push({
                     phase: 'resetPosition',
                     data: {
                         bodyIndex: particleIndex,
@@ -132,6 +134,9 @@ class PhysicsParticles {
                 });
             }, 6000);
             this.sceneState.physics.nextParticleIndex = nextParticleIndex;
+        }
+        if(detailLevel === 'none') {
+            this._createFakeParticles(from, to, speed, intersect);
         }
         this.particles.geometry.attributes.targetNormal.needsUpdate = true;
     }
@@ -148,6 +153,11 @@ class PhysicsParticles {
             attributes.position.array[i+2] = pos[2];
         }
         attributes.position.needsUpdate = true;
+    }
+
+    _createFakeParticles(from, to, speed, intersect) {
+        from, to, speed, intersect;
+        // [TODO] DO THE FAKE PHYSICS PARTICLES HERE!
     }
 
     _createParticleShader() {
