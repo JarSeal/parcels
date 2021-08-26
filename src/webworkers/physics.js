@@ -424,10 +424,15 @@ const addMovementToShape = (body) => {
         const belowContact = _findBelowContactBody(body.bodyId);
         let airDivision = 1;
         if(belowContact.inTheAir) airDivision = 2;
-        body.velocity.x += body.moveValues.veloX / airDivision + belowContact.velocity.x;
-        body.velocity.z += body.moveValues.veloZ / airDivision + belowContact.velocity.z;
         if(belowContact.cannotJump) body.moveValues.veloY = 0;
-        body.velocity.y += body.moveValues.veloY;
+        body.applyForce(
+            new CANNON.Vec3(
+                body.moveValues.veloX * 3000 / airDivision,
+                body.moveValues.veloY * 4000,
+                body.moveValues.veloZ * 3000 / airDivision
+            ),
+            new CANNON.Vec3(0, 0, 0)
+        );
         if(body.moveValues.veloY) body.moveValues.veloY = 0;
         const speedWithMulti = body.moveValues.speed;
         const maxMoveVeloX = speedWithMulti + belowContact.velocity.x;
