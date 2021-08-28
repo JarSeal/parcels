@@ -6,7 +6,9 @@ class Physics {
         this.mainWorkerSendTime = 0;
         this.secondaryWorkerSendTime = 0;
         this.mainWorker = new Worker('./webworkers/physics.js');
-        this.secondaryWorker = new Worker('./webworkers/physics.js');
+        if(this.sceneState.physics.particlesCount) {
+            this.secondaryWorker = new Worker('./webworkers/physics.js');
+        }
         this.secPositions = new Float32Array(this.sceneState.physics.positions.length);
         this.secQuaternions = new Float32Array(this.sceneState.physics.quaternions.length);
         this.tempShapes = {};
