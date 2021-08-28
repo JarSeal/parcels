@@ -85,7 +85,7 @@ class Consequences {
             time = this.sceneState.atomClock.getTime();
         for(i=0; i<keysLength; i++) {
             const hit = hitList[keys[i]];
-            if(this.projectileIds.includes(hit.id) && hit.hitTime > time - 75 && hit.hitTime < time + 75) {
+            if(this.projectileIds.includes(hit.id) && hit.hitTime > time - 10 && hit.hitTime < time + 55) {
                 this.removeProjectile(hit.id);
                 this.sceneState.projectiles.setNewProjectileHit(hit);
                 this.sceneState.additionalPhysicsData.push({

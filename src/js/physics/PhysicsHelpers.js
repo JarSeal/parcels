@@ -11,7 +11,7 @@ class PhysicsHelpers {
 
     updatePhysicsHelpers(positions, quaternions, i) {
         const s = this.movingShapes[i];
-        if((!this.enabled && !s.showHelper) || !s) return;
+        if(!s || (!this.enabled && !s.showHelper)) return;
         s.helperMesh.position.set(
             positions[i * 3],
             positions[i * 3 + 1],
