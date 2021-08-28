@@ -55,22 +55,26 @@ class Consequences {
         this.positions[index * 3] = position[0];
         this.positions[index * 3 + 1] = position[1];
         this.positions[index * 3 + 2] = position[2];
-        this.quaternions[index * 4] = quaternion[0];
-        this.quaternions[index * 4 + 1] = quaternion[1];
-        this.quaternions[index * 4 + 2] = quaternion[2];
-        this.quaternions[index * 4 + 3] = quaternion[3];
+        if(quaternion) {
+            this.quaternions[index * 4] = quaternion[0];
+            this.quaternions[index * 4 + 1] = quaternion[1];
+            this.quaternions[index * 4 + 2] = quaternion[2];
+            this.quaternions[index * 4 + 3] = quaternion[3];
+        }
         if(this.sceneState.settings.debug.showHitAreas) {
             this.testMesh[id].position.set(
                 position[0],
                 position[1],
                 position[2]
             );
-            this.testMesh[id].quaternion.set(
-                quaternion[0],
-                quaternion[1],
-                quaternion[2],
-                quaternion[3]
-            );
+            if(quaternion) {
+                this.testMesh[id].quaternion.set(
+                    quaternion[0],
+                    quaternion[1],
+                    quaternion[2],
+                    quaternion[3]
+                );
+            }
         }
     }
 

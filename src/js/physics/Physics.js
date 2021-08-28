@@ -195,7 +195,7 @@ class Physics {
                 ];
                 s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
             } else {
-                qua = [0, 0, 0, 1];
+                qua = null;
             }
             this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
