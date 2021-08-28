@@ -11,7 +11,7 @@ class PhysicsHelpers {
 
     updatePhysicsHelpers(positions, quaternions, i) {
         const s = this.movingShapes[i];
-        if(!s || (!this.enabled && !s.showHelper)) return;
+        if((!this.enabled && !s.showHelper) || !s) return;
         s.helperMesh.position.set(
             positions[i * 3],
             positions[i * 3 + 1],
@@ -89,7 +89,10 @@ class PhysicsHelpers {
         if(data.compoundParentId) {
             if(compound) {
                 compound.helperMesh.add(mesh);
-            } else { this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.'); }
+            } else {
+                this.sceneState.logger.error('PhysicsHelper could not add compound child shape, because parent was not found.');
+                throw new Error('**Error stack:**');
+            }
         } else {
             this.scene.add(mesh);
             data.helperMesh = mesh;

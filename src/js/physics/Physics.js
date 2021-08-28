@@ -10,6 +10,7 @@ class Physics {
         this.secPositions = new Float32Array(this.sceneState.physics.positions.length);
         this.secQuaternions = new Float32Array(this.sceneState.physics.quaternions.length);
         this.tempShapes = {};
+        this.particleIndexes = {};
         sceneState.additionalPhysicsData = [];
         sceneState.additionalPhysicsData2 = [];
         this.helpers = new PhysicsHelpers(sceneState);
@@ -40,6 +41,8 @@ class Physics {
             quaternionsLength: this.sceneState.physics.quaternions.length,
         };
         this._createParticles(initParams);
+        
+        // Main worker
         this.mainWorker.postMessage({
             init: true,
             initParams,
@@ -64,6 +67,7 @@ class Physics {
             throw new Error('**Error stack:**');
         });
 
+        // Secondary worker (particles)
         if(this.sceneState.physics.particlesCount) {
             this.secondaryWorker.postMessage({
                 init: true,
@@ -72,9 +76,12 @@ class Physics {
             });
             this.secondaryWorker.addEventListener('message', (e) => {
                 if(e.data.loop) {
-                    this._updateRenderShapes(e.data);
+                    this._updateRenderParticles(e.data);
                 } else if(e.data.additionals && e.data.additionals.length) {
-                    this._updateRenderShapes(e.data);
+                    this._updateRenderParticles(e.data);
+                } else if(e.data.initPhysicsDone) {
+                    this.particleIndexes = e.data.particleIndexes;
+                    console.log('init done', this.particleIndexes);
                 } else if(e.data.error) {
                     this.sceneState.logger.error('From secondary physics worker:', e.data.error);
                     throw new Error('**Error stack:**');
@@ -128,47 +135,69 @@ class Physics {
         }
     }
 
-    _updateRenderShapes(data) {
+    _updateRenderParticles(data) {
         const positions = data.positions;
         const quaternions = data.quaternions;
-        let sendTime;
-        if(data.isThisMainWorker) {
-            this.sceneState.physics.positions = positions;
-            this.sceneState.physics.quaternions = quaternions;
-            sendTime = this.mainWorkerSendTime;
-        } else {
-            this.secPositions = positions;
-            this.secQuaternions = quaternions;
-            sendTime = this.secondaryWorkerSendTime;
-        }
+        this.secPositions = positions;
+        this.secQuaternions = quaternions;
+        const sendTime = this.secondaryWorkerSendTime;
         const shapes = this.sceneState.physics.movingShapes;
-        const shapesL = this.sceneState.physics.movingShapesLength;
         let i;
-        for(i=0; i<shapesL; i++) {
+        const start = this.particleIndexes.start || 0;
+        const shapesL = this.particleIndexes.end || 0;
+        for(i=start; i<shapesL; i++) {
             const s = shapes[i];
             const pos = [
                 positions[i * 3],
                 positions[i * 3 + 1],
                 positions[i * 3 + 2],
             ];
-            if(!data.isThisMainWorker) {
-                this.sceneState.physicsParticles.updatePosition(i, pos);
-            } else if(s.mesh) {
-                s.mesh.position.set(pos[0], pos[1], pos[2]);
-                let qua;
-                if(!s.fixedRotation) {
-                    qua = [
-                        quaternions[i * 4],
-                        quaternions[i * 4 + 1],
-                        quaternions[i * 4 + 2],
-                        quaternions[i * 4 + 3],
-                    ];
-                    s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
-                } else {
-                    qua = [0, 0, 0, 1];
-                }
-                this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
+            this.sceneState.physicsParticles.updatePosition(i, pos);
+            this.helpers.updatePhysicsHelpers(positions, quaternions, i);
+            if(s.updateFn) s.updateFn(s);
+        }
+
+        const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - sendTime);
+        if(delay < 0) {
+            this.requestPhysicsFromWorker(false);
+        } else {
+            setTimeout(() => {
+                this.requestPhysicsFromWorker(false);
+            }, delay);
+        }
+    }
+
+    _updateRenderShapes(data) {
+        const positions = data.positions;
+        const quaternions = data.quaternions;
+        this.sceneState.physics.positions = positions;
+        this.sceneState.physics.quaternions = quaternions;
+        const sendTime = this.mainWorkerSendTime;
+        const shapes = this.sceneState.physics.movingShapes;
+        const shapesL = this.sceneState.physics.movingShapesLength;
+        let i;
+        for(i=0; i<shapesL; i++) {
+            if(i >= this.particleIndexes.start && i <= this.particleIndexes.end) continue;
+            const s = shapes[i];
+            const pos = [
+                positions[i * 3],
+                positions[i * 3 + 1],
+                positions[i * 3 + 2],
+            ];
+            s.mesh.position.set(pos[0], pos[1], pos[2]);
+            let qua;
+            if(!s.fixedRotation) {
+                qua = [
+                    quaternions[i * 4],
+                    quaternions[i * 4 + 1],
+                    quaternions[i * 4 + 2],
+                    quaternions[i * 4 + 3],
+                ];
+                s.mesh.quaternion.set(qua[0], qua[1], qua[2], qua[3]);
+            } else {
+                qua = [0, 0, 0, 1];
             }
+            this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
         }
@@ -184,10 +213,10 @@ class Physics {
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - sendTime);
         this._zpsCounter(delay);
         if(delay < 0) {
-            this.requestPhysicsFromWorker(data.isThisMainWorker);
+            this.requestPhysicsFromWorker(true);
         } else {
             setTimeout(() => {
-                this.requestPhysicsFromWorker(data.isThisMainWorker);
+                this.requestPhysicsFromWorker(true);
             }, delay);
         }
     }
