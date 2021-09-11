@@ -133,6 +133,11 @@ class Player {
             ease: Sine.easeInOut,
             onUpdate: () => {
                 this.data.direction = this._bringRotationToRange(mesh.rotation.y);
+                this.sceneState.consClass.updateEntityData(
+                    [mesh.position.x, mesh.position.y, mesh.position.z],
+                    [mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w],
+                    mesh.name
+                );
             },
             onComplete: () => {
                 this.rotationTL = null;
@@ -140,6 +145,11 @@ class Player {
                 this.data.direction = this._makeRotationPositive(this.data.direction);
                 mesh.rotation.y = this.data.direction;
                 this.data.rotatingY = false;
+                this.sceneState.consClass.updateEntityData(
+                    [mesh.position.x, mesh.position.y, mesh.position.z],
+                    [mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w],
+                    mesh.name
+                );
             },
         });
     }

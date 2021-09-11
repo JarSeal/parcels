@@ -263,7 +263,7 @@ class LevelLoader {
 
     _createLevelCompoundShape() {
         const floorFriction = 0.1;
-        const wallFriction = 0.001;
+        const wallFriction = 0.01;
         this.sceneState.physicsClass.addShape({
             id: 'levelCompoundFloors',
             type: 'compound',

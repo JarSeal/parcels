@@ -90,6 +90,7 @@ const addWallShape = (data, sceneState) => {
         helperColor: colors[data.wallIndex > 5 ? 0 : data.wallIndex],
     });
     if(data.doorTile) return;
+    const sectionHeight = 0.36;
     sceneState.physicsClass.addShape({
         //id: 'wallShape2_' + 'f' + data.floor + '_' + data.moduleData.id + '_' + data.moduleIndex + '_' + data.wallIndex,
         id: createWallID(data, '2'),
@@ -97,17 +98,17 @@ const addWallShape = (data, sceneState) => {
         type: 'box',
         rotation: createWallTilt(data),
         size: data.horisontal
-            ? [data.wallLength / 2, 3 / 2, 0.15]
-            : [0.15, 3 / 2, data.wallLength / 2],
+            ? [data.wallLength / 2, sectionHeight, 0.3]
+            : [0.3, sectionHeight, data.wallLength / 2],
         position: data.horisontal
             ? [
                 data.wallLength / 2 + data.moduleData.pos[2] + data.startX,
-                1.5,
+                0.32,
                 0.5 + data.moduleData.pos[1] + data.startZ,
             ]
             : [
                 0.5 + data.moduleData.pos[2] + data.startX,
-                1.5,
+                0.32,
                 data.wallLength / 2 + data.moduleData.pos[1] + data.startZ,
             ],
         sleep: {
@@ -122,9 +123,9 @@ const addWallShape = (data, sceneState) => {
 const createWallTilt = (data) => {
     let tilt = 1;
     if(data.floorNeighbors.top || data.floorNeighbors.right) {
-        tilt = 16;
+        tilt = 3.56;
     } else if(data.floorNeighbors.bottom || data.floorNeighbors.left) {
-        tilt = -16;
+        tilt = -3.56;
     } else {
         return null;
     }

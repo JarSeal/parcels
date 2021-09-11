@@ -385,7 +385,7 @@ const initPhysics = (params) => {
         particleIndexes.end = particleIndexes.start + params.particlesCount - 1;
     }
 
-    self.postMessage({ initPhysicsDone: true });
+    self.postMessage({ initPhysicsDone: true, particleIndexes });
 };
 
 const getShapeById = (id, moving) => {
