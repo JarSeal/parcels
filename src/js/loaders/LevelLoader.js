@@ -24,6 +24,7 @@ class LevelLoader {
         sceneState.levelAssets = {
             exteriorModules: {},
             interiorModules: {},
+            detailsIntModules: {},
             roofModules: {},
             exteriorTextures: {},
             interiorTextures: {},
@@ -185,12 +186,12 @@ class LevelLoader {
         case 'exteriorTextures': t = 'ext'; break;
         case 'roofTextures': t = 'roof'; break;
         case 'bottomTextures': t = 'bottom'; break;
-        case 'detailsTextures': t = 'details'; break;
+        case 'detailsIntTextures': t = 'detailsInt'; break;
         case 'interiorModules': t = 'int'; break;
         case 'exteriorModules': t = 'ext'; break;
         case 'roofModules': t = 'roof'; break;
         case 'bottomModules': t = 'bottom'; break;
-        case 'detailsModules': t = 'details'; break;
+        case 'detailsIntModules': t = 'detailsInt'; break;
         default: t = 'unknown'; break;
         }
         return keyBeginning + t;
@@ -402,6 +403,7 @@ class LevelLoader {
             const keys = Object.keys(this.sceneState.levelAssets.lvlTextureBundles[i]);
             let geos = [];
             for(let k=0; k<keys.length; k++) {
+                console.log('KEY', k, keys[k]);
                 const curMesh = this.sceneState.levelAssets.lvlAllModules[keys[k]];
                 this._modifyObjectUV(curMesh, this.sceneState.levelAssets.lvlMerges[i].ranges[keys[k]]);
                 curMesh.material.dispose();

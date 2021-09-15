@@ -19,8 +19,8 @@ const moduleData = {
             exterior: 'HallWay01_L1_EXT.glb',
             interior: 'HallWay01_L1_INT.glb',
             roof: null,
-            bottom: null, // maybe..
-            details: null, // maybe..
+            bottom: null,
+            detailsInt: 'HallWay01_L1_INTDET.glb',
         },
     ],
     textures: [
@@ -28,8 +28,8 @@ const moduleData = {
             exterior: 'HallWay01_L1_EXT',
             interior: 'HallWay01_L1_INT',
             roof: null,
-            bottom: null, // maybe..
-            details: null, // maybe..
+            bottom: null,
+            detailsInt: 'HallWay01_L1_INTDET',
         },
     ],
     textureExt: 'png',
