@@ -10,9 +10,14 @@ const levelData = {
             turn: 1,
             pos: [0, 2, 11],
         },
+        // {
+        //     id: 'HallWay01L1',
+        //     turn: 1,
+        //     pos: [0, 10, 11], 
+        // },
         {
             id: 'HallWay01L1',
-            turn: 0,
+            turn: 1,
             pos: [0, 10, 10], 
         },
         {
