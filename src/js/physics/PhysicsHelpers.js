@@ -122,6 +122,12 @@ class PhysicsHelpers {
         if(data.rotation) {
             mesh.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
         }
+        if(data.quaternion) {
+            mesh.quaternion.x = data.quaternion[0];
+            mesh.quaternion.y = data.quaternion[1];
+            mesh.quaternion.z = data.quaternion[2];
+            mesh.quaternion.w = data.quaternion[3];
+        }
         return mesh;
     }
 
@@ -130,6 +136,15 @@ class PhysicsHelpers {
         const mat = new THREE.MeshLambertMaterial();
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        if(data.rotation) {
+            mesh.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
+        }
+        if(data.quaternion) {
+            mesh.quaternion.x = data.quaternion[0];
+            mesh.quaternion.y = data.quaternion[1];
+            mesh.quaternion.z = data.quaternion[2];
+            mesh.quaternion.w = data.quaternion[3];
+        }
         return mesh;
     }
 
@@ -143,6 +158,15 @@ class PhysicsHelpers {
         const mat = new THREE.MeshLambertMaterial();
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(data.position[0], data.position[1], data.position[2]);
+        if(data.rotation) {
+            mesh.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2]);
+        }
+        if(data.quaternion) {
+            mesh.quaternion.x = data.quaternion[0];
+            mesh.quaternion.y = data.quaternion[1];
+            mesh.quaternion.z = data.quaternion[2];
+            mesh.quaternion.w = data.quaternion[3];
+        }
         return mesh;
     }
 

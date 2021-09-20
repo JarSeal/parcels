@@ -205,6 +205,9 @@ const addShape = (shape) => {
     if(shape.rotation) {
         body.quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
     }
+    if(shape.quaternion) {
+        body.quaternion = new CANNON.Quaternion(shape.quaternion[0], shape.quaternion[1], shape.quaternion[2], shape.quaternion[3]);
+    }
     if(shape.fixedRotation) {
         body.fixedRotation = true;
         body.updateMassProperties();
@@ -255,6 +258,9 @@ const addShapeToCompound = (shape) => {
     let quaternion = new CANNON.Quaternion(0, 0, 0, 1);
     if(shape.rotation) {
         quaternion.setFromEuler(shape.rotation[0], shape.rotation[1], shape.rotation[2], 'XYZ');
+    }
+    if(shape.quaternion) {
+        quaternion = new CANNON.Quaternion(shape.quaternion[0], shape.quaternion[1], shape.quaternion[2], shape.quaternion[3]);
     }
     const parent = getShapeById(shape.compoundParentId, shape.moving);
     if(parent) {

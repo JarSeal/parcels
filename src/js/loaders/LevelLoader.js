@@ -68,10 +68,10 @@ class LevelLoader {
     }
 
     _loadModules(data, callback) {
-        this.sceneState.logger.log('Level data:', data); // Show level data being loaded
+        this.sceneState.logger.log('Level data:', data); // Debug level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
-            this._createLevelPhysics(module, modIndex); // Might be unnecessary, not being used at the moment
+            this._createLevelDetailsPhysics(module, modIndex);
             new ModulePhysics(this.sceneState, module, modIndex);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
@@ -297,61 +297,15 @@ class LevelLoader {
         });
     }
 
-    _createLevelPhysics(data, index) { // Maybe get rid of, not used at the moment
+    _createLevelDetailsPhysics(data, index) {
         const phys = data.physics;
-        // const compoundIdExt = data.id + '-' + index;
-        // console.log('DATA', data);
-        // let xOffset = 0, zOffset = 0;
-        // if(data.turn === 1) { zOffset = data.boundingDims[1]; } else
-        // if(data.turn === 2) {
-        //     zOffset = data.boundingDims[1];
-        //     xOffset = data.boundingDims[2];
-        // } else
-        // if(data.turn === 3) { xOffset = data.boundingDims[2]; }
-        // const compoundPos = [
-        //     data.pos[2] + xOffset,
-        //     this.sceneState.constants.FLOOR_HEIGHT * data.pos[0],
-        //     data.pos[1] + zOffset
-        // ];
-        // this.sceneState.physicsClass.addShape({
-        //     id: 'details-' + compoundIdExt,
-        //     type: 'compound',
-        //     moving: false,
-        //     movingShape: false,
-        //     mass: 0,
-        //     position: compoundPos,
-        //     rotation: [0, data.turnRadians, 0],
-        //     material: { friction: 0.001 },
-        //     sleep: {
-        //         allowSleep: true,
-        //         sleeSpeedLimit: 0.1,
-        //         sleepTimeLimit: 1,
-        //     },
-        // });
-        if(index === 0) {
-            // TESTING GROUPING
-            const groupGeo = new THREE.BoxBufferGeometry(5, 1, 9);
-            const groupMat = new THREE.MeshBasicMaterial({ wireframe: true });
-            const group = new THREE.Mesh(groupGeo, groupMat);
-            const geo1 = new THREE.BoxBufferGeometry(1, 1, 3);
-            const mat1 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            const mesh1 = new THREE.Mesh(geo1, mat1);
-            mesh1.position.set(0, 0, 4);
-            group.add(mesh1);
-            const geo2 = new THREE.BoxBufferGeometry(3, 1, 1);
-            const mat2 = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
-            const mesh2 = new THREE.Mesh(geo2, mat2);
-            mesh2.position.set(4, 0, 0);
-            group.add(mesh2);
-            group.rotation.y = Math.PI / 2;
-            group.position.set(4, 0, 8);
-            // this.sceneState.scenes[this.sceneState.curScene].add(group);
-            console.log('GROUP', group.children[1], data);
-        }
-
+        
         // 1. Create the group mesh and define positions and quternions arrays
-        const grGeo = new THREE.BoxBufferGeometry(data.boundingDims[2], 1, data.boundingDims[1]);
-        const grMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const dims = data.turn === 1 || data.turn === 3
+            ? [data.boundingDims[1], data.boundingDims[2]]
+            : [data.boundingDims[2], data.boundingDims[1]];
+        const grGeo = new THREE.BoxBufferGeometry(dims[0], 1, dims[1]);
+        const grMat = new THREE.MeshBasicMaterial({ wireframe: true });
         const gr = new THREE.Mesh(grGeo, grMat);
         gr.position.set(
             data.pos[2] + data.boundingDims[2] / 2,
@@ -364,17 +318,17 @@ class LevelLoader {
         for(let i=0; i<phys.length; i++) {
             const obj = phys[i];
             if(obj.type === 'box') {
-                const boxGeo = new THREE.BoxBufferGeometry(obj.size[0][0], obj.size[0][1], obj.size[0][2]); // REFACTOR (remove the first level array)
+                const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
                 const boxMesh = new THREE.Mesh(boxGeo, basicMat);
                 boxMesh.position.set(
-                    obj.position[0][0] - data.boundingDims[2] / 2, // REFACTOR (remove the first level array)
-                    obj.position[0][1], // REFACTOR (remove the first level array)
-                    obj.position[0][2] - data.boundingDims[1] / 2 // REFACTOR (remove the first level array)
+                    obj.position[0] - dims[0] / 2,
+                    obj.position[1],
+                    obj.position[2] - dims[1] / 2
                 );
                 if(obj.rotation) {
-                    boxMesh.rotation.x = obj.rotation[0][0]; // REFACTOR (remove the first level array)
-                    boxMesh.rotation.y = obj.rotation[0][1]; // REFACTOR (remove the first level array)
-                    boxMesh.rotation.z = obj.rotation[0][2]; // REFACTOR (remove the first level array)
+                    boxMesh.rotation.x = obj.rotation[0];
+                    boxMesh.rotation.y = obj.rotation[1];
+                    boxMesh.rotation.z = obj.rotation[2];
                 }
                 gr.add(boxMesh);
             }
@@ -384,37 +338,42 @@ class LevelLoader {
         gr.rotation.y = (Math.PI / 2) * data.turn;
 
         // 4. Loop through all elems and add the shapes into the physicsClass with Mesh.getWorldPosition() and Mesh.getWorldQuaternion()
-        
+        const compoundId = 'levelCompoundWalls';
+        for(let i=0; i<phys.length; i++) {
+            const obj = phys[i];
+            const position = new THREE.Vector3();
+            const quaternion = new THREE.Quaternion();
+            gr.children[i].updateMatrix();
+            gr.children[i].getWorldPosition(position);
+            gr.children[i].getWorldQuaternion(quaternion);
+            if(obj.type === 'box') {
+                this.sceneState.physicsClass.addShape({
+                    id: 'levelShape_' + obj.id + '_' + index,
+                    compoundParentId: compoundId,
+                    type: 'box',
+                    size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
+                    position: [position.x, position.y, position.z],
+                    quaternion: [quaternion.x, quaternion.y, quaternion.z, quaternion.w],
+                    roof: obj.roof,
+                    sleep: {
+                        allowSleep: true,
+                        sleeSpeedLimit: 0.1,
+                        sleepTimeLimit: 1,
+                    },
+                    helperColor: obj.helperColor,
+                });
+            }
 
-        this.sceneState.scenes[this.sceneState.curScene].add(gr);
-        console.log('MY GROUP', gr, (Math.PI / 2) * data.turn);
+            // 4.1 Remove geometry and mesh
+            gr.children[i].geometry.dispose();
+            gr.children[i].remove();
+        }
 
-        // for(let i=0; i<phys.length; i++) {
-        //     let compoundId = 'levelCompoundWalls', rotation = null;
-        //     const obj = phys[i];
-        //     if(obj.rotation) rotation = obj.rotation[data.turn];
-        //     if(obj.type === 'box') {
-        //         this.sceneState.physicsClass.addShape({
-        //             id: 'levelShape_' + obj.id + '_' + index,
-        //             compoundParentId: compoundId,
-        //             type: 'box',
-        //             size: [obj.size[data.turn][0] / 2, obj.size[data.turn][1] / 2, obj.size[data.turn][2] / 2],
-        //             position: [
-        //                 data.pos[2] + obj.position[data.turn][0],
-        //                 obj.position[data.turn][1],
-        //                 data.pos[1] + obj.position[data.turn][2],
-        //             ],
-        //             rotation,
-        //             roof: obj.roof,
-        //             sleep: {
-        //                 allowSleep: true,
-        //                 sleeSpeedLimit: 0.1,
-        //                 sleepTimeLimit: 1,
-        //             },
-        //             helperColor: obj.helperColor,
-        //         });
-        //     }
-        // }
+        // 5. Remove group geometry, mesh and materials
+        basicMat.dispose();
+        gr.geometry.dispose();
+        gr.material.dispose();
+        gr.remove();
     }
 
     _createLevelTextureSet() {

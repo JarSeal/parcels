@@ -39,156 +39,66 @@ const moduleData = {
             id: 'pipe01',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 1.87],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 1.87],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [0.72, 2.55, 1.62],
-                [0, 2.5, 0], // TODO
-                [8.3, 2.55, 3.4],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [0.2, 0.2, 1.87],
+            position: [0.72, 2.55, 1.62],
             helperColor: 0x777777,
         },
         {
             id: 'pipe02',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 1.87],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 1.87],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [8.3, 2.55, 1.62],
-                [0, 2.5, 0], // TODO
-                [0.72, 2.55, 3.4],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [0.2, 0.2, 1.87],
+            position: [8.3, 2.55, 1.62],
             helperColor: 0x777777,
         },
         {
             id: 'pipe03',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 1],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 1],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [3.5, 2.55, 0.44],
-                [0, 2.5, 0], // TODO
-                [5.5, 2.55, 4.56],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [0.2, 0.2, 0.5],
+            position: [3.5, 2.55, 0.7],
             helperColor: 0x777777,
         },
         {
             id: 'pipe04',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 0.8],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 0.8],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [6.53, 2.55, 1.2],
-                [0, 2.5, 0], // TODO
-                [2.477, 2.55, 3.82],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [0.2, 0.2, 0.8],
+            position: [6.53, 2.55, 1.2],
             helperColor: 0x777777,
         },
         {
             id: 'pipe05',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 2.1],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 2.1],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [5.5, 2.55, 3.6],
-                [0, 2.5, 0], // TODO
-                [3.5, 2.55, 1.4],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [0.2, 0.2, 2.1],
+            position: [5.5, 2.55, 3.6],
             helperColor: 0x777777,
         },
         {
             id: 'pipe06',
             section: 'walls',
             type: 'box',
-            size: [
-                [7.6, 0.2, 0.2],
-                [3, 0.3, 3], // TODO
-                [7.6, 0.2, 0.2],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [4.5, 2.55, 0.72],
-                [0, 2.5, 0], // TODO
-                [4.5, 2.55, 4.28],
-                [0, 2.5, 0], // TODO
-            ],
+            size: [7.6, 0.2, 0.2],
+            position: [4.5, 2.55, 0.72],
             helperColor: 0x777777,
         },
         {
             id: 'pipe07',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.2, 0.2, 1.55],
-                [3, 0.3, 3], // TODO
-                [0.2, 0.2, 1.55],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [6.02, 2.55, 2.07],
-                [0, 2.5, 0], // TODO
-                [2.98, 2.55, 2.945],
-                [0, 2.5, 0], // TODO
-            ],
-            rotation: [
-                [0, Math.PI/-4, 0],
-                [0, Math.PI/4, 0], // TODO
-                [0, Math.PI/-4, 0],
-                [0, Math.PI/4, 0], // TODO
-            ],
+            size: [0.2, 0.2, 1.55],
+            position: [6.02, 2.55, 2.07],
+            rotation: [0, Math.PI/-4, 0],
             helperColor: 0x777777,
         },
         {
             id: 'wire01',
             section: 'walls',
             type: 'box',
-            size: [
-                [0.1, 0.1, 1.58],
-                [3, 0.3, 3], // TODO
-                [0.1, 0.1, 1.58],
-                [3, 0.3, 3], // TODO
-            ],
-            position: [
-                [1, 2.55, 4.08],
-                [0, 2.5, 0], // TODO
-                [8, 2.55, 0.93],
-                [0, 2.5, 0], // TODO
-            ],
-            rotation: [
-                [0, Math.PI/4 + 0.1, 0],
-                [0, Math.PI/4, 0], // TODO
-                [0, Math.PI/4 + 0.1, 0],
-                [0, Math.PI/4, 0], // TODO
-            ],
+            size: [0.1, 0.1, 1.58],
+            position: [1, 2.55, 4.08],
+            rotation: [0, Math.PI/4 + 0.1, 0],
             helperColor: 0x777777,
         },
     ],
