@@ -12,7 +12,7 @@ const levelData = {
         },
         {
             id: 'HallWay01L1',
-            turn: 0,
+            turn: 2,
             pos: [0, 10, 10], 
         },
         {

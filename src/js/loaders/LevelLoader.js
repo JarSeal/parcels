@@ -55,7 +55,7 @@ class LevelLoader {
         this.skyboxLoaded = false;
         this.sceneState.loadingLevel = true;
         this.loadingData = true;
-        this._createLevelCompoundShape();
+        this._createLevelCompoundShapes();
         new LevelsData(this.sceneState).loadLevelsData(levelId, (data) => {
             this.loadingData = false;
             this.loadingModels = true;
@@ -68,10 +68,10 @@ class LevelLoader {
     }
 
     _loadModules(data, callback) {
-        this.sceneState.logger.log('Level data:', data); // Show level data being loaded
+        this.sceneState.logger.log('Level data:', data); // Debug level data being loaded
         for(let modIndex=0; modIndex<data.modules.length; modIndex++) {
             const module = data.modules[modIndex];
-            this._createLevelPhysics(module, modIndex); // Might be unnecessary, not being used at the moment
+            this._createLevelDetailsPhysics(module, modIndex);
             new ModulePhysics(this.sceneState, module, modIndex);
             const urlAndPath = this.sceneState.settings.assetsUrl + module.path;
             for(let mIndex=0; mIndex<module.models.length; mIndex++) {
@@ -262,7 +262,7 @@ class LevelLoader {
         }
     }
 
-    _createLevelCompoundShape() {
+    _createLevelCompoundShapes() {
         const floorFriction = 0.1;
         const wallFriction = 0.01;
         this.sceneState.physicsClass.addShape({
@@ -297,69 +297,63 @@ class LevelLoader {
         });
     }
 
-    _createLevelPhysics(data, index) { // Maybe get rid of, not used at the moment
+    _createLevelDetailsPhysics(data, index) {
         const phys = data.physics;
-        const compoundIdExt = data.id + '-' + index;
-        let xOffset = 0, zOffset = 0;
-        if(data.turn === 1) { zOffset = data.boundingDims[1]; } else
-        if(data.turn === 2) {
-            zOffset = data.boundingDims[1];
-            xOffset = data.boundingDims[2];
-        } else
-        if(data.turn === 3) { xOffset = data.boundingDims[2]; }
-        const compoundPos = [
-            data.pos[2] + xOffset,
-            this.sceneState.constants.FLOOR_HEIGHT * data.pos[0],
-            data.pos[1] + zOffset
-        ];
-        this.sceneState.physicsClass.addShape({
-            id: 'floor-' + compoundIdExt,
-            type: 'compound',
-            moving: false,
-            movingShape: false,
-            mass: 0,
-            position: compoundPos,
-            rotation: [0, data.turnRadians, 0],
-            material: { friction: 0.1 },
-            sleep: {
-                allowSleep: true,
-                sleeSpeedLimit: 0.1,
-                sleepTimeLimit: 1,
-            },
-        });
-        this.sceneState.physicsClass.addShape({
-            id: 'wall-' + compoundIdExt,
-            type: 'compound',
-            moving: false,
-            movingShape: false,
-            mass: 0,
-            position: compoundPos,
-            rotation: [0, data.turnRadians, 0],
-            material: { friction: 0.001 },
-            sleep: {
-                allowSleep: true,
-                sleeSpeedLimit: 0.1,
-                sleepTimeLimit: 1,
-            },
-        });
+        
+        // 1. Create the group mesh and define positions and quternions arrays
+        const dims = data.turn === 1 || data.turn === 3
+            ? [data.boundingDims[1], data.boundingDims[2]]
+            : [data.boundingDims[2], data.boundingDims[1]];
+        const grGeo = new THREE.BoxBufferGeometry(dims[0], 1, dims[1]);
+        const grMat = new THREE.MeshBasicMaterial({ wireframe: true });
+        const gr = new THREE.Mesh(grGeo, grMat);
+        gr.position.set(
+            data.pos[2] + data.boundingDims[2] / 2,
+            0,
+            data.pos[1] + data.boundingDims[1] / 2
+        );
+
+        // 2. Loop through all physics/details elements and add them to their proper positions on the group mesh
+        const basicMat = new THREE.MeshBasicMaterial({ color: 0xcccccc });
         for(let i=0; i<phys.length; i++) {
-            let compoundId = null, rotation = null;
             const obj = phys[i];
-            if(obj.section === 'floor') { compoundId = 'floor-'+compoundIdExt; } else
-            if(obj.section === 'wall') { compoundId = 'wall-'+compoundIdExt; }
-            if(obj.rotation) rotation = obj.rotation;
+            if(obj.type === 'box') {
+                const boxGeo = new THREE.BoxBufferGeometry(obj.size[0], obj.size[1], obj.size[2]);
+                const boxMesh = new THREE.Mesh(boxGeo, basicMat);
+                boxMesh.position.set(
+                    obj.position[0] - dims[0] / 2,
+                    obj.position[1],
+                    obj.position[2] - dims[1] / 2
+                );
+                if(obj.rotation) {
+                    boxMesh.rotation.x = obj.rotation[0];
+                    boxMesh.rotation.y = obj.rotation[1];
+                    boxMesh.rotation.z = obj.rotation[2];
+                }
+                gr.add(boxMesh);
+            }
+        }
+
+        // 3. Turn the group mesh
+        gr.rotation.y = (Math.PI / 2) * data.turn;
+
+        // 4. Loop through all elems and add the shapes into the physicsClass with Mesh.getWorldPosition() and Mesh.getWorldQuaternion()
+        const compoundId = 'levelCompoundWalls';
+        for(let i=0; i<phys.length; i++) {
+            const obj = phys[i];
+            const position = new THREE.Vector3();
+            const quaternion = new THREE.Quaternion();
+            gr.children[i].updateMatrix();
+            gr.children[i].getWorldPosition(position);
+            gr.children[i].getWorldQuaternion(quaternion);
             if(obj.type === 'box') {
                 this.sceneState.physicsClass.addShape({
                     id: 'levelShape_' + obj.id + '_' + index,
                     compoundParentId: compoundId,
                     type: 'box',
                     size: [obj.size[0] / 2, obj.size[1] / 2, obj.size[2] / 2],
-                    position: [
-                        obj.position[0],
-                        obj.position[1],
-                        obj.position[2],
-                    ],
-                    rotation,
+                    position: [position.x, position.y, position.z],
+                    quaternion: [quaternion.x, quaternion.y, quaternion.z, quaternion.w],
                     roof: obj.roof,
                     sleep: {
                         allowSleep: true,
@@ -369,7 +363,17 @@ class LevelLoader {
                     helperColor: obj.helperColor,
                 });
             }
+
+            // 4.1 Remove geometry and mesh
+            gr.children[i].geometry.dispose();
+            gr.children[i].remove();
         }
+
+        // 5. Remove group geometry, mesh and materials
+        basicMat.dispose();
+        gr.geometry.dispose();
+        gr.material.dispose();
+        gr.remove();
     }
 
     _createLevelTextureSet() {
@@ -403,7 +407,6 @@ class LevelLoader {
             const keys = Object.keys(this.sceneState.levelAssets.lvlTextureBundles[i]);
             let geos = [];
             for(let k=0; k<keys.length; k++) {
-                console.log('KEY', k, keys[k]);
                 const curMesh = this.sceneState.levelAssets.lvlAllModules[keys[k]];
                 this._modifyObjectUV(curMesh, this.sceneState.levelAssets.lvlMerges[i].ranges[keys[k]]);
                 curMesh.material.dispose();

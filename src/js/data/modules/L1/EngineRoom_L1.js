@@ -37,14 +37,14 @@ const moduleData = {
     textureExt: 'png',
     textureSizes: [512, 1024, 2048, 4096],
     physics: [
-        {
-            id: 'floor',
-            section: 'floor',
-            type: 'box',
-            size: [8, 0.5, 5],
-            position: [4, -0.25, 2.5],
-            helperColor: 0xffcc00,
-        },
+        // {
+        //     id: 'floor',
+        //     section: 'floor',
+        //     type: 'box',
+        //     size: [8, 0.5, 5],
+        //     position: [4, -0.25, 2.5],
+        //     helperColor: 0xffcc00,
+        // },
     ],
 };
 
