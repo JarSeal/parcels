@@ -83,7 +83,6 @@ class Physics {
                     this._updateRenderParticles(e.data);
                 } else if(e.data.initPhysicsDone) {
                     this.particleIndexes = e.data.particleIndexes;
-                    console.log('init done', this.particleIndexes);
                 } else if(e.data.error) {
                     this.sceneState.logger.error('From secondary physics worker:', e.data.error);
                     throw new Error('**Error stack:**');
