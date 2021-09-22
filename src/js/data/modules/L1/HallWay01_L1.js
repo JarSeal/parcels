@@ -37,7 +37,6 @@ const moduleData = {
     physics: [
         {
             id: 'pipe01',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 1.87],
             position: [0.72, 2.55, 1.62],
@@ -45,7 +44,6 @@ const moduleData = {
         },
         {
             id: 'pipe02',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 1.87],
             position: [8.3, 2.55, 1.62],
@@ -53,7 +51,6 @@ const moduleData = {
         },
         {
             id: 'pipe03',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 0.5],
             position: [3.5, 2.55, 0.7],
@@ -61,7 +58,6 @@ const moduleData = {
         },
         {
             id: 'pipe04',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 0.8],
             position: [6.53, 2.55, 1.2],
@@ -69,7 +65,6 @@ const moduleData = {
         },
         {
             id: 'pipe05',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 2.1],
             position: [5.5, 2.55, 3.6],
@@ -77,7 +72,6 @@ const moduleData = {
         },
         {
             id: 'pipe06',
-            section: 'walls',
             type: 'box',
             size: [7.6, 0.2, 0.2],
             position: [4.5, 2.55, 0.72],
@@ -85,7 +79,6 @@ const moduleData = {
         },
         {
             id: 'pipe07',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 1.55],
             position: [6.02, 2.55, 2.07],
@@ -94,7 +87,6 @@ const moduleData = {
         },
         {
             id: 'wire01',
-            section: 'walls',
             type: 'box',
             size: [0.1, 0.1, 1.58],
             position: [1, 2.55, 4.08],

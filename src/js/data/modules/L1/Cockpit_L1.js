@@ -37,7 +37,6 @@ const moduleData = {
     physics: [
         {
             id: 'pipe01',
-            section: 'walls',
             type: 'box',
             size: [0.2, 0.2, 2],
             position: [0.72, 2.55, 3.45],
@@ -45,7 +44,6 @@ const moduleData = {
         },
         {
             id: 'pipe02',
-            section: 'walls',
             type: 'box',
             size: [1, 0.2, 0.2],
             position: [1.25, 2.55, 4.4],
