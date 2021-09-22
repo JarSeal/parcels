@@ -19,8 +19,8 @@ const moduleData = {
             exterior: 'Cockpit_L1_EXT.glb',
             interior: 'Cockpit_L1_INT.glb',
             roof: null,
-            bottom: null, // maybe..
-            details: null, // maybe..
+            bottom: null,
+            detailsInt: 'Cockpit_L1_INTDET.glb',
         },
     ],
     textures: [
@@ -28,21 +28,29 @@ const moduleData = {
             exterior: 'Cockpit_L1_EXT',
             interior: 'Cockpit_L1_INT',
             roof: null,
-            bottom: null, // maybe..
-            details: null, // maybe..
+            bottom: null,
+            detailsInt: 'Cockpit_L1_INTDET',
         },
     ],
     textureExt: 'png',
     textureSizes: [512, 1024, 2048, 4096],
     physics: [
-        // {
-        //     id: 'floor',
-        //     section: 'floor',
-        //     type: 'box',
-        //     size: [8, 0.5, 5],
-        //     position: [4, -0.25, 2.5],
-        //     helperColor: 0xffcc00,
-        // },
+        {
+            id: 'pipe01',
+            section: 'walls',
+            type: 'box',
+            size: [0.2, 0.2, 2],
+            position: [0.72, 2.55, 3.45],
+            helperColor: 0x777777,
+        },
+        {
+            id: 'pipe02',
+            section: 'walls',
+            type: 'box',
+            size: [1, 0.2, 0.2],
+            position: [1.25, 2.55, 4.4],
+            helperColor: 0x777777,
+        },
     ],
 };
 

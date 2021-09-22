@@ -365,15 +365,21 @@ class LevelLoader {
             }
 
             // 4.1 Remove geometry and mesh
-            gr.children[i].geometry.dispose();
-            gr.children[i].remove();
+            if(!data.showPhysics) {
+                gr.children[i].geometry.dispose();
+                gr.children[i].remove();
+            }
         }
 
         // 5. Remove group geometry, mesh and materials
-        basicMat.dispose();
-        gr.geometry.dispose();
-        gr.material.dispose();
-        gr.remove();
+        if(!data.showPhysics) {
+            basicMat.dispose();
+            gr.geometry.dispose();
+            gr.material.dispose();
+            gr.remove();
+        } else {
+            this.sceneState.scenes[this.sceneState.curScene].add(gr);
+        }
     }
 
     _createLevelTextureSet() {
