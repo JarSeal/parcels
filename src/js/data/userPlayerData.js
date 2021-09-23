@@ -6,6 +6,16 @@ const userPlayerData = {
     speed: 2.8,
     jump: 4.8,
     charHeight: 1.82,
+    path: '/models/characters/spacesuit_human_male/',
+    model: 'spacesuit_human_male.glb',
+    modelTexture: 'space_suit_human_male',
+    textureSizes: [256, 512, 1024],
+    textureExt: 'png',
+    createValues: {
+        yOffset: -0.94,
+        zRotation: -Math.PI / 2,
+        scale: 0.0068,
+    },
     curMovementSpeed: 0,
     moveKeysPressed: 0,
     userPlayer: true,
@@ -34,7 +44,7 @@ const userPlayerData = {
         playerGroup.add(pMesh);
         playerGroup.name = id;
         data.mesh = playerGroup;
-        sceneState.scenes[sceneState.curScene].add(playerGroup);
+        // sceneState.scenes[sceneState.curScene].add(playerGroup);
 
         sceneState.physicsClass.addShape({
             id: pMesh.name,

@@ -5,9 +5,6 @@ import Utils from './utils/Utils';
 import Logger from './utils/Logger';
 import PostProcessing from './postProcessing/PostProcessing';
 import LevelLoader from './loaders/LevelLoader';
-import Player from './players/Player';
-import userPlayerData from './data/userPlayerData';
-import UserControls from './controls/UserControls';
 import Physics from './physics/Physics';
 import ProjectileParticles from './VFX/ProjectileParticles';
 import PhysicsParticles from './VFX/PhysicsParticles';
@@ -133,17 +130,17 @@ class Root {
         this.sceneState.physicsParticles = new PhysicsParticles(this.sceneState);
         this.sceneState.hitZonePlates = new HitZonePlates(this.sceneState);
         this.sceneState.smokeParticles = new SmokeParticles(this.sceneState);
+        // const userPlayer = new Player(this.sceneState, userPlayerData);
 
-        this.levelLoader.load(this.sceneState.curLevelId, () => {           
+        this.levelLoader.load(this.sceneState.curLevelId, () => {
 
             this.sceneState.hitZonePlates.initPlates();
             this.sceneState.physicsParticles.initParticles();
             this.sceneState.smokeParticles.initSmoke();
             
             this.sceneState.projectiles.initProjectiles();
-            const userPlayer = new Player(this.sceneState, userPlayerData);
-            userPlayer.create();
-            new UserControls(this.sceneState, userPlayer);
+            // userPlayer.create();
+            // new UserControls(this.sceneState, userPlayer);
 
             const playerPos = this.sceneState.players[this.sceneState.userPlayerId].position;
             camera.position.set(
@@ -167,7 +164,6 @@ class Root {
 
     renderLoop = () => {
         const ss = this.sceneState;
-        // const delta = ss.clock.getDelta();
         requestAnimationFrame(() => {
             this.renderLoop();
         });
@@ -181,9 +177,14 @@ class Root {
     _updateShaders = (ss) => {
         let i = 0;
         const shadersLength = ss.shadersToUpdateLength,
-            now = ss.atomClock.getTime();
+            now = ss.atomClock.getTime(),
+            mixersLength = ss.mixersCount,
+            delta = ss.clock.getDelta();
         for(i=0; i<shadersLength; i++) {
             ss.shadersToUpdate[i].material.uniforms.uTime.value = now;
+        }
+        for(i=0; i<mixersLength; i++) {
+            ss.mixers[i].update(delta);
         }
     };
 

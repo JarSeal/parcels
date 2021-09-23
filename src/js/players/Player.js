@@ -11,7 +11,6 @@ class Player {
         this.data = data;
         this.curWeapon = projectileWeapon;
         this.rayshooter = new THREE.Raycaster();
-        data.render = this.render;
         data.xPosMulti = 0;
         data.zPosMulti = 0;
         data.direction = 0;
@@ -24,18 +23,153 @@ class Player {
             this.sceneState.playerKeys = [];
             this.sceneState.playerKeysCount = 0;
         }
-        this.shooting = {
-            maxDistance: 10, // Temp for now, this needs to be determined by the gun used.
-        };
+        if(!this.sceneState.mixers) {
+            this.sceneState.mixers = [];
+            this.sceneState.mixersCount = 0;
+        }
     }
 
     create() {
-        this.data.createPlayerFn(
-            this.data,
-            this.sceneState,
-            THREE
-        );
+        // this.data.createPlayerFn(
+        //     this.data,
+        //     this.sceneState,
+        //     THREE
+        // );
+        this._createPlayerCharacter();
+
         this._addPushableBox(); // TEMPORARY
+    }
+
+    _createPlayerCharacter() {
+        const id = this.data.id;
+        this.sceneState.players[id] = this.data;
+        this.sceneState.userPlayerId = id;
+        this.sceneState.userPlayerIndex = null;
+        this.sceneState.playerKeys.push(id);
+        this.sceneState.playerKeysCount += 1;
+
+        const mainMeshName = id + '-' + 'mainchild';
+        const model = this.data.gltf.scene.children[0];
+        const mixer = new THREE.AnimationMixer(model);
+        const fileAnimations = this.data.gltf.animations,
+            idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'Idle'),
+            idle = mixer.clipAction(idleAnim),
+            runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Running'),
+            run = mixer.clipAction(runAnim);
+        this.sceneState.mixers.push(mixer);
+        this.sceneState.mixersCount++;
+        this.data.anims = {
+            idle, run
+        };
+
+        const pos = this.data.position;
+        const group = new THREE.Group();
+        model.children[1].material.dispose();
+        model.children[1].material = new THREE.MeshLambertMaterial({
+            map: this.data.texture,
+            skinning: true,
+            side: THREE.DoubleSide,
+        });
+        model.children[1].material.map.flipY = false;
+        model.position.y = this.data.createValues.yOffset;
+        model.rotation.z = this.data.createValues.zRotation;
+        model.scale.set(this.data.createValues.scale, this.data.createValues.scale, this.data.createValues.scale);
+
+        const pGeo = new THREE.BoxBufferGeometry(0.7, this.data.charHeight, 0.8);
+        const pMesh = new THREE.Mesh(pGeo, new THREE.MeshBasicMaterial({ visible: false }));
+        pMesh.position.set(pos[0], pos[1], pos[2]);
+        pMesh.name = mainMeshName;
+        pMesh.add(model);
+        group.name = id;
+        group.add(pMesh);
+        this.data.mesh = group;
+        this.sceneState.scenes[this.sceneState.curScene].add(group);
+
+        this.sceneState.physicsClass.addShape({
+            id: mainMeshName,
+            type: 'compound',
+            moving: true,
+            mass: 70,
+            position: [pos[0], pos[1], pos[2]],
+            startPosition: [pos[0], pos[1], pos[2]],
+            rotation: [0, 0, 0],
+            material: { friction: 0.2 },
+            movingShape: true,
+            updateFn: (shape) => {
+                if(this.sceneState.settings.debug.cameraFollowsPlayer) {
+                    const camera = this.sceneState.cameras[this.sceneState.curScene];
+                    camera.position.set(
+                        camera.userData.followXOffset+shape.mesh.position.x,
+                        camera.userData.followYOffset+shape.mesh.position.y,
+                        camera.userData.followZOffset+shape.mesh.position.z
+                    );
+                    camera.lookAt(new THREE.Vector3(
+                        shape.mesh.position.x,
+                        shape.mesh.position.y,
+                        shape.mesh.position.z
+                    ));
+                }
+                // Temp death...
+                if(shape.mesh.position.y < -50 && !shape.mesh.userData.reload) {
+                    console.log('WASTED!');
+                    this.sceneState.additionalPhysicsData.push({
+                        phase: 'resetPosition',
+                        data: {
+                            bodyIndex: shape.characterData.bodyIndex,
+                            position: shape.startPosition,
+                            sleep: false,
+                        },
+                    });
+                }
+            },
+            mesh: pMesh,
+            fixedRotation: true,
+            sleep: {
+                allowSleep: true,
+                sleeSpeedLimit: 0.1,
+                sleepTimeLimit: 1,
+            },
+            characterData: this.data,
+        });
+
+        this.sceneState.consClass.addEntity({
+            id: mainMeshName,
+            type: 'box',
+            size: [this.data.charHeight / 2, this.data.charHeight, this.data.charHeight / 2],
+            position: pos,
+        });
+
+        // Make the actual capsule shape
+        this.sceneState.physicsClass.addShape({
+            id: id + '_comp_cylinder',
+            compoundParentId: mainMeshName,
+            type: 'cylinder',
+            radiusTop: this.data.charHeight / 4,
+            radiusBottom: this.data.charHeight / 4,
+            height: this.data.charHeight / 2,
+            numSegments: 32,
+            position: [0, 0, 0],
+            helperColor: 0xcc1122,
+        });
+        this.sceneState.physicsClass.addShape({
+            id: id + '_comp_sphereLower',
+            compoundParentId: mainMeshName,
+            type: 'sphere',
+            radius: this.data.charHeight / 4,
+            position: [0, -this.data.charHeight / 4, 0],
+            helperColor: 0xcc1122,
+        });
+        this.sceneState.physicsClass.addShape({
+            id: id + '_comp_sphereUpper',
+            compoundParentId: mainMeshName,
+            type: 'sphere',
+            radius: this.data.charHeight / 4,
+            position: [0, this.data.charHeight / 4, 0],
+            helperColor: 0xcc1122,
+        });
+
+        this.data.anims.idle.play();
+        this.data.anims.idle.weight = 1;
     }
 
     _addPushableBox() { // TEMPORARY

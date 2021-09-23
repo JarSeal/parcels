@@ -1,5 +1,6 @@
 import modulesData from './modulesData';
 import ship01 from './levels/ship01';
+import userPlayerData from './userPlayerData';
 
 // This class mocks the data received from the server (loadLevelsData)
 
@@ -15,13 +16,21 @@ class LevelsData {
         const levelsData = {
             ship01
         };
+        const playersData = {
+            ship01: [userPlayerData]
+        };
         const level = levelsData[id];
+        const players = playersData[id];
         if(!level) {
-            this.sceneState.logger.error('Unknown level id: ' + id);
+            this.sceneState.logger.error('Unknown level id for retrieving levelsData: ' + id);
+            return null;
+        }
+        if(!players) {
+            this.sceneState.logger.error('Unknown level id for retrieving playersData: ' + id);
             return null;
         }
         const data = this._unpackData(level);
-        callBack(data);
+        callBack(data, players);
     }
 
     _unpackData(data) {

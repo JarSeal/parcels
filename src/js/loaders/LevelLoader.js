@@ -3,6 +3,8 @@ import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtil
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LevelsData from '../data/LevelsData';
 import ModulePhysics from '../physics/ModulePhysics';
+import Player from '../players/Player';
+import UserControls from '../controls/UserControls';
 import { TextureMerger } from '../vendor/TextureMerger';
 
 class LevelLoader {
@@ -13,6 +15,8 @@ class LevelLoader {
         this.loadingModels = false;
         this.loadingTextures = false;
         this.mergingModules = false;
+        this.creatingPlayers = false;
+        this.players = [];
         this.modelsToLoad = 0;
         this.modelsLoaded = 0;
         this.texturesToLoad = 0;
@@ -56,13 +60,15 @@ class LevelLoader {
         this.sceneState.loadingLevel = true;
         this.loadingData = true;
         this._createLevelCompoundShapes();
-        new LevelsData(this.sceneState).loadLevelsData(levelId, (data) => {
+        new LevelsData(this.sceneState).loadLevelsData(levelId, (data, players) => {
             this.loadingData = false;
             this.loadingModels = true;
             this.loadingTextures = true;
             this.mergingModules = true;
+            this.creatingPlayers = true;
             this._loadFXTextures(callback);
             this._loadModules(data, callback);
+            this._loadPlayers(players, callback);
             this._setSkyBox(callback);
         });
     }
@@ -79,7 +85,7 @@ class LevelLoader {
                 const mKeys = Object.keys(m);
                 for(let i=0; i<mKeys.length; i++) {
                     if(m[mKeys[i]]) {
-                        this._loadModel(
+                        this._loadModuleModel(
                             urlAndPath + m[mKeys[i]],
                             mKeys[i]+'Modules',
                             module.pos,
@@ -112,7 +118,57 @@ class LevelLoader {
         }
     }
 
-    _loadModel = (url, type, pos, turn, modIndex, partIndex, dims, callback) => {
+    _loadPlayers(data, callback) {
+        this.sceneState.logger.log('Players\' data:', data); // Debug players' data being loaded
+        for(let i=0; i<data.length; i++) {
+            const player = data[i];
+            player.partsLoaded = 0;
+            const urlAndPath = this.sceneState.settings.assetsUrl + player.path;
+            this._loadPlayerModel(
+                urlAndPath + player.model,
+                player,
+                callback
+            );
+            this._loadPlayerTexture(
+                urlAndPath + player.modelTexture,
+                player,
+                callback
+            );
+        }
+    }
+
+    _loadPlayerModel = (url, player, callback) => {
+        this.modelsToLoad++;
+        this.modelLoader.load(url, (gltf) => {
+            console.log('PLAYER MODEL LOADED!', gltf);
+            this.modelsLoaded++;
+            player.partsLoaded++;
+            player.gltf = gltf;
+            if(player.partsLoaded === 2) this.players.push(player);
+            this._checkLoadingStatus(callback);
+        }, undefined, function(error) {
+            this.sceneState.logger.error(error);
+            throw new Error('**Error stack:**');
+        });
+    }
+
+    _loadPlayerTexture(url, player, callback) {
+        this.texturesToLoad++;
+        let size = player.textureSizes[0]; // Replace with texture size setting
+        this.textureLoader.load(url+'_'+size+'.'+player.textureExt, (texture) => {
+            console.log('PLAYER TEXTURE LOADED!', texture);
+            player.texture = texture;
+            this.texturesLoaded++;
+            player.partsLoaded++;
+            if(player.partsLoaded === 2) this.players.push(player);
+            this._checkLoadingStatus(callback);
+        }, undefined, function(error) {
+            this.sceneState.logger.error(error);
+            throw new Error('**Error stack:**');
+        });
+    }
+
+    _loadModuleModel = (url, type, pos, turn, modIndex, partIndex, dims, callback) => {
         this.modelsToLoad++;
         this.modelLoader.load(url, (gltf) => {
             const mesh = gltf.scene.children[0];
@@ -205,10 +261,24 @@ class LevelLoader {
             this._mergeModelsAndTextures(callback);
             return;
         }
-        if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded && !this.mergingModules) {
+        if(!this.loadingModels && !this.loadingTextures && this.creatingPlayers) {
+            this._createPlayers(callback);
+            return;
+        }
+        if(!this.loadingModels && !this.loadingTextures && this.skyboxLoaded && !this.mergingModules && !this.creatingPlayers) {
             this._updateLoadingScreen(false);
             callback();
         }
+    }
+
+    _createPlayers(callback) {
+        for(let i=0; i<this.players.length; i++) {
+            const player = new Player(this.sceneState, this.players[i]);
+            player.create();
+            if(this.players[i].userPlayer) new UserControls(this.sceneState, player);
+        }
+        this.creatingPlayers = false;
+        this._checkLoadingStatus(callback);
     }
 
     _setSkyBox(callback) {
