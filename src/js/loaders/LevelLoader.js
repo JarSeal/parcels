@@ -365,14 +365,14 @@ class LevelLoader {
             }
 
             // 4.1 Remove geometry and mesh
-            if(!data.showPhysics) {
+            if(!data.showDetailsPhysics) {
                 gr.children[i].geometry.dispose();
                 gr.children[i].remove();
             }
         }
 
         // 5. Remove group geometry, mesh and materials
-        if(!data.showPhysics) {
+        if(!data.showDetailsPhysics) {
             basicMat.dispose();
             gr.geometry.dispose();
             gr.material.dispose();

@@ -38,15 +38,15 @@ const moduleData = {
         {
             id: 'pipe01',
             type: 'box',
-            size: [0.2, 0.2, 2],
-            position: [0.72, 2.55, 3.45],
+            size: [0.2, 0.2, 1.9],
+            position: [0.72, 2.55, 3.4],
             helperColor: 0x777777,
         },
         {
             id: 'pipe02',
             type: 'box',
             size: [1, 0.2, 0.2],
-            position: [1.25, 2.55, 4.4],
+            position: [1.25, 2.55, 4.27],
             helperColor: 0x777777,
         },
     ],
