@@ -54,7 +54,7 @@ class Player {
         const fileAnimations = this.data.gltf.animations,
             idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'Idle'),
             idle = mixer.clipAction(idleAnim),
-            runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Running'),
+            runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Run'),
             run = mixer.clipAction(runAnim);
         this.sceneState.mixers.push(mixer);
         this.sceneState.mixersCount++;
@@ -170,6 +170,8 @@ class Player {
 
         this.data.anims.idle.play();
         this.data.anims.idle.weight = 1;
+        this.data.anims.run.timeScale = this.data.runAnimScale;
+        console.log(this.data.anims);
     }
 
     _addPushableBox() { // TEMPORARY
@@ -325,6 +327,17 @@ class Player {
                 direction: dir,
             },
         });
+        if(this.data.moveStartTimes.startX === 0 && this.data.moveStartTimes.startZ === 0) {
+            // Stop
+            this.data.anims.run.stop();
+            this.data.anims.idle.play();
+            this.data.anims.idle.weight = 1;
+        } else {
+            // Move
+            this.data.anims.idle.stop();
+            this.data.anims.run.play();
+            this.data.anims.run.weight = 1;
+        }
     }
 
     jump(timePressed) {
