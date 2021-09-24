@@ -68,6 +68,7 @@ class Player {
             map: this.data.texture,
             skinning: true,
             side: THREE.DoubleSide,
+            color: new THREE.Color(0xbbbbbb)
         });
         model.children[1].material.map.flipY = false;
         model.position.y = this.data.createValues.yOffset;
