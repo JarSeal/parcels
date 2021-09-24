@@ -6,11 +6,16 @@ class Player {
     constructor(sceneState, data) {
         this.sceneState = sceneState;
         this.rotatationTL = null;
+        this.skinAnimTLs = {};
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
         this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
         this.curWeapon = projectileWeapon;
         this.rayshooter = new THREE.Raycaster();
+        this.previousPos = {
+            x: 0,
+            z: 0,
+        };
         data.xPosMulti = 0;
         data.zPosMulti = 0;
         data.direction = 0;
@@ -30,13 +35,7 @@ class Player {
     }
 
     create() {
-        // this.data.createPlayerFn(
-        //     this.data,
-        //     this.sceneState,
-        //     THREE
-        // );
         this._createPlayerCharacter();
-
         this._addPushableBox(); // TEMPORARY
     }
 
@@ -170,7 +169,11 @@ class Player {
 
         this.data.anims.idle.play();
         this.data.anims.idle.weight = 1;
+        this.data.anims.run.play();
+        this.data.anims.run.weight = 0;
         this.data.anims.run.timeScale = this.data.runAnimScale;
+        this.skinAnimTLs.idle = null;
+        this.skinAnimTLs.run = null;
         console.log(this.data.anims);
     }
 
@@ -329,14 +332,24 @@ class Player {
         });
         if(this.data.moveStartTimes.startX === 0 && this.data.moveStartTimes.startZ === 0) {
             // Stop
-            this.data.anims.run.stop();
-            this.data.anims.idle.play();
-            this.data.anims.idle.weight = 1;
+            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.4, {
+                weight: 0,
+                ease: Sine.easeInOut,
+                onUpdate: () => {
+                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
+                },
+            });
         } else {
             // Move
-            this.data.anims.idle.stop();
-            this.data.anims.run.play();
-            this.data.anims.run.weight = 1;
+            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.2, {
+                weight: 1,
+                ease: Sine.easeInOut,
+                onUpdate: () => {
+                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
+                },
+            });
         }
     }
 
