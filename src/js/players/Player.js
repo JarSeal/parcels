@@ -53,7 +53,7 @@ class Player {
         const fileAnimations = this.data.gltf.animations,
             idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'Idle'),
             idle = mixer.clipAction(idleAnim),
-            runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Run'),
+            runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Run2'),
             run = mixer.clipAction(runAnim);
         this.sceneState.mixers.push(mixer);
         this.sceneState.mixersCount++;
