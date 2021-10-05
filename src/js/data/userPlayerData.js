@@ -4,7 +4,7 @@ const userPlayerData = {
     position: [15, 2, 4],
     direction: 0,
     speed: 2.5,
-    runAnimScale: 1.25,
+    runAnimScale: 1.15,
     jump: 4.8,
     charHeight: 1.82,
     path: '/models/characters/spacesuit_human_male/',
