@@ -70,7 +70,7 @@ self.addEventListener('message', (e) => {
 const stepTheWorld = (data, returnAdditionals) => {
     const time = performance.now() / 1000;
     const dt = time - lastCallTime;
-    const { positions, quaternions, timeStep } = data;
+    const { positions, quaternions, movingData, timeStep } = data;
     let i, start = 0, count = movingShapesCount;
     if(!isThisMainWorker) {
         start = particleIndexes.start;
@@ -88,13 +88,14 @@ const stepTheWorld = (data, returnAdditionals) => {
             quaternions[i * 4 + 2] = body.quaternion.z;
             quaternions[i * 4 + 3] = body.quaternion.w;
             if(body.movingShape) {
-                addMovementToShape(body);
+                addMovementToShape(body, movingData, i);
             }
         }
     }
     let returnMessage = {
         positions,
         quaternions,
+        movingData,
         loop: true,
         isThisMainWorker,
     };
@@ -102,7 +103,11 @@ const stepTheWorld = (data, returnAdditionals) => {
         returnMessage.additionals = returnAdditionals;
         returnMessage.loop = false; // Because we want the additionals to be handled in the main thread (returns to normal loop after that)
     }
-    self.postMessage(returnMessage, [data.positions.buffer, data.quaternions.buffer]);
+    self.postMessage(returnMessage, [
+        data.positions.buffer,
+        data.quaternions.buffer,
+        data.movingData.buffer,
+    ]);
     lastCallTime = time;
 };
 
@@ -425,9 +430,14 @@ const getShapeById = (id, moving) => {
     return null;
 };
 
-const addMovementToShape = (body) => {
+const addMovementToShape = (body, movingData, i) => {
+    const belowContact = _findBelowContactBody(body.bodyId);
+    const movingDataItemCount = movingData[0];
+    const movingDataInTheAirIndex = i * movingDataItemCount + 1;
+    movingData[movingDataInTheAirIndex] = 0;
+    if(belowContact.inTheAir) movingData[movingDataInTheAirIndex] = 1;
+
     if(body.moveValues.onTheMove) {
-        const belowContact = _findBelowContactBody(body.bodyId);
         let airDivision = 1;
         if(belowContact.inTheAir) airDivision = 2;
         if(belowContact.cannotJump) body.moveValues.veloY = 0;
@@ -454,6 +464,8 @@ const addMovementToShape = (body) => {
             veloX: 0,
             veloY: 0,
             veloZ: 0,
+            onTheMove: false,
+            speed: 0,
         };
     }
 };

@@ -11,6 +11,7 @@ class Physics {
         }
         this.secPositions = new Float32Array(this.sceneState.physics.positions.length);
         this.secQuaternions = new Float32Array(this.sceneState.physics.quaternions.length);
+        this.secMovingData = new Float32Array(this.sceneState.physics.movingData.length);
         this.tempShapes = {};
         this.particleIndexes = {};
         sceneState.additionalPhysicsData = [];
@@ -41,6 +42,7 @@ class Physics {
             particlesIdlePosition: [0, 2000, 0],
             positionsLength: this.sceneState.physics.positions.length,
             quaternionsLength: this.sceneState.physics.quaternions.length,
+            movingDataLength: this.sceneState.physics.movingData.length,
         };
         this._createParticles(initParams);
         
@@ -105,6 +107,7 @@ class Physics {
                 timeStep: this.sceneState.physics.timeStep,
                 positions: this.sceneState.physics.positions,
                 quaternions: this.sceneState.physics.quaternions,
+                movingData: this.sceneState.physics.movingData,
             };
             const additionals = this.sceneState.additionalPhysicsData;
             if(additionals.length) {
@@ -113,7 +116,11 @@ class Physics {
             }
             this.mainWorker.postMessage(
                 sendObject,
-                [this.sceneState.physics.positions.buffer, this.sceneState.physics.quaternions.buffer]
+                [
+                    this.sceneState.physics.positions.buffer,
+                    this.sceneState.physics.quaternions.buffer,
+                    this.sceneState.physics.movingData.buffer,
+                ]
             );
             this.mainWorkerSendTime = performance.now();
             if(this.sceneState.settings.debug.showPhysicsStats) this.stats.update(); // Debug statistics
@@ -122,6 +129,7 @@ class Physics {
                 timeStep: this.sceneState.physics.timeStep,
                 positions: this.secPositions,
                 quaternions: this.secQuaternions,
+                movingData: this.secMovingData,
             };
             const additionals = this.sceneState.additionalPhysicsData2;
             if(additionals.length) {
@@ -130,7 +138,11 @@ class Physics {
             }
             this.secondaryWorker.postMessage(
                 sendObject,
-                [this.secPositions.buffer, this.secQuaternions.buffer]
+                [
+                    this.secPositions.buffer,
+                    this.secQuaternions.buffer,
+                    this.secMovingData.buffer,
+                ]
             );
             this.secondaryWorkerSendTime = performance.now();
         }
@@ -139,8 +151,10 @@ class Physics {
     _updateRenderParticles(data) {
         const positions = data.positions;
         const quaternions = data.quaternions;
+        const movingData = data.movingData;
         this.secPositions = positions;
         this.secQuaternions = quaternions;
+        this.secMovingData = movingData;
         const sendTime = this.secondaryWorkerSendTime;
         const shapes = this.sceneState.physics.movingShapes;
         let i;
@@ -171,8 +185,10 @@ class Physics {
     _updateRenderShapes(data) {
         const positions = data.positions;
         const quaternions = data.quaternions;
+        const movingData = data.movingData;
         this.sceneState.physics.positions = positions;
         this.sceneState.physics.quaternions = quaternions;
+        this.sceneState.physics.movingData = movingData;
         const sendTime = this.mainWorkerSendTime;
         const shapes = this.sceneState.physics.movingShapes;
         const shapesL = this.sceneState.physics.movingShapesLength;
@@ -198,6 +214,7 @@ class Physics {
             } else {
                 qua = null;
             }
+            this._updateShapeSpeedAndState(s, movingData, i);
             this.sceneState.consClass.updateEntityData(pos, qua, s.mesh.name);
             this.helpers.updatePhysicsHelpers(positions, quaternions, i);
             if(s.updateFn) s.updateFn(s);
@@ -207,8 +224,10 @@ class Physics {
         if(positions.length + quaternions.length <= shapesL * 14) { // shapesL * (3 + 4) * 2 = shapesL * 14
             this.sceneState.physics.positions = new Float32Array(positions.length * 2);
             this.sceneState.physics.quaternions = new Float32Array(quaternions.length * 2);
+            this.sceneState.physics.movingData = new Float32Array(movingData.length * 2);
             this.secPositions = new Float32Array(positions.length * 2);
             this.secQuaternions = new Float32Array(quaternions.length * 2);
+            this.secMovingData = new Float32Array(movingData.length * 2);
         }
 
         const delay = this.sceneState.physics.timeStep * 1000 - (performance.now() - sendTime);
@@ -219,6 +238,47 @@ class Physics {
             setTimeout(() => {
                 this.requestPhysicsFromWorker(true);
             }, delay);
+        }
+    }
+
+    _updateShapeSpeedAndState(shape, movingData, i) {
+        const movingDataItemCount = movingData[0];
+        const inTheAir = movingData[i * movingDataItemCount + 1];
+        const prevPosition = shape.prevPosition;
+        const position = shape.mesh.position;
+        if(prevPosition) {
+            const timeElapsed = (performance.now() - shape.curSpeed.lastCheck) / 1000;
+            const xSpeed = (prevPosition.x - position.x).toFixed(4) / timeElapsed;
+            const ySpeed = (prevPosition.y - position.y).toFixed(4) / timeElapsed;
+            const zSpeed = (prevPosition.z - position.z).toFixed(4) / timeElapsed;
+            shape.curSpeed.x = xSpeed;
+            shape.curSpeed.y = ySpeed;
+            shape.curSpeed.z = zSpeed;
+            shape.curSpeed.moving = false;
+            if(xSpeed !== 0 || ySpeed !== 0 || zSpeed !== 0) shape.curSpeed.moving = true;
+            if(shape.curSpeed.moving && shape.id === 'some-unique-player-id-mainchild') {
+                // console.log('MOVING', xSpeed, ySpeed, zSpeed, inTheAir);
+            }
+            shape.curSpeed.lastCheck = performance.now();
+            shape.prevPosition = {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            }
+        } else {
+            // TODO: Move this to addShape
+            shape.prevPosition = {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            }
+            shape.curSpeed = {
+                x: 0,
+                y: 0,
+                z: 0,
+                moving: false,
+                lastCheck: performance.now(),
+            };
         }
     }
 

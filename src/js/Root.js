@@ -92,8 +92,12 @@ class Root {
             this.sceneState.physics.particlesCount = 0;
         }
         this.sceneState.physics.nextParticleIndex = 0;
-        this.sceneState.physics.positions = new Float32Array(500 * 3);
-        this.sceneState.physics.quaternions = new Float32Array(500 * 4);
+        const movingItemsCount = 500;
+        this.sceneState.physics.positions = new Float32Array(movingItemsCount * 3);
+        this.sceneState.physics.quaternions = new Float32Array(movingItemsCount * 4);
+        this.sceneState.physics.movingDataItemCount = 1;
+        this.sceneState.physics.movingData = new Float32Array(movingItemsCount * this.sceneState.physics.movingDataItemCount + 1);
+        this.sceneState.physics.movingData[0] = this.sceneState.physics.movingDataItemCount;
         this.sceneState.physics.initiated = false;
         // Setup physics (cannon.js) [/END]
 
