@@ -433,7 +433,7 @@ const getShapeById = (id, moving) => {
 const addMovementToShape = (body, movingData, i) => {
     const belowContact = _findBelowContactBody(body.bodyId);
     const movingDataItemCount = movingData[0];
-    const movingDataInTheAirIndex = i * movingDataItemCount + 1;
+    const movingDataInTheAirIndex = i * movingDataItemCount + 1; // In the air data is the index 0 per item
     movingData[movingDataInTheAirIndex] = 0;
     if(belowContact.inTheAir) movingData[movingDataInTheAirIndex] = 1;
 

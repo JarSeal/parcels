@@ -121,6 +121,20 @@ class Player {
                         },
                     });
                 }
+
+                // Check if change in in the air property
+                if(shape.inTheAirUpdateTime + 1000 > this.sceneState.atomClock.getTime()) {
+                    if(shape.inTheAir) {
+                        // if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+                        // this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.2, {
+                        //     weight: 0,
+                        //     ease: Sine.easeInOut,
+                        //     onUpdate: () => {
+                        //         this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
+                        //     },
+                        // });
+                    }
+                }
             },
             mesh: pMesh,
             fixedRotation: true,

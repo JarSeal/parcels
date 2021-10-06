@@ -243,7 +243,10 @@ class Physics {
 
     _updateShapeSpeedAndState(shape, movingData, i) {
         const movingDataItemCount = movingData[0];
-        const inTheAir = movingData[i * movingDataItemCount + 1];
+        const inTheAir = movingData[i * movingDataItemCount + 1]; // in the air data is the index 0 per item
+        if(shape.inTheAir !== inTheAir) shape.inTheAirUpdateTime = this.sceneState.atomClock.getTime();
+        shape.inTheAir = inTheAir;
+
         const prevPosition = shape.prevPosition;
         const position = shape.mesh.position;
         if(prevPosition) {
