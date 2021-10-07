@@ -7,6 +7,7 @@ class Player {
         this.sceneState = sceneState;
         this.rotatationTL = null;
         this.skinAnimTLs = {};
+        this.skinAnimPhasesRunning = {};
         this.twoPI = sceneState.utils.getCommonPIs('twoPi');
         this.halfPI = sceneState.utils.getCommonPIs('half');
         this.data = data;
@@ -122,9 +123,67 @@ class Player {
                     });
                 }
 
+                const startX = shape.characterData.moveStartTimes.startX;
+                const startZ = shape.characterData.moveStartTimes.startZ;
                 // Check if change in in the air property
+                if(shape.inTheAir) {
+                    // Jumping or dropping
+                    if(startX !== 0 || startZ !== 0) {
+                        if(!this.skinAnimPhasesRunning.runToIdle) {
+                            this.skinAnimPhasesRunning.idleToRun = false;
+                            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+                            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.4, {
+                                weight: 0,
+                                ease: Sine.easeInOut,
+                                onUpdate: () => {
+                                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight; // Change this to dropping animation
+                                },
+                                onComplete: () => {
+                                    this.skinAnimPhasesRunning.runToIdle = false; // Change to runToDropping = false
+                                },
+                            });
+                            this.skinAnimPhasesRunning.runToIdle = true; // Change to runToDropping = true
+                        }
+                    }
+                } else {
+                    // On the ground, stopping or moving (running)
+                    if(startX === 0 && startZ === 0) {
+                        if(!this.skinAnimPhasesRunning.runToIdle) {
+                            this.skinAnimPhasesRunning.idleToRun = false;
+                            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+                            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.4, {
+                                weight: 0,
+                                ease: Sine.easeInOut,
+                                onUpdate: () => {
+                                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
+                                },
+                                onComplete: () => {
+                                    this.skinAnimPhasesRunning.runToIdle = false;
+                                },
+                            });
+                            this.skinAnimPhasesRunning.runToIdle = true;
+                        }
+                    } else {
+                        if(!this.skinAnimPhasesRunning.idleToRun) {
+                            this.skinAnimPhasesRunning.runToIdle = false;
+                            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
+                            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.2, {
+                                weight: 1,
+                                ease: Sine.easeInOut,
+                                onUpdate: () => {
+                                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
+                                },
+                                onComplete: () => {
+                                    this.skinAnimPhasesRunning.idleToRun = false;
+                                },
+                            });
+                            this.skinAnimPhasesRunning.idleToRun = true;
+                        }
+                    }
+                }
                 if(shape.inTheAirUpdateTime + 1000 > this.sceneState.atomClock.getTime()) {
                     if(shape.inTheAir) {
+                        // console.log(shape);
                         // if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
                         // this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.2, {
                         //     weight: 0,
@@ -345,27 +404,6 @@ class Player {
                 direction: dir,
             },
         });
-        if(this.data.moveStartTimes.startX === 0 && this.data.moveStartTimes.startZ === 0) {
-            // Stop
-            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
-            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.4, {
-                weight: 0,
-                ease: Sine.easeInOut,
-                onUpdate: () => {
-                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
-                },
-            });
-        } else {
-            // Move
-            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
-            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.2, {
-                weight: 1,
-                ease: Sine.easeInOut,
-                onUpdate: () => {
-                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight;
-                },
-            });
-        }
     }
 
     jump(timePressed) {
