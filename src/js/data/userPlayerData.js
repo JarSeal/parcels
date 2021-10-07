@@ -9,7 +9,7 @@ const userPlayerData = {
     charHeight: 1.82,
     path: '/models/characters/spacesuit_human_male/',
     model: 'spacesuit_human_male.glb',
-    modelTexture: 'space_suit_human_male',
+    modelTexture: 'spacesuit3_human_male',
     textureSizes: [512, 1024],
     textureExt: 'png',
     createValues: {

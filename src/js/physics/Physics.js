@@ -249,39 +249,24 @@ class Physics {
 
         const prevPosition = shape.prevPosition;
         const position = shape.mesh.position;
-        if(prevPosition) {
-            const timeElapsed = (performance.now() - shape.curSpeed.lastCheck) / 1000;
-            const xSpeed = (prevPosition.x - position.x).toFixed(4) / timeElapsed;
-            const ySpeed = (prevPosition.y - position.y).toFixed(4) / timeElapsed;
-            const zSpeed = (prevPosition.z - position.z).toFixed(4) / timeElapsed;
-            shape.curSpeed.x = xSpeed;
-            shape.curSpeed.y = ySpeed;
-            shape.curSpeed.z = zSpeed;
-            shape.curSpeed.moving = false;
-            if(xSpeed !== 0 || ySpeed !== 0 || zSpeed !== 0) shape.curSpeed.moving = true;
-            if(shape.curSpeed.moving && shape.id === 'some-unique-player-id-mainchild') {
-                // console.log('MOVING', xSpeed, ySpeed, zSpeed, inTheAir);
-            }
-            shape.curSpeed.lastCheck = performance.now();
-            shape.prevPosition = {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-            }
-        } else {
-            // TODO: Move this to addShape
-            shape.prevPosition = {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-            }
-            shape.curSpeed = {
-                x: 0,
-                y: 0,
-                z: 0,
-                moving: false,
-                lastCheck: performance.now(),
-            };
+        
+        const timeElapsed = (performance.now() - shape.curSpeed.lastCheck) / 1000;
+        const xSpeed = (prevPosition.x - position.x).toFixed(4) / timeElapsed;
+        const ySpeed = (prevPosition.y - position.y).toFixed(4) / timeElapsed;
+        const zSpeed = (prevPosition.z - position.z).toFixed(4) / timeElapsed;
+        shape.curSpeed.x = xSpeed;
+        shape.curSpeed.y = ySpeed;
+        shape.curSpeed.z = zSpeed;
+        shape.curSpeed.moving = false;
+        if(xSpeed !== 0 || ySpeed !== 0 || zSpeed !== 0) shape.curSpeed.moving = true;
+        if(shape.curSpeed.moving && shape.id === 'some-unique-player-id-mainchild') {
+            // console.log('MOVING', xSpeed, ySpeed, zSpeed, inTheAir);
+        }
+        shape.curSpeed.lastCheck = performance.now();
+        shape.prevPosition = {
+            x: position.x,
+            y: position.y,
+            z: position.z,
         }
     }
 
@@ -345,6 +330,20 @@ class Physics {
         if(!id) {
             id = 'phyShape_' + performance.now().toString().replace('.', '_');
             shapeData.id = id;
+        }
+        if(shapeData.moving) {
+            shapeData.prevPosition = {
+                x: shapeData.position[0],
+                y: shapeData.position[1],
+                z: shapeData.position[2],
+            }
+            shapeData.curSpeed = {
+                x: 0,
+                y: 0,
+                z: 0,
+                moving: false,
+                lastCheck: performance.now(),
+            };
         }
         this.tempShapes[id] = shapeData;
         this.sceneState.additionalPhysicsData.push({

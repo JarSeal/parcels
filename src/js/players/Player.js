@@ -55,11 +55,13 @@ class Player {
             idleAnim = THREE.AnimationClip.findByName(fileAnimations, 'Idle'),
             idle = mixer.clipAction(idleAnim),
             runAnim = THREE.AnimationClip.findByName(fileAnimations, 'Run2'),
-            run = mixer.clipAction(runAnim);
+            run = mixer.clipAction(runAnim),
+            fallAnim = THREE.AnimationClip.findByName(fileAnimations, 'Fall'),
+            fall = mixer.clipAction(fallAnim);
         this.sceneState.mixers.push(mixer);
         this.sceneState.mixersCount++;
         this.data.anims = {
-            idle, run
+            idle, run, fall
         };
 
         const pos = this.data.position;
@@ -125,29 +127,48 @@ class Player {
 
                 const startX = shape.characterData.moveStartTimes.startX;
                 const startZ = shape.characterData.moveStartTimes.startZ;
+                const moving = startX !== 0 || startZ !== 0;
+                const inTheAir = shape.inTheAir;
                 // Check if change in in the air property
-                if(shape.inTheAir) {
+                if(inTheAir) {
                     // Jumping or dropping
-                    if(startX !== 0 || startZ !== 0) {
-                        if(!this.skinAnimPhasesRunning.runToIdle) {
+                    if(moving) {
+                        if(!this.skinAnimPhasesRunning.runToFall) {
                             this.skinAnimPhasesRunning.idleToRun = false;
-                            if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
-                            this.skinAnimTLs.run = new TimelineMax().to(this.data.anims.run, 0.4, {
-                                weight: 0,
+                            this.skinAnimPhasesRunning.runToIdle = false;
+                            this.skinAnimPhasesRunning.fallOnFeet = false;
+                            if(this.skinAnimTLs.fall) this.skinAnimTLs.fall.kill();
+                            this.skinAnimTLs.fall = new TimelineMax().to(this.data.anims.fall, 0.5, {
+                                weight: 1,
                                 ease: Sine.easeInOut,
                                 onUpdate: () => {
-                                    this.data.anims.idle.weight = 1 - this.data.anims.run.weight; // Change this to dropping animation
+                                    this.data.anims.run.weight = 1 - this.data.anims.fall.weight;
+                                    this.data.anims.idle.weight = this.data.anims.run.weight;
                                 },
                                 onComplete: () => {
-                                    this.skinAnimPhasesRunning.runToIdle = false; // Change to runToDropping = false
+                                    this.skinAnimPhasesRunning.runToFall = false;
                                 },
                             });
-                            this.skinAnimPhasesRunning.runToIdle = true; // Change to runToDropping = true
+                            this.skinAnimPhasesRunning.runToFall = true;
                         }
                     }
                 } else {
+                    if(shape.inTheAirUpdateTime + 100 > this.sceneState.atomClock.getTime()) {
+                        if(!this.skinAnimPhasesRunning.fallOnFeet) {
+                            this.skinAnimPhasesRunning.runToFall = false;
+                            if(this.skinAnimTLs.fall) this.skinAnimTLs.fall.kill();
+                            this.skinAnimTLs.fall = new TimelineMax().to(this.data.anims.fall, 0.2, {
+                                weight: 0,
+                                ease: Sine.easeInOut,
+                                onComplete: () => {
+                                    this.skinAnimPhasesRunning.fallOnFeet = false;
+                                },
+                            });
+                            this.skinAnimPhasesRunning.fallOnFeet = true;
+                        }
+                    }
                     // On the ground, stopping or moving (running)
-                    if(startX === 0 && startZ === 0) {
+                    if(!moving) {
                         if(!this.skinAnimPhasesRunning.runToIdle) {
                             this.skinAnimPhasesRunning.idleToRun = false;
                             if(this.skinAnimTLs.run) this.skinAnimTLs.run.kill();
@@ -246,8 +267,11 @@ class Player {
         this.data.anims.run.play();
         this.data.anims.run.weight = 0;
         this.data.anims.run.timeScale = this.data.runAnimScale;
+        this.data.anims.fall.play();
+        this.data.anims.fall.weight = 0;
         this.skinAnimTLs.idle = null;
         this.skinAnimTLs.run = null;
+        this.skinAnimTLs.fall = null;
         console.log(this.data.anims);
     }
 
