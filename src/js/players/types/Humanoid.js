@@ -114,8 +114,29 @@ class Humanoid {
                 const inTheAir = shape.inTheAir;
                 // Check if change in in the air property
                 if(inTheAir) {
-                    this._getDistanceToGround(shape);
-                    console.log('IN THE AIR');
+                    this.skinAnimPhasesRunning.idleToRun = false;
+                    this.skinAnimPhasesRunning.runToIdle = false;
+                    this.skinAnimPhasesRunning.idleToFall = false;
+                    // this.data.anims.idle.weight = 0;
+                    // this.data.anims.run.weight = 0;
+                    // this.data.anims.landing.weight = 0;
+                    // this.data.anims.jumpStill.weight = 0;
+                    // this.data.anims.jumpMovingLeft.weight = 0;
+                    // this.data.anims.jumpMovingRight.weight = 0;
+                    const dist = this._getDistanceToGround();
+                    if(dist > 2) {
+                        this.data.fallLevel = 1;
+                    } else {
+                        this.data.fallLevel = dist / 2;
+                    }
+                    const timeInAir = this.sceneState.atomClock.getTime() - shape.inTheAirUpdateTime;
+                    let multiplier = 1;
+                    if(timeInAir < 100) {
+                        multiplier = 0;
+                    }
+                    this.data.anims.fall.weight = this.data.fallLevel * multiplier;
+                    this.data.anims.idle.weight = Math.max(this.data.anims.idle.weight - this.data.fallLevel, 0);
+                    console.log('RUN FALL');
                     // Jumping or dropping
                     // if(moving) {
                     //     if(!this.skinAnimPhasesRunning.runToFall) {
@@ -159,6 +180,8 @@ class Humanoid {
                     // }
                 } else {
                     if(this.sceneState.atomClock.getTime() < shape.inTheAirUpdateTime + 100) {
+                        const lastIntTheAirUpdate = this.sceneState.atomClock.getTime() - shape.inTheAirUpdateTime;
+                        // console.log('last update time', lastIntTheAirUpdate);
                         // Landing
                         if(!this.skinAnimPhasesRunning.fallOnFeet) {
                             this.skinAnimPhasesRunning.runToFall = false;
@@ -173,6 +196,7 @@ class Humanoid {
                             this.data.anims.landing.timeScale = 1;
                             this.data.anims.landing.weight = 0.5;
                             this.data.anims.landing.play();
+                            console.log('RUN LANDING');
                             this.skinAnimTLs.landing = new TimelineMax().to(this.data.anims.landing, 0.1, {
                                 weight: 0.8,
                                 ease: Sine.easeInOut,
@@ -191,7 +215,7 @@ class Humanoid {
                                             this.skinAnimPhasesRunning.fallOnFeet = false;
                                             this.data.anims.landing.stop();
                                         },
-                                    })
+                                    });
                                 },
                             });
                             this.skinAnimPhasesRunning.fallOnFeet = true;
@@ -381,11 +405,10 @@ class Humanoid {
         return timeOut;
     }
 
-    _getDistanceToGround(shape) {
+    _getDistanceToGround() {
         const fromPos = this.data.mesh.children[0].position;
-        const toPos = new THREE.Vector3(fromPos.x, fromPos.y - 100, fromPos.z);
         const direction = new THREE.Vector3();
-        direction.subVectors(   
+        direction.subVectors(
             new THREE.Vector3(
                 fromPos.x,
                 fromPos.y - 100,
@@ -398,22 +421,8 @@ class Humanoid {
             this.sceneState.levelAssets.lvlMeshes,
             true
         );
-        const dist = intersectsLevel.length ? intersectsLevel[0].distance - this.data.charHeight / 2 : 9999999
-        if(dist > 1) {
-            if(dist > 1) {
-                this.data.fallLevel = 1;
-            } else {
-                this.data.fallLevel = 0.5;
-            }
-        } else {
-            this.data.fallLevel = dist;
-        }
-        const timeInAir = this.sceneState.atomClock.getTime() - shape.inTheAirUpdateTime;
-        let multiplier = 1;
-        if(timeInAir < 100) {
-            multiplier = 0;
-        }
-        this.data.anims.fall.weight = this.data.fallLevel * multiplier;
+        const dist = intersectsLevel.length ? intersectsLevel[0].distance - this.data.charHeight / 2 : 9999999;
+        return dist;
     }
 }
 
