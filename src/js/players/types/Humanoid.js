@@ -43,16 +43,15 @@ class Humanoid {
         this.data.anims = {
             idle, run, fall, jumpStill, jumpMovingRight, jumpMovingLeft, landing
         };
-        console.log('Debug2');
 
         const pos = this.data.position;
         const group = new THREE.Group();
         model.children[1].material.dispose();
-        model.children[1].material = new THREE.MeshLambertMaterial({
+        model.children[1].material = new THREE.MeshPhongMaterial({
             map: this.data.texture,
             skinning: true,
             side: THREE.DoubleSide,
-            color: new THREE.Color(0xbbbbbb)
+            // color: new THREE.Color(0xbbbbbb)
         });
         model.children[1].material.map.flipY = false;
         model.position.y = this.data.createValues.yOffset;
