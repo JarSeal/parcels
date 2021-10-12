@@ -135,7 +135,6 @@ class Humanoid {
                     }
                     this.data.anims.fall.weight = this.data.fallLevel * multiplier;
                     this.data.anims.idle.weight = Math.max(this.data.anims.idle.weight - this.data.fallLevel, 0);
-                    console.log('RUN FALL');
                     // Jumping or dropping
                     // if(moving) {
                     //     if(!this.skinAnimPhasesRunning.runToFall) {
@@ -178,8 +177,9 @@ class Humanoid {
                     //     }
                     // }
                 } else {
-                    if(this.sceneState.atomClock.getTime() < shape.inTheAirUpdateTime + 100) {
-                        const lastIntTheAirUpdate = this.sceneState.atomClock.getTime() - shape.inTheAirUpdateTime;
+                    const lastIntTheAirUpdate = this.sceneState.atomClock.getTime() - shape.inTheAirUpdateTime;
+                    // if(this.sceneState.atomClock.getTime() < shape.inTheAirUpdateTime + 100) {
+                    if(lastIntTheAirUpdate < 100) {
                         // console.log('last update time', lastIntTheAirUpdate);
                         // Landing
                         if(!this.skinAnimPhasesRunning.fallOnFeet) {
@@ -195,7 +195,6 @@ class Humanoid {
                             this.data.anims.landing.timeScale = 1;
                             this.data.anims.landing.weight = 0.5;
                             this.data.anims.landing.play();
-                            console.log('RUN LANDING');
                             this.skinAnimTLs.landing = new TimelineMax().to(this.data.anims.landing, 0.1, {
                                 weight: 0.8,
                                 ease: Sine.easeInOut,
@@ -211,7 +210,9 @@ class Humanoid {
                                             this.data.anims.idle.weight = 1 - this.data.anims.landing.weight;
                                         },
                                         onComplete: () => {
-                                            this.skinAnimPhasesRunning.fallOnFeet = false;
+                                            setTimeout(() => {
+                                                this.skinAnimPhasesRunning.fallOnFeet = false;
+                                            }, 500);
                                             this.data.anims.landing.stop();
                                         },
                                     });
